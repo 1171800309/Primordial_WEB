@@ -31,6 +31,25 @@
         <el-main class="main">
           <div v-if="active === 'dashboard'">
             <el-card class="card">
+              <template #header>
+                <div class="fate-header">
+                  <span>八字分析结果</span>
+                  <el-button size="small" :loading="fateLoading" @click="handleRefreshFate">手动刷新重算</el-button>
+                </div>
+              </template>
+              <div v-if="fateLoading" class="fate-tip">分析中...</div>
+              <div v-else-if="fateError" class="fate-tip error">{{ fateError }}</div>
+              <div v-else-if="hourSummary.hourGanZhi" class="hour-summary">
+                <span>时柱：{{ hourSummary.hourGanZhi }}</span>
+                <span v-if="hourSummary.actualBirthTime">真太阳时：{{ hourSummary.actualBirthTime }}</span>
+                <span v-if="hourSummary.longitudeCorrectionMinutes">经度校正：{{ hourSummary.longitudeCorrectionMinutes }} 分钟</span>
+              </div>
+              <pre v-else-if="fateAnalysis" class="fate-json">{{ formattedFateAnalysis }}</pre>
+              <pre v-if="fateAnalysis" class="fate-json">{{ formattedFateAnalysis }}</pre>
+              <div v-else class="fate-tip">暂无命理结果</div>
+            </el-card>
+
+            <el-card class="card">
               <template #header><span>仪表盘</span></template>
               <el-row :gutter="20">
                 <el-col :span="8">
@@ -98,14 +117,26 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { logout } from '@/api/auth'
+import { analyzeByUser } from '@/api/fate'
 
 const router = useRouter()
 const user = ref({ username: '管理员' })
 const active = ref('dashboard')
+const fateAnalysis = ref(null)
+const fateLoading = ref(false)
+const fateError = ref('')
+const hourSummary = ref({
+  hourTianGan: '',
+  hourDiZhi: '',
+  hourGanZhi: '',
+  actualBirthTime: '',
+  longitudeCorrectionMinutes: ''
+})
+const formattedFateAnalysis = computed(() => JSON.stringify(fateAnalysis.value, null, 2))
 
 const stats = ref({
   totalUsers: 0,
@@ -124,15 +155,80 @@ const mockSettings = ref({
   apiBaseUrl: 'http://localhost:5000'
 })
 
+const readStoredFateAnalysis = () => {
+  const raw = localStorage.getItem('fateAnalysis')
+  if (!raw) return null
+  try {
+    return JSON.parse(raw)
+  } catch (e) {
+    return null
+  }
+}
+
+const readStoredHourSummary = () => {
+  const raw = localStorage.getItem('hourSummary')
+  if (!raw) return null
+  try {
+    return JSON.parse(raw)
+  } catch (e) {
+    return null
+  }
+}
+
+const persistFateAnalysis = (data) => {
+  fateAnalysis.value = data || null
+  localStorage.setItem('fateAnalysis', JSON.stringify(fateAnalysis.value))
+}
+
+const loadFateAnalysis = async ({ force = false } = {}) => {
+  if (!force) {
+    const stored = readStoredFateAnalysis()
+    if (stored) {
+      fateAnalysis.value = stored
+      fateError.value = ''
+      return
+    }
+  }
+
+  const userId = user.value?.id || user.value?.userId
+  if (!userId) {
+    fateError.value = '缺少用户ID，无法获取命理结果'
+    fateAnalysis.value = null
+    return
+  }
+
+  fateLoading.value = true
+  fateError.value = ''
+  try {
+    const res = await analyzeByUser(userId, user.value?.gender)
+    const next = res?.data?.fateAnalysis ?? res?.fateAnalysis ?? res?.data ?? null
+    persistFateAnalysis(next)
+  } catch (error) {
+    fateAnalysis.value = null
+    fateError.value = error?.response?.data?.message || error?.message || '命理结果获取失败'
+  } finally {
+    fateLoading.value = false
+  }
+}
+
 onMounted(() => {
   const userStr = localStorage.getItem('user')
   if (userStr) user.value = JSON.parse(userStr)
+  fateAnalysis.value = readStoredFateAnalysis()
+  const cachedHourSummary = readStoredHourSummary()
+  if (cachedHourSummary) hourSummary.value = cachedHourSummary
+  if (!fateAnalysis.value) loadFateAnalysis()
 
   // 模拟一下首页展示效果
   stats.value.totalUsers = 1280
   stats.value.todayLogins = 38
   stats.value.vipUsers = 76
 })
+
+const handleRefreshFate = async () => {
+  await loadFateAnalysis({ force: true })
+  if (!fateError.value) ElMessage.success('命理结果已更新')
+}
 
 const onMenuSelect = (key) => {
   active.value = key
@@ -201,6 +297,38 @@ const handleLogout = async () => {
 
 .card {
   margin-bottom: 16px;
+}
+
+.fate-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fate-tip {
+  color: #6b7280;
+}
+
+.fate-tip.error {
+  color: #ef4444;
+}
+
+.fate-json {
+  margin: 0;
+  max-height: 320px;
+  overflow: auto;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.hour-summary {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  color: #374151;
 }
 
 .stat {

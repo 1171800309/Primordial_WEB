@@ -23,3 +23,11 @@ export const getDistricts = (province, city) => {
   })
 }
 
+export const getHourPillar = (province, city, coordinates, birthTime) => {
+  return request({
+    url: '/api/Region/hour-pillar',
+    method: 'get',
+    params: { province, city, coordinates, birthTime }
+  })
+}
+

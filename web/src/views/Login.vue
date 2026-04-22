@@ -76,13 +76,29 @@ const handleLogin = async () => {
         password: loginForm.password
       })
 
+      const payload = res?.data || res || {}
       const token =
-        res?.data?.token ||
+        payload?.token ||
         res?.token ||
-        res?.data?.accessToken ||
+        payload?.accessToken ||
         res?.accessToken ||
         ''
-      const user = res?.data?.user || res?.user || { username: loginForm.username }
+      const user =
+        payload?.user ||
+        res?.user || {
+          id: payload?.id,
+          username: payload?.username || loginForm.username,
+          userType: payload?.userType || 'member',
+          gender: payload?.gender
+        }
+      const fateAnalysis = payload?.fateAnalysis ?? res?.fateAnalysis ?? null
+      const hourSummary = {
+        hourTianGan: payload?.hourTianGan || '',
+        hourDiZhi: payload?.hourDiZhi || '',
+        hourGanZhi: payload?.hourGanZhi || '',
+        actualBirthTime: payload?.actualBirthTime || '',
+        longitudeCorrectionMinutes: payload?.longitudeCorrectionMinutes || ''
+      }
 
       if (!token) {
         ElMessage.error('登录成功但未返回 token')
@@ -92,6 +108,8 @@ const handleLogin = async () => {
       clearSession()
       localStorage.setItem('token', token)
       localStorage.setItem('user', JSON.stringify(user))
+      localStorage.setItem('fateAnalysis', JSON.stringify(fateAnalysis))
+      localStorage.setItem('hourSummary', JSON.stringify(hourSummary))
       touchSession()
       ElMessage.success('登录成功')
       router.push('/index')
