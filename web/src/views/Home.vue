@@ -45,7 +45,6 @@
                 <span v-if="hourSummary.longitudeCorrectionMinutes">经度校正：{{ hourSummary.longitudeCorrectionMinutes }} 分钟</span>
               </div>
               <pre v-else-if="fateAnalysis" class="fate-json">{{ formattedFateAnalysis }}</pre>
-              <pre v-if="fateAnalysis" class="fate-json">{{ formattedFateAnalysis }}</pre>
               <div v-else class="fate-tip">暂无命理结果</div>
             </el-card>
 
@@ -71,6 +70,39 @@
                   </div>
                 </el-col>
               </el-row>
+            </el-card>
+
+            <el-card class="card" style="margin-top: 16px;">
+              <template #header><span>八字五行分析</span></template>
+              <el-form :model="analysisForm" label-width="140px" class="analysis-form">
+                <el-row :gutter="16">
+                  <el-col :span="8"><el-form-item label="年柱"><el-input :model-value="analysisForm.yearPillar" readonly /></el-form-item></el-col>
+                  <el-col :span="8"><el-form-item label="月柱"><el-input :model-value="analysisForm.monthPillar" readonly /></el-form-item></el-col>
+                  <el-col :span="8"><el-form-item label="日柱"><el-input :model-value="analysisForm.dayPillar" readonly /></el-form-item></el-col>
+                </el-row>
+                <el-row :gutter="16">
+                  <el-col :span="8"><el-form-item label="时柱"><el-input :model-value="analysisForm.hourPillar" readonly /></el-form-item></el-col>
+                  <el-col :span="8"><el-form-item label="大运"><el-input :model-value="analysisForm.majorLuckPillar" readonly /></el-form-item></el-col>
+                  <el-col :span="8"><el-form-item label="流年 / 流月"><el-input :model-value="analysisForm.flowYearMonthPillar" readonly /></el-form-item></el-col>
+                </el-row>
+                <el-row :gutter="16">
+                  <el-col :span="8"><el-form-item label="五行喜用"><el-input :model-value="analysisForm.usefulElement" readonly /></el-form-item></el-col>
+                  <el-col :span="8"><el-form-item label="五行忌用"><el-input :model-value="analysisForm.unfavorableElement" readonly /></el-form-item></el-col>
+                  <el-col :span="8"><el-form-item label="日主"><el-input :model-value="analysisForm.dayMaster" readonly /></el-form-item></el-col>
+                </el-row>
+                <el-row :gutter="16">
+                  <el-col :span="12"><el-form-item label="喜用十神"><el-input :model-value="analysisForm.usefulTenGods" readonly /></el-form-item></el-col>
+                  <el-col :span="12"><el-form-item label="忌用十神"><el-input :model-value="analysisForm.unfavorableTenGods" readonly /></el-form-item></el-col>
+                </el-row>
+                <el-row :gutter="16">
+                  <el-col :span="8"><el-form-item label="年柱纳音"><el-input :model-value="analysisForm.yearNaYin" readonly /></el-form-item></el-col>
+                  <el-col :span="8"><el-form-item label="月柱纳音"><el-input :model-value="analysisForm.monthNaYin" readonly /></el-form-item></el-col>
+                  <el-col :span="8"><el-form-item label="日柱纳音"><el-input :model-value="analysisForm.dayNaYin" readonly /></el-form-item></el-col>
+                </el-row>
+                <el-row :gutter="16">
+                  <el-col :span="24"><el-form-item label="状态"><el-input :model-value="analysisForm.statusText" readonly /></el-form-item></el-col>
+                </el-row>
+              </el-form>
             </el-card>
 
             <el-card class="card" style="margin-top: 16px;">
@@ -211,6 +243,81 @@ const loadFateAnalysis = async ({ force = false } = {}) => {
   }
 }
 
+const analysisForm = ref({
+  yearPillar: '',
+  monthPillar: '',
+  dayPillar: '',
+  hourPillar: '',
+  majorLuckPillar: '',
+  flowYearMonthPillar: '',
+  usefulElement: '',
+  unfavorableElement: '',
+  dayMaster: '',
+  usefulTenGods: '',
+  unfavorableTenGods: '',
+  yearNaYin: '',
+  monthNaYin: '',
+  dayNaYin: '',
+  statusText: '暂无八字分析数据'
+})
+
+const formatPillar = (item) => {
+  if (!item) return ''
+  if (typeof item === 'string') return item
+  return `${item.tianGan || ''}${item.diZhi || ''}`.trim()
+}
+
+const getAnalysis = () => {
+  const userStr = localStorage.getItem('user')
+  let userAnalysis = null
+  if (userStr) {
+    try {
+      const parsedUser = JSON.parse(userStr)
+      userAnalysis = parsedUser?.analysis || null
+    } catch (e) {}
+  }
+
+  const loginAnalysisStr = localStorage.getItem('userAnalysis')
+  const registerAnalysisStr = sessionStorage.getItem('registerAnalysis')
+
+  try {
+    if (userAnalysis) return userAnalysis
+    if (loginAnalysisStr) return JSON.parse(loginAnalysisStr)
+    if (registerAnalysisStr) return JSON.parse(registerAnalysisStr)
+  } catch (e) {
+    return null
+  }
+  return null
+}
+
+const fillAnalysisForm = () => {
+  const analysis = getAnalysis()
+  if (!analysis) return
+
+  const pillars = analysis.pillars || {}
+  const usefulGods = analysis.usefulGods || {}
+  const dayMaster = usefulGods.dayMaster || {}
+  const naYin = analysis.naYin || analysis.nayin || {}
+
+  analysisForm.value = {
+    yearPillar: formatPillar(pillars.year),
+    monthPillar: formatPillar(pillars.month),
+    dayPillar: formatPillar(pillars.day),
+    hourPillar: formatPillar(pillars.hour),
+    majorLuckPillar: formatPillar(pillars.majorLuck),
+    flowYearMonthPillar: `${formatPillar(pillars.flowYear)} / ${formatPillar(pillars.flowMonth)}`.trim(),
+    usefulElement: usefulGods.usefulElement || '',
+    unfavorableElement: usefulGods.unfavorableElement || '',
+    dayMaster: `${dayMaster.tianGan || ''} ${dayMaster.wuXing || ''} ${dayMaster.trend || ''}`.trim(),
+    usefulTenGods: Array.isArray(usefulGods.usefulTenGods) ? usefulGods.usefulTenGods.join('、') : '',
+    unfavorableTenGods: Array.isArray(usefulGods.unfavorableTenGods) ? usefulGods.unfavorableTenGods.join('、') : '',
+    yearNaYin: naYin.yearPillar || naYin.year || '',
+    monthNaYin: naYin.monthPillar || naYin.month || '',
+    dayNaYin: naYin.dayPillar || naYin.day || '',
+    statusText: '已加载八字分析数据'
+  }
+}
+
 onMounted(() => {
   const userStr = localStorage.getItem('user')
   if (userStr) user.value = JSON.parse(userStr)
@@ -223,6 +330,7 @@ onMounted(() => {
   stats.value.totalUsers = 1280
   stats.value.todayLogins = 38
   stats.value.vipUsers = 76
+  fillAnalysisForm()
 })
 
 const handleRefreshFate = async () => {
@@ -240,6 +348,10 @@ const handleLogout = async () => {
   } catch (e) {}
   localStorage.removeItem('token')
   localStorage.removeItem('user')
+  localStorage.removeItem('userAnalysis')
+  localStorage.removeItem('fateAnalysis')
+  localStorage.removeItem('hourSummary')
+  sessionStorage.removeItem('registerAnalysis')
   ElMessage.success('已退出')
   router.push('/login')
 }

@@ -99,6 +99,7 @@ const handleLogin = async () => {
         actualBirthTime: payload?.actualBirthTime || '',
         longitudeCorrectionMinutes: payload?.longitudeCorrectionMinutes || ''
       }
+      const analysis = payload?.analysis ?? res?.analysis ?? null
 
       if (!token) {
         ElMessage.error('登录成功但未返回 token')
@@ -110,6 +111,11 @@ const handleLogin = async () => {
       localStorage.setItem('user', JSON.stringify(user))
       localStorage.setItem('fateAnalysis', JSON.stringify(fateAnalysis))
       localStorage.setItem('hourSummary', JSON.stringify(hourSummary))
+      if (analysis) {
+        localStorage.setItem('userAnalysis', JSON.stringify(analysis))
+      } else {
+        localStorage.removeItem('userAnalysis')
+      }
       touchSession()
       ElMessage.success('登录成功')
       router.push('/index')

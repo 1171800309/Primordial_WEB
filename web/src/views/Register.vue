@@ -429,6 +429,13 @@ const onSubmit = async () => {
       district: form.district
     })
     const payload = res?.data || res || {}
+    const analysis = payload?.analysis ?? res?.analysis ?? null
+    if (analysis) {
+      sessionStorage.setItem('registerAnalysis', JSON.stringify(analysis))
+    } else {
+      sessionStorage.removeItem('registerAnalysis')
+    }
+
     const token =
       payload?.token ||
       res?.token ||
@@ -462,6 +469,11 @@ const onSubmit = async () => {
       localStorage.setItem('user', JSON.stringify(user))
       localStorage.setItem('fateAnalysis', JSON.stringify(fateAnalysis))
       localStorage.setItem('hourSummary', JSON.stringify(hourSummary))
+      if (analysis) {
+        localStorage.setItem('userAnalysis', JSON.stringify(analysis))
+      } else {
+        localStorage.removeItem('userAnalysis')
+      }
       touchSession()
       ElMessage.success('注册成功')
       router.push('/index')

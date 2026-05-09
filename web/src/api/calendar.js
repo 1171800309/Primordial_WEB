@@ -32,3 +32,11 @@ export const getPillarThree = (calendarType, year, month, day) => {
   })
 }
 
+export const analyzePillar = (data) => {
+  return request({
+    url: import.meta.env.VITE_PILLAR_ANALYSIS_PATH || '/api/pillar/analysis',
+    method: 'post',
+    data
+  })
+}
+
