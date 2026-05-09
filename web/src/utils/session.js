@@ -8,7 +8,10 @@ export const touchSession = () => {
 export const clearSession = () => {
   localStorage.removeItem('token')
   localStorage.removeItem('user')
+  localStorage.removeItem('baziAnalysis')
   localStorage.removeItem('fateAnalysis')
+  localStorage.removeItem('hourSummary')
+  localStorage.removeItem('userAnalysis')
   localStorage.removeItem(LAST_ACTIVE_AT_KEY)
 }
 

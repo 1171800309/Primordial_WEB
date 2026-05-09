@@ -1,8 +1,13 @@
 <template>
-  <div class="register-container">
-    <div class="register-box">
-      <h2 class="title">用户注册</h2>
-      <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
+  <div class="yiqi-auth-page register-auth">
+    <MysticCanvasBackground />
+    <div class="yiqi-auth-vignette" />
+    <div class="register-box yiqi-glass-panel yiqi-glass-panel--wide">
+      <div class="yiqi-title-block register-head">
+        <h1 class="yiqi-brand register-brand">开启命格</h1>
+        <p class="yiqi-subtitle">创建命盘 · 出生地辰与历法</p>
+      </div>
+      <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="register-form">
         <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="用户名称" prop="username">
@@ -31,11 +36,6 @@
 
         <el-row :gutter="16">
           <el-col :span="12">
-            <el-form-item label="身份证" prop="identityCard">
-              <el-input v-model="form.identityCard" placeholder="请输入身份证号" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
             <el-form-item label="性别" prop="gender">
               <el-radio-group v-model="form.gender">
                 <el-radio label="male">男</el-radio>
@@ -43,9 +43,6 @@
               </el-radio-group>
             </el-form-item>
           </el-col>
-        </el-row>
-
-        <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="历法类型" prop="calendarType">
               <el-radio-group v-model="form.calendarType" @change="onCalendarTypeChange">
@@ -161,10 +158,10 @@
         </el-row>
 
         <el-form-item>
-          <el-button type="primary" :loading="loading" @click="onSubmit">
-            {{ loading ? '提交中...' : '注册' }}
+          <el-button type="primary" :loading="loading" class="yiqi-btn-ritual" @click="onSubmit">
+            {{ loading ? '推演命盘中…' : '开启命格' }}
           </el-button>
-          <el-button @click="goLogin">返回登录</el-button>
+          <el-button class="yiqi-btn-ghost" @click="goLogin">返回天机</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -179,6 +176,7 @@ import { register } from '@/api/auth'
 import { getCities, getDistricts, getHourPillar, getProvinces } from '@/api/region'
 import { getCalendarDays, getCalendarMonths, getCalendarYears, getPillarThree } from '@/api/calendar'
 import { touchSession, clearSession } from '@/utils/session'
+import MysticCanvasBackground from '@/components/MysticCanvasBackground.vue'
 
 const router = useRouter()
 const formRef = ref()
@@ -202,7 +200,6 @@ const form = reactive({
   email: '',
   phone: '',
   userType: 'member',
-  identityCard: '',
   gender: 'male',
   calendarType: 'solar',
   birthYear: '',
@@ -218,7 +215,6 @@ const rules = {
   username: [{ required: true, message: '请输入用户名称', trigger: 'blur' }],
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
   phone: [{ required: true, message: '请输入手机号', trigger: 'blur' }],
-  identityCard: [{ required: true, message: '请输入身份证', trigger: 'blur' }],
   gender: [{ required: true, message: '请选择性别', trigger: 'change' }],
   calendarType: [{ required: true, message: '请选择历法类型', trigger: 'change' }],
   birthYear: [{ required: true, message: '请选择出生年', trigger: 'change' }],
@@ -420,7 +416,6 @@ const onSubmit = async () => {
       email: form.email || undefined,
       phone: form.phone,
       userType: form.userType,
-      identityCard: form.identityCard,
       gender: form.gender,
       calendarType: form.calendarType,
       birthDateTime,
@@ -429,12 +424,6 @@ const onSubmit = async () => {
       district: form.district
     })
     const payload = res?.data || res || {}
-    const analysis = payload?.analysis ?? res?.analysis ?? null
-    if (analysis) {
-      sessionStorage.setItem('registerAnalysis', JSON.stringify(analysis))
-    } else {
-      sessionStorage.removeItem('registerAnalysis')
-    }
 
     const token =
       payload?.token ||
@@ -450,7 +439,7 @@ const onSubmit = async () => {
         userType: payload?.userType || form.userType,
         gender: form.gender
       }
-    const fateAnalysis = payload?.fateAnalysis ?? res?.fateAnalysis ?? null
+    const baziAnalysis = payload?.baziAnalysis ?? null
     const hourSummary = {
       hourTianGan: payload?.hourTianGan || '',
       hourDiZhi: payload?.hourDiZhi || '',
@@ -459,28 +448,22 @@ const onSubmit = async () => {
       longitudeCorrectionMinutes: payload?.longitudeCorrectionMinutes || ''
     }
 
-    // 注册返回已包含完整算法结果，先缓存一份，登录后可直接复用。
-    localStorage.setItem('fateAnalysis', JSON.stringify(fateAnalysis))
+    localStorage.setItem('baziAnalysis', JSON.stringify(baziAnalysis))
     localStorage.setItem('hourSummary', JSON.stringify(hourSummary))
 
     if (token) {
       clearSession()
       localStorage.setItem('token', token)
       localStorage.setItem('user', JSON.stringify(user))
-      localStorage.setItem('fateAnalysis', JSON.stringify(fateAnalysis))
+      localStorage.setItem('baziAnalysis', JSON.stringify(baziAnalysis))
       localStorage.setItem('hourSummary', JSON.stringify(hourSummary))
-      if (analysis) {
-        localStorage.setItem('userAnalysis', JSON.stringify(analysis))
-      } else {
-        localStorage.removeItem('userAnalysis')
-      }
       touchSession()
-      ElMessage.success('注册成功')
+      ElMessage.success('命格已启')
       router.push('/index')
       return
     }
 
-    ElMessage.success('注册成功，请登录')
+    ElMessage.success('命盘已立，请回天机关卡登录')
     router.push('/login')
   } catch (error) {
     const msg =
@@ -510,30 +493,33 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.register-container {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  padding: 20px;
+.register-auth {
+  align-items: flex-start;
+  padding-top: 32px;
+  padding-bottom: 32px;
 }
 
-.register-box {
-  width: 860px;
-  max-width: 100%;
-  background: rgba(255, 255, 255, 0.96);
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  padding: 28px;
+.register-head {
+  margin-bottom: 20px;
 }
 
-.title {
-  margin: 0 0 20px;
-  text-align: center;
-  color: #1a1a2e;
-  font-size: 28px;
-  font-weight: 600;
+.register-brand {
+  letter-spacing: 0.42em;
+  text-indent: 0.42em;
+  font-size: clamp(22px, 3.2vw, 30px);
+}
+
+.register-form :deep(.el-row) {
+  margin-bottom: 0;
+}
+
+.register-form :deep(.el-form-item) {
+  margin-bottom: 16px;
+}
+
+.register-form :deep(.el-date-editor),
+.register-form :deep(.el-date-editor .el-input__wrapper) {
+  width: 100%;
 }
 </style>
 

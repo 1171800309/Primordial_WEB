@@ -1,0 +1,299 @@
+/**
+ * 一炁文化 · 国风玄幻 / 赛博东方 主题变量与全局基调
+ * 依据《一炁文化前端设计.md》色彩与克制动效原则
+ */
+
+:root {
+  --yiqi-black: #050505;
+  --yiqi-ink: #07141f;
+  --yiqi-xuan: #0b1c2c;
+  --yiqi-gold-dim: #8b6b2e;
+  --yiqi-gold: #c89b3c;
+  --yiqi-qi-blue: #4da3ff;
+  --yiqi-purple: #7c5cff;
+  --yiqi-fire: #ff6b4a;
+  --yiqi-wood: #4faf6c;
+  --yiqi-text: #e8e4dc;
+  --yiqi-text-muted: #9a9a8e;
+  --yiqi-glass: rgba(11, 28, 44, 0.55);
+  --yiqi-glass-border: rgba(200, 155, 60, 0.35);
+  --yiqi-glow: rgba(200, 155, 60, 0.12);
+
+  /* Element Plus 主色对齐赤金（克制使用） */
+  --el-color-primary: #c89b3c;
+  --el-color-primary-light-3: #a88435;
+  --el-color-primary-light-5: #8f6f2d;
+  --el-color-primary-light-7: #6e5624;
+  --el-color-primary-light-9: rgba(200, 155, 60, 0.12);
+  --el-color-primary-dark-2: #d4ab4f;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  overflow-x: hidden;
+  background: var(--yiqi-black);
+  color: var(--yiqi-text);
+  font-family: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+.yiqi-root {
+  min-height: 100vh;
+  background: radial-gradient(ellipse 120% 80% at 50% -20%, rgba(11, 28, 44, 0.95), var(--yiqi-black));
+}
+
+/* ---------- 认证页通用：磨砂玻璃 + 金边 ---------- */
+.yiqi-auth-page {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(24px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px))
+    max(24px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  overflow-x: hidden;
+  touch-action: manipulation;
+}
+
+.yiqi-auth-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 70% 55% at 50% 45%, transparent 0%, rgba(5, 5, 5, 0.65) 100%);
+  z-index: 1;
+}
+
+.yiqi-glass-panel {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 420px;
+  padding: 40px 36px;
+  border-radius: 16px;
+  background: var(--yiqi-glass);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--yiqi-glass-border);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 24px 48px rgba(0, 0, 0, 0.45),
+    0 0 80px var(--yiqi-glow);
+  animation: yiqi-panel-breathe 8s ease-in-out infinite;
+}
+
+@keyframes yiqi-panel-breathe {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+      0 24px 48px rgba(0, 0, 0, 0.45),
+      0 0 60px var(--yiqi-glow);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+      0 28px 56px rgba(0, 0, 0, 0.5),
+      0 0 88px rgba(200, 155, 60, 0.18);
+  }
+}
+
+.yiqi-glass-panel--wide {
+  max-width: 920px;
+  max-height: min(92vh, 900px);
+  overflow-y: auto;
+  padding: 28px 32px;
+}
+
+.yiqi-title-block {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.yiqi-brand {
+  margin: 0;
+  font-size: clamp(26px, 4vw, 34px);
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-indent: 0.28em;
+  background: linear-gradient(105deg, #e8d5a8 0%, var(--yiqi-gold) 45%, #8b6b2e 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 20px rgba(200, 155, 60, 0.25));
+  animation: yiqi-title-shimmer 6s ease-in-out infinite;
+}
+
+@keyframes yiqi-title-shimmer {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 16px rgba(200, 155, 60, 0.2));
+  }
+  50% {
+    filter: drop-shadow(0 0 28px rgba(200, 155, 60, 0.35));
+  }
+}
+
+.yiqi-subtitle {
+  margin: 10px 0 0;
+  font-size: 13px;
+  letter-spacing: 0.35em;
+  text-indent: 0.35em;
+  color: var(--yiqi-text-muted);
+}
+
+/* 阵法启动按钮 */
+.yiqi-btn-ritual {
+  width: 100%;
+  margin-top: 8px;
+  height: 46px !important;
+  font-size: 15px !important;
+  letter-spacing: 0.25em !important;
+  text-indent: 0.25em;
+  border: 1px solid rgba(200, 155, 60, 0.5) !important;
+  background: linear-gradient(180deg, rgba(200, 155, 60, 0.22) 0%, rgba(139, 107, 46, 0.12) 100%) !important;
+  color: #f0e6d4 !important;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+}
+
+.yiqi-btn-ritual::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.12) 50%, transparent 60%);
+  transform: translateX(-100%);
+  animation: yiqi-sweep 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes yiqi-sweep {
+  0%,
+  60% {
+    transform: translateX(-100%);
+  }
+  85% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.yiqi-btn-ritual:hover:not(:disabled) {
+  border-color: rgba(200, 155, 60, 0.85) !important;
+  box-shadow: 0 0 24px rgba(200, 155, 60, 0.2);
+  transform: translateY(-1px);
+}
+
+.yiqi-btn-ghost {
+  width: 100%;
+  margin-top: 12px;
+  height: 42px !important;
+  border: 1px solid rgba(200, 155, 60, 0.25) !important;
+  background: rgba(5, 5, 5, 0.25) !important;
+  color: var(--yiqi-text-muted) !important;
+  letter-spacing: 0.12em;
+}
+
+.yiqi-btn-ghost:hover {
+  color: var(--yiqi-text) !important;
+  border-color: rgba(200, 155, 60, 0.45) !important;
+}
+
+/* Element 表单项在深色玻璃上的对比 */
+.yiqi-glass-panel :deep(.el-form-item__label) {
+  color: var(--yiqi-text-muted) !important;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+}
+
+.yiqi-glass-panel :deep(.el-input__wrapper),
+.yiqi-glass-panel :deep(.el-select .el-input__wrapper) {
+  background: rgba(5, 5, 5, 0.35) !important;
+  box-shadow: 0 0 0 1px rgba(200, 155, 60, 0.2) inset !important;
+}
+
+.yiqi-glass-panel :deep(.el-input__wrapper:hover),
+.yiqi-glass-panel :deep(.el-select .el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px rgba(77, 163, 255, 0.25) inset !important;
+}
+
+.yiqi-glass-panel :deep(.el-input__wrapper.is-focus),
+.yiqi-glass-panel :deep(.el-select .el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px rgba(200, 155, 60, 0.55) inset, 0 0 20px rgba(200, 155, 60, 0.08) !important;
+}
+
+.yiqi-glass-panel :deep(.el-input__inner) {
+  color: var(--yiqi-text) !important;
+}
+
+.yiqi-glass-panel :deep(.el-checkbox__label) {
+  color: var(--yiqi-text-muted) !important;
+}
+
+.yiqi-glass-panel :deep(.el-radio__label) {
+  color: var(--yiqi-text) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .yiqi-glass-panel,
+  .yiqi-brand,
+  .yiqi-btn-ritual::after {
+    animation: none !important;
+  }
+}
+
+/* ---------- 移动端适配：<768 减弱磨砂/阴影；768–1024 折中 ---------- */
+@media (max-width: 767px) {
+  .yiqi-glass-panel {
+    padding: 28px 20px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+      0 12px 28px rgba(0, 0, 0, 0.38),
+      0 0 48px rgba(200, 155, 60, 0.08);
+    animation: none;
+  }
+
+  .yiqi-glass-panel--wide {
+    max-height: min(88dvh, 860px);
+    padding: 20px 14px;
+  }
+
+  .yiqi-brand {
+    filter: drop-shadow(0 0 12px rgba(200, 155, 60, 0.18));
+    animation: none;
+  }
+
+  .yiqi-btn-ritual {
+    touch-action: manipulation;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .yiqi-glass-panel {
+    backdrop-filter: blur(11px);
+    -webkit-backdrop-filter: blur(11px);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+      0 18px 40px rgba(0, 0, 0, 0.42),
+      0 0 64px var(--yiqi-glow);
+  }
+}
