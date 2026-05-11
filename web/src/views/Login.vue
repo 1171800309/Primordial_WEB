@@ -103,8 +103,8 @@ const handleLogin = async () => {
         hourTianGan: payload?.hourTianGan || '',
         hourDiZhi: payload?.hourDiZhi || '',
         hourGanZhi: payload?.hourGanZhi || '',
-        actualBirthTime: payload?.actualBirthTime || '',
-        longitudeCorrectionMinutes: payload?.longitudeCorrectionMinutes || ''
+        actualBirthTime: payload?.actualTime ?? payload?.actualBirthTime ?? '',
+        longitudeCorrectionMinutes: payload?.longitudeCorrectionMinutes ?? ''
       }
 
       if (!token) {

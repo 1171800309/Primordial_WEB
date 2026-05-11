@@ -54,7 +54,7 @@
         </el-row>
 
         <el-row :gutter="16">
-          <el-col :span="8">
+          <el-col :span="12">
             <el-form-item label="省" prop="province">
               <el-select v-model="form.province" placeholder="请选择省" style="width: 100%;" @change="onProvinceChange">
                 <el-option
@@ -66,7 +66,7 @@
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :span="8">
+          <el-col :span="12">
             <el-form-item label="市" prop="city">
               <el-select v-model="form.city" placeholder="请选择市" style="width: 100%;" :disabled="!form.province" @change="onCityChange">
                 <el-option
@@ -78,19 +78,8 @@
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :span="8">
-            <el-form-item label="经纬" prop="district">
-              <el-select v-model="form.district" placeholder="请选择经纬" style="width: 100%;" :disabled="!form.city" @change="onDistrictChange">
-                <el-option
-                  v-for="item in districts"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
         </el-row>
+        <p class="register-coords-hint">经纬已固定为<strong>东经</strong>基准（北京时间参考），与所选省市无关。</p>
 
         <el-row :gutter="16">
           <el-col :span="8">
@@ -152,7 +141,7 @@
         <el-row :gutter="16">
           <el-col :span="24">
             <el-form-item label="时柱">
-              <el-input :model-value="hourPillar" readonly placeholder="根据省市经纬和出生时间自动计算" />
+              <el-input :model-value="hourPillar" readonly placeholder="根据省市与出生时间自动计算（东经基准）" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -173,7 +162,7 @@ import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { register } from '@/api/auth'
-import { getCities, getDistricts, getHourPillar, getProvinces } from '@/api/region'
+import { getCities, getHourPillar, getProvinces } from '@/api/region'
 import { getCalendarDays, getCalendarMonths, getCalendarYears, getPillarThree } from '@/api/calendar'
 import { touchSession, clearSession } from '@/utils/session'
 import MysticCanvasBackground from '@/components/MysticCanvasBackground.vue'
@@ -182,9 +171,11 @@ const router = useRouter()
 const formRef = ref()
 const loading = ref(false)
 
+/** 注册与时柱接口统一使用东经坐标（经度为正，中国境内），与区县接口常见「经度,纬度」格式一致 */
+const REGISTER_EAST_LONGITUDE_COORDINATES = '116.407526,39.904030'
+
 const provinces = ref([])
 const cities = ref([])
-const districts = ref([])
 const calendarYearOptions = ref([])
 const calendarMonthOptions = ref([])
 const calendarDayOptions = ref([])
@@ -207,8 +198,7 @@ const form = reactive({
   birthDay: '',
   birthTime: '',
   province: '',
-  city: '',
-  district: ''
+  city: ''
 })
 
 const rules = {
@@ -222,8 +212,7 @@ const rules = {
   birthDay: [{ required: true, message: '请选择出生日', trigger: 'change' }],
   birthTime: [{ required: true, message: '请选择出生时间', trigger: 'change' }],
   province: [{ required: true, message: '请选择省', trigger: 'change' }],
-  city: [{ required: true, message: '请选择市', trigger: 'change' }],
-  district: [{ required: true, message: '请选择经纬', trigger: 'change' }]
+  city: [{ required: true, message: '请选择市', trigger: 'change' }]
 }
 
 const normalizeList = (data) => {
@@ -308,6 +297,7 @@ const onCalendarTypeChange = async () => {
   calendarMonthOptions.value = []
   calendarDayOptions.value = []
   pillarThree.value = { yearPillar: '', monthPillar: '', dayPillar: '' }
+  hourPillar.value = ''
   await loadCalendarYears()
 }
 
@@ -316,17 +306,21 @@ const onBirthYearChange = async () => {
   form.birthDay = ''
   calendarDayOptions.value = []
   pillarThree.value = { yearPillar: '', monthPillar: '', dayPillar: '' }
+  hourPillar.value = ''
   if (!form.birthYear) return
   const res = await getCalendarMonths(form.calendarType, form.birthYear)
   calendarMonthOptions.value = normalizeList(res)
+  await updateHourPillar()
 }
 
 const onBirthMonthChange = async () => {
   form.birthDay = ''
   pillarThree.value = { yearPillar: '', monthPillar: '', dayPillar: '' }
+  hourPillar.value = ''
   if (!form.birthYear || !form.birthMonth) return
   const res = await getCalendarDays(form.calendarType, form.birthYear, form.birthMonth)
   calendarDayOptions.value = normalizeList(res)
+  await updateHourPillar()
 }
 
 const onBirthDayChange = async () => {
@@ -353,14 +347,13 @@ const onBirthDayChange = async () => {
     monthPillar: formatPillar(res?.data?.monthPillar || res?.monthPillar),
     dayPillar: formatPillar(res?.data?.dayPillar || res?.dayPillar)
   }
+  await updateHourPillar()
 }
 
 const onProvinceChange = async () => {
   form.city = ''
-  form.district = ''
   hourPillar.value = ''
   cities.value = []
-  districts.value = []
 
   if (!form.province) return
   const res = await getCities(form.province)
@@ -368,29 +361,57 @@ const onProvinceChange = async () => {
 }
 
 const onCityChange = async () => {
-  form.district = ''
   hourPillar.value = ''
-  districts.value = []
+  await updateHourPillar()
+}
 
-  if (!form.province || !form.city) return
-  const res = await getDistricts(form.province, form.city)
-  districts.value = normalizeRegionOptions(normalizeList(res), 'district')
+/** 阳历：hour-pillar 用的 birthDate yyyy-MM-dd */
+const buildSolarBirthDateForHourApi = () => {
+  if (form.calendarType !== 'solar') return ''
+  if (!form.birthYear || !form.birthMonth || !form.birthDay) return ''
+  const year = String(form.birthYear)
+  const month = String(form.birthMonth)
+  const day = String(form.birthDay)
+  if (!/^\d{1,4}$/.test(year) || !/^\d{1,2}$/.test(month) || !/^\d{1,2}$/.test(day)) return ''
+  return `${year}-${pad2(month)}-${pad2(day)}`
 }
 
 const updateHourPillar = async () => {
-  if (!form.province || !form.city || !form.district || !form.birthTime) {
-    hourPillar.value = ''
-    return
+  hourPillar.value = ''
+  if (!form.province || !form.city || !form.birthTime) return
+  if (!form.birthYear || !form.birthMonth || !form.birthDay) return
+
+  const birthTime =
+    form.birthTime.length === 5 ? `${form.birthTime}:00` : form.birthTime
+
+  const params = {
+    province: form.province,
+    city: form.city,
+    coordinates: REGISTER_EAST_LONGITUDE_COORDINATES,
+    birthTime
   }
 
-  const res = await getHourPillar(form.province, form.city, form.district, form.birthTime.slice(0, 5))
-  const directHourPillar = res?.data?.hourGanZhi
-  const objectHourPillar = `${res?.data?.hourPillar?.hourTianGan || ''}${res?.data?.hourPillar?.hourDiZhi || ''}`.trim()
-  hourPillar.value = directHourPillar || objectHourPillar
-}
+  if (form.calendarType === 'lunar') {
+    params.calendarType = 'lunar'
+    params.birthYear = String(form.birthYear)
+    params.lunarMonth = String(form.birthMonth)
+    params.lunarDay = String(form.birthDay)
+  } else {
+    const birthDate = buildSolarBirthDateForHourApi()
+    if (!birthDate) return
+    params.birthDate = birthDate
+  }
 
-const onDistrictChange = async () => {
-  await updateHourPillar()
+  try {
+    const res = await getHourPillar(params)
+    const d = res?.data ?? res ?? {}
+    const gz =
+      (typeof d.hourGanZhi === 'string' && d.hourGanZhi.trim()) ||
+      `${d.hourTianGan || ''}${d.hourDiZhi || ''}`.trim()
+    hourPillar.value = gz || ''
+  } catch {
+    hourPillar.value = ''
+  }
 }
 
 const onBirthTimeChange = async () => {
@@ -421,7 +442,7 @@ const onSubmit = async () => {
       birthDateTime,
       province: form.province,
       city: form.city,
-      district: form.district
+      district: REGISTER_EAST_LONGITUDE_COORDINATES
     })
     const payload = res?.data || res || {}
 
@@ -444,8 +465,8 @@ const onSubmit = async () => {
       hourTianGan: payload?.hourTianGan || '',
       hourDiZhi: payload?.hourDiZhi || '',
       hourGanZhi: payload?.hourGanZhi || hourPillar.value || '',
-      actualBirthTime: payload?.actualBirthTime || '',
-      longitudeCorrectionMinutes: payload?.longitudeCorrectionMinutes || ''
+      actualBirthTime: payload?.actualTime ?? payload?.actualBirthTime ?? '',
+      longitudeCorrectionMinutes: payload?.longitudeCorrectionMinutes ?? ''
     }
 
     localStorage.setItem('baziAnalysis', JSON.stringify(baziAnalysis))
@@ -520,6 +541,19 @@ onMounted(async () => {
 .register-form :deep(.el-date-editor),
 .register-form :deep(.el-date-editor .el-input__wrapper) {
   width: 100%;
+}
+
+.register-coords-hint {
+  margin: -4px 0 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--yiqi-text-muted, #9a9a8e);
+  letter-spacing: 0.04em;
+}
+
+.register-coords-hint strong {
+  color: var(--yiqi-gold, #c89b3c);
+  font-weight: 600;
 }
 </style>
 
