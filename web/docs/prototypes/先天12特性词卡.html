@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>一炁 YI QI | 先天恒炁域</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #050507;
+            --text-white: #FFFFFF;
+            --text-muted: rgba(255, 255, 255, 0.55);
+            --text-dark: rgba(255, 255, 255, 0.3);
+            --gold-light: #EADEC7;
+            --gold-legendary: #D4AF37;
+            
+            --font-serif: 'Noto Serif SC', STSong, serif;
+            --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", sans-serif;
+            --bezier-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-color); color: var(--text-white);
+            font-family: var(--font-sans); overflow-x: hidden;
+            -webkit-font-smoothing: antialiased; min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+
+        .ink-blend { mix-blend-mode: screen; background-color: transparent; border-radius: 0; object-fit: contain; }
+
+        /* ================= 页面转场遮罩 ================= */
+        #page-transition {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: var(--bg-color); z-index: 9999;
+            display: flex; justify-content: center; align-items: center;
+            transition: opacity 1s var(--bezier-smooth), visibility 1s;
+        }
+        #page-transition.loaded { opacity: 0; visibility: hidden; }
+        .transition-ring {
+            width: 60px; height: 60px; border-radius: 50%; border: 1px dashed rgba(234, 222, 199, 0.5);
+            animation: spin 4s linear infinite;
+        }
+
+        /* ================= 底层星尘画布 ================= */
+        #bg-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; opacity: 0.6; pointer-events: none; }
+
+        /* ================= 顶部 UI ================= */
+        .top-nav {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100px;
+            padding: 0 5%; z-index: 100; display: flex; justify-content: space-between; align-items: center;
+            pointer-events: none;
+        }
+        .top-left-brand { display: flex; align-items: center; gap: 14px; text-decoration: none; pointer-events: auto; mix-blend-mode: screen; }
+        .real-logo { width: 36px; height: 36px; transition: transform 0.4s ease, filter 0.4s ease; filter: drop-shadow(0 0 5px rgba(234,222,199,0.2)); }
+        .top-left-brand:hover .real-logo { transform: scale(1.08); filter: drop-shadow(0 0 15px rgba(234,222,199,0.6)); }
+        .brand-text { font-family: var(--font-serif); font-size: 18px; color: var(--gold-light); letter-spacing: 4px; font-weight: 300; }
+
+        .back-btn {
+            position: fixed; top: 90px; left: 5%; z-index: 100; display: flex; align-items: center; gap: 8px;
+            font-size: 13px; color: var(--text-muted); letter-spacing: 0.2em; text-decoration: none; transition: all 0.3s ease; pointer-events: auto; padding: 8px 0;
+        }
+        .back-btn:hover { color: var(--gold-light); transform: translateX(-5px); }
+
+        .top-right-store { display: flex; align-items: center; gap: 12px; text-decoration: none; cursor: pointer; pointer-events: auto; }
+        .store-label { font-size: 12px; color: var(--text-muted); letter-spacing: 0.1em; opacity: 0; transform: translateX(10px); transition: all 0.4s var(--bezier-smooth); }
+        .store-dot {
+            width: 14px; height: 14px; border-radius: 50%; background: #000; border: 1px solid rgba(234, 222, 199, 0.4); box-shadow: 0 0 10px rgba(234, 222, 199, 0.2); position: relative; transition: all 0.4s ease;
+        }
+        .store-dot::after { content: ''; position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px; border-radius: 50%; border: 1px dashed rgba(234, 222, 199, 0.3); animation: spin 10s linear infinite; }
+        .top-right-store:hover .store-label { opacity: 1; transform: translateX(0); color: var(--gold-light); }
+        .top-right-store:hover .store-dot { transform: scale(1.1); box-shadow: 0 0 20px rgba(234, 222, 199, 0.5); }
+
+        /* ================= 主体容器与导航胶囊 ================= */
+        .main-content { position: relative; z-index: 10; flex-grow: 1; display: flex; flex-direction: column; align-items: center; padding-top: 120px; padding-bottom: 80px; width: 100%; }
+        .page-title { font-family: var(--font-serif); font-size: clamp(28px, 4vw, 40px); color: var(--text-white); font-weight: 300; letter-spacing: 0.15em; margin-bottom: 40px; text-align: center; }
+
+        .segment-control { display: flex; align-items: center; background: rgba(15, 15, 17, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 40px; padding: 6px; margin-bottom: 60px; position: relative; }
+        .segment-btn { padding: 12px 36px; border-radius: 30px; border: none; background: transparent; font-family: var(--font-serif); font-size: 16px; color: var(--text-muted); letter-spacing: 0.1em; cursor: pointer; transition: all 0.4s ease; position: relative; z-index: 2; outline: none; }
+        .segment-btn.active { color: var(--bg-color); font-weight: 600; }
+        .segment-slider { position: absolute; top: 6px; left: 6px; height: calc(100% - 12px); background: var(--gold-light); border-radius: 30px; transition: transform 0.5s var(--bezier-smooth), width 0.5s var(--bezier-smooth); z-index: 1; box-shadow: 0 4px 15px rgba(234, 222, 199, 0.3); }
+
+        .tab-content { display: none; flex-direction: column; align-items: center; width: 100%; max-width: 1400px; opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+        .tab-content.active { display: flex; opacity: 1; transform: translateY(0); }
+
+        /* ================= 模块一：炁数 ================= */
+        .qi-value-container { position: relative; display: flex; flex-direction: column; align-items: center; width: 100%; margin-top: 60px; }
+        .resonance-ring {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 500px; height: 500px; border-radius: 50%; z-index: -1; pointer-events: none;
+            background: radial-gradient(circle, rgba(234, 222, 199, 0.08) 0%, transparent 60%);
+            box-shadow: 0 0 50px rgba(234, 222, 199, 0.05);
+            border: 1px solid rgba(234, 222, 199, 0.05); animation: spinCenter 40s linear infinite;
+        }
+        .resonance-ring::before { content: ''; position: absolute; top: 15%; left: 15%; width: 70%; height: 70%; border-radius: 50%; border: 2px dashed rgba(234, 222, 199, 0.15); animation: spinCenter 20s linear infinite reverse; }
+        .resonance-ring::after { content: ''; position: absolute; top: 30%; left: 30%; width: 40%; height: 40%; border-radius: 50%; border-top: 2px solid rgba(234, 222, 199, 0.4); border-bottom: 2px solid rgba(234, 222, 199, 0.4); animation: spinCenter 10s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite; }
+        .pre-text { font-size: 15px; color: var(--text-muted); letter-spacing: 0.3em; margin-bottom: 20px; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
+        .huge-number {
+            font-family: var(--font-serif); font-size: clamp(80px, 15vw, 180px); font-weight: 300; letter-spacing: 0.15em; line-height: 1;
+            background: linear-gradient(180deg, #FFFFFF 0%, rgba(234, 222, 199, 0.6) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 30px rgba(234, 222, 199, 0.3)); margin-bottom: 40px; transition: filter 0.3s ease; animation: numberPulse 4s infinite alternate;
+        }
+        @keyframes numberPulse { 0% { filter: drop-shadow(0 0 20px rgba(234, 222, 199, 0.2)); transform: scale(0.98); } 100% { filter: drop-shadow(0 0 50px rgba(234, 222, 199, 0.6)); transform: scale(1.02); } }
+        .huge-number.decoding { filter: blur(8px); opacity: 0.6; transform: scale(0.9); }
+        .post-text { text-align: center; max-width: 600px; line-height: 2.2; font-size: 14px; color: var(--text-dark); letter-spacing: 0.1em; padding: 40px 20px; border-top: 1px solid rgba(255, 255, 255, 0.05); }
+
+        /* ================= 模块二：炁性 (盲盒网格) ================= */
+        .tab-title-sub { font-family: var(--font-serif); font-size: 24px; color: var(--text-muted); letter-spacing: 0.15em; margin-bottom: 40px; }
+        
+        .traits-grid-all { display: grid; grid-template-columns: repeat(5, 1fr); gap: 30px 20px; width: 100%; padding: 0 3%; margin-bottom: 60px; }
+        
+        .trait-wrapper { display: flex; flex-direction: column; align-items: center; gap: 16px; perspective: 1200px; width: 100%; }
+        .blind-box { width: 100%; aspect-ratio: 1 / 1.15; position: relative; cursor: pointer; }
+
+        /* 盲盒未开启封面 */
+        .unopened-cover {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10;
+            background: #FFFFFF; border-radius: 12px; border: 1px solid rgba(0,0,0,0.1);
+            display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 24px;
+            font-family: var(--font-serif); font-size: 13px; color: #444; letter-spacing: 0.1em; line-height: 1.8; text-align: left;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: opacity 0.6s ease, transform 0.6s var(--bezier-smooth);
+        }
+        .unopened-cover.center-text { text-align: center; } 
+        .unopened-cover.opened { opacity: 0; pointer-events: none; transform: scale(0.95); }
+        
+        /* 💡 新增：盲盒左上角矢量图标样式 */
+        .cover-icon {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 22px;
+            height: 22px;
+            color: rgba(0, 0, 0, 0.4); /* 深灰色，契合白底 */
+            stroke-width: 1.2;
+            pointer-events: none;
+        }
+
+        /* 盲盒开启引导文字样式 */
+        .open-hint {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: var(--font-serif);
+            font-size: 11px;
+            color: rgba(0, 0, 0, 0.4);
+            letter-spacing: 0.3em;
+            pointer-events: none; 
+            white-space: nowrap;
+            animation: hintPulse 2s infinite alternate var(--bezier-smooth);
+        }
+        @keyframes hintPulse {
+            0% { opacity: 0.2; }
+            100% { opacity: 0.8; }
+        }
+
+        /* 卡片内里本体 */
+        .flip-card { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+        .flip-card.is-yin { transform: rotateY(180deg); }
+        .card-face { position: absolute; top: 0; left: 0; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 12px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; }
+
+        .face-yang { background: #FDFDFD; border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+        .face-yin { background: #08080A; border: 1px solid rgba(255,255,255,0.15); box-shadow: inset 0 0 30px rgba(0,0,0,1); transform: rotateY(180deg); }
+        
+        .trait-title { font-family: var(--font-serif); font-size: 26px; font-weight: 600; margin-bottom: 8px; letter-spacing: 0.1em; }
+        .trait-annotation { font-family: var(--font-sans); font-size: 12px; opacity: 0.7; margin-bottom: 16px; font-weight: 300; }
+        .trait-desc { font-size: 14px; line-height: 1.6; font-weight: 400; }
+
+        .face-yang .trait-title { color: #000; }
+        .face-yang .trait-annotation, .face-yang .trait-desc { color: #333; }
+        
+        .face-yin .trait-title { color: #FFF; }
+        .face-yin .trait-annotation, .face-yin .trait-desc { color: #AAA; font-weight: 300; }
+
+        .toggle-dot { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); width: 12px; height: 12px; border-radius: 50%; transition: all 0.3s ease; }
+        .face-yang .toggle-dot { background: #000; border: 2px solid #FFF; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .face-yin .toggle-dot { background: #FFF; border: 2px solid #000; box-shadow: 0 0 8px rgba(255,255,255,0.6); }
+
+        .trait-label { font-family: var(--font-serif); font-size: 15px; color: var(--text-white); letter-spacing: 0.1em; }
+
+        /* ==================== 词卡级别体系 (Tier System) ==================== */
+        .tier-gold .face-yang, .tier-gold .face-yin { border-color: rgba(212, 175, 55, 0.6); box-shadow: 0 0 20px rgba(212, 175, 55, 0.15), inset 0 0 10px rgba(212, 175, 55, 0.05); }
+        .tier-gold .face-yang { background: #FFFCF2; }
+        .tier-gold .trait-title, .tier-gold .trait-annotation, .tier-gold .trait-desc { color: #B8860B !important; }
+        .tier-gold .toggle-dot { background: #B8860B !important; border-color: #B8860B !important; box-shadow: 0 0 10px rgba(184, 134, 11, 0.5) !important; }
+
+        .tier-yellow .face-yang, .tier-yellow .face-yin { border-color: rgba(249, 212, 35, 0.6); box-shadow: 0 0 20px rgba(249, 212, 35, 0.15), inset 0 0 10px rgba(249, 212, 35, 0.05); }
+        .tier-yellow .face-yang { background: #FFFDF5; }
+        .tier-yellow .trait-title, .tier-yellow .trait-annotation, .tier-yellow .trait-desc { color: #D4A000 !important; }
+        .tier-yellow .toggle-dot { background: #D4A000 !important; border-color: #D4A000 !important; box-shadow: 0 0 10px rgba(212, 160, 0, 0.5) !important; }
+
+        .tier-black .face-yang, .tier-black .face-yin { border-color: rgba(136, 136, 136, 0.6); box-shadow: 0 0 20px rgba(136, 136, 136, 0.15), inset 0 0 10px rgba(136, 136, 136, 0.05); }
+        .tier-black .face-yang { background: #F5F5F5; }
+        .tier-black .trait-title, .tier-black .trait-annotation, .tier-black .trait-desc { color: #777777 !important; }
+        .tier-black .toggle-dot { background: #777777 !important; border-color: #777777 !important; box-shadow: 0 0 10px rgba(119, 119, 119, 0.5) !important; }
+
+        .traits-footer { margin-top: 40px; text-align: center; }
+        .traits-note { font-size: 12px; color: var(--text-dark); letter-spacing: 0.1em; }
+
+        /* ================= 模块三：八维评估 ================= */
+        .radar-container { display: flex; gap: 100px; width: 100%; justify-content: center; align-items: center; flex-wrap: wrap; margin-top: 20px; }
+        .radar-box { 
+            display: flex; flex-direction: column; align-items: center; gap: 30px; width: 440px; 
+            background: rgba(10, 10, 12, 0.4); border: 1px solid rgba(255, 255, 255, 0.03); border-radius: 20px; padding: 40px;
+            position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        .radar-box::before, .radar-box::after { content: ''; position: absolute; width: 30px; height: 30px; border: 1px solid var(--gold-dim); pointer-events: none; }
+        .radar-box::before { top: -1px; left: -1px; border-right: none; border-bottom: none; border-top-left-radius: 20px; }
+        .radar-box::after { bottom: -1px; right: -1px; border-left: none; border-top: none; border-bottom-right-radius: 20px; }
+
+        .radar-canvas-wrap { width: 320px; height: 320px; position: relative; }
+        .radar-canvas-wrap canvas { width: 100%; height: 100%; display: block; }
+        .radar-title { font-family: var(--font-serif); font-size: 22px; color: var(--gold-light); letter-spacing: 0.15em; }
+        .radar-desc { font-size: 13px; color: var(--text-muted); line-height: 2; text-align: justify; letter-spacing: 0.05em; padding-top: 20px; border-top: 1px dashed rgba(255,255,255,0.1); }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes spinCenter { 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+
+        /* 响应式 */
+        @media (max-width: 1400px) { .traits-grid-all { grid-template-columns: repeat(4, 1fr); } }
+        @media (max-width: 1100px) { .traits-grid-all { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 800px) { 
+            .traits-grid-all { grid-template-columns: repeat(2, 1fr); } 
+            .radar-container { gap: 40px; }
+            .huge-number { font-size: 100px; }
+        }
+        @media (max-width: 500px) { .traits-grid-all { grid-template-columns: 1fr; padding: 0 10%; } }
+    </style>
+</head>
+<body>
+
+    <div id="page-transition"><div class="transition-ring"></div></div>
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- 顶部 UI -->
+    <div class="top-nav">
+        <a href="#" class="top-left-brand">
+            <img src="logo.png" alt="一炁" class="real-logo ink-blend">
+            <span class="brand-text">一炁文化</span>
+        </a>
+        <a href="#" class="top-right-store">
+            <span class="store-label">进入万炁之城</span>
+            <div class="store-dot"></div>
+        </a>
+    </div>
+    <a href="#" class="back-btn">← 返回中枢</a>
+
+    <main class="main-content">
+        <h1 class="page-title">先天 . 恒 . 炁域</h1>
+
+        <!-- 胶囊导航控件 -->
+        <div class="segment-control" id="segment-control">
+            <div class="segment-slider" id="segment-slider"></div>
+            <button class="segment-btn active" data-target="tab-1">恒.炁.数</button>
+            <button class="segment-btn" data-target="tab-2">恒.炁.性</button>
+            <button class="segment-btn" data-target="tab-3">八维图</button>
+        </div>
+
+        <!-- ================= Tab 1: 炁数 ================= -->
+        <div id="tab-1" class="tab-content active">
+            <div class="qi-value-container">
+                <div class="resonance-ring"></div>
+                <div class="pre-text">你的先天恒.炁.数值为</div>
+                <div class="huge-number" id="qi-number">0000</div>
+                <div class="post-text">
+                    此数值为时空坐标下的能量坍缩量化。<br>
+                    它是你一生运转的基石参数。
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= Tab 2: 炁性 (10张盲盒词卡) ================= -->
+        <div id="tab-2" class="tab-content">
+            <div class="tab-title-sub">先天特性词卡</div>
+            
+            <div class="traits-grid-all">
+                <!-- 卡片 1：先天特性 -->
+                <div class="trait-wrapper">
+                    <div class="blind-box" onclick="handleCardClick(this)">
+                        <div class="unopened-cover">
+                            <svg class="cover-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="6" width="18" height="12" rx="1" />
+                                <line x1="3" y1="12" x2="21" y2="12" />
+                            </svg>
+                            它是你生命最底层的“源代码”，不因环境而改变，不因际遇而转移。你一生会经历无数事，扮演无数角色，但那个最核心的“性”，从你投胎而来的那一刻，就已经写定了。
+                            <div class="open-hint">开启词卡</div>
+                        </div>
+                        <div class="flip-card">
+                            <div class="card-face face-yang">
+                                <div class="trait-title">阔</div>
+                                <div class="trait-annotation">拥有无限可能性的生命场。</div>
+                                <div class="trait-desc">胸襟宽广，气吞万象，有容纳天地的大格局。</div>
+                                <div class="toggle-dot"></div>
+                            </div>
+                            <div class="card-face face-yin">
+                                <div class="trait-desc">漫无边际，精力分散，难聚焦于一事物。</div>
+                                <div class="toggle-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="trait-label">先天特性</div>
+                </div>
+
+                <!-- 卡片 2：先天禀性 (示范：金色词条) -->
+                <div class="trait-wrapper">
+                    <div class="blind-box" onclick="handleCardClick(this)">
+                        <div class="unopened-cover center-text">
+                            <svg class="cover-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="12 3 4 20 20 20" />
+                            </svg>
+                            我携带什么样的能量，来到一个什么样的世界？
+                            <div class="open-hint">开启词卡</div>
+                        </div>
+                        <div class="flip-card tier-gold">
+                            <div class="card-face face-yang">
+                                <div class="trait-title">森林之子</div>
+                                <div class="trait-annotation">你天生就是那种心胸特别开阔的人。</div>
+                                <div class="trait-desc">心里装着一整片森林，大气、从容、舒展。</div>
+                                <div class="toggle-dot"></div>
+                            </div>
+                            <div class="card-face face-yin">
+                                <div class="trait-title">漫无边际</div>
+                                <div class="trait-desc">边界感模糊，对万物皆有兴趣但往往浅尝辄止。</div>
+                                <div class="toggle-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="trait-label">先天禀性</div>
+                </div>
+
+                <!-- 卡片 3：先天行为特性 -->
+                <div class="trait-wrapper">
+                    <div class="blind-box" onclick="handleCardClick(this)">
+                        <div class="unopened-cover">
+                            <svg class="cover-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                                <polyline points="12 5 19 12 12 19" />
+                            </svg>
+                            与生俱来的“行动方式”——不是你要做什么，而是你无论做什么都改不掉的“做法”。
+                            <div class="open-hint">开启词卡</div>
+                        </div>
+                        <div class="flip-card">
+                            <div class="card-face face-yang">
+                                <div class="trait-title">向上</div>
+                                <div class="trait-annotation">以高度取胜的开拓者。</div>
+                                <div class="trait-desc">直来直往，目标明确，以不可阻挡的生长之势向上突破。</div>
+                                <div class="toggle-dot"></div>
+                            </div>
+                            <div class="card-face face-yin">
+                                <div class="trait-desc">不懂迂回，在硬碰硬中容易折损自己的锐气。</div>
+                                <div class="toggle-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="trait-label">先天行为特性</div>
+                </div>
+
+                <!-- 卡片 4：先天天赋特性 (示范：黄色词条) -->
+                <div class="trait-wrapper">
+                    <div class="blind-box" onclick="handleCardClick(this)">
+                        <div class="unopened-cover center-text">
+                            <svg class="cover-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="4"/>
+                                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+                            </svg>
+                            我得天生拥有什么样的天赋？
+                            <div class="open-hint">开启词卡</div>
+                        </div>
+                        <div class="flip-card tier-yellow">
+                            <div class="card-face face-yang">
+                                <div class="trait-title">开荒光环</div>
+                                <div class="trait-annotation">初春生发之生力注入。</div>
+                                <div class="trait-desc">对空白领域有征服欲，天生适合从零到一。</div>
+                                <div class="toggle-dot"></div>
+                            </div>
+                            <div class="card-face face-yin">
+                                <div class="trait-desc">三板斧过后容易熄灭，开局巅峰后续乏力。</div>
+                                <div class="toggle-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="trait-label">先天天赋特性</div>
+                </div>
+
+                <!-- 卡片 5：先天气质特性 -->
+                <div class="trait-wrapper">
+                    <div class="blind-box" onclick="handleCardClick(this)">
+                        <div class="unopened-cover center-text">
+                            <svg class="cover-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 3v18M3 12h18M6.5 6.5L12 12" />
+                            </svg>
+                            我天生带着怎样的气质？
+                            <div class="open-hint">开启词卡</div>
+                        </div>
+                        <div class="flip-card">
+                            <div class="card-face face-yang">
+                                <div class="trait-title">光芒</div>
+                                <div class="trait-annotation">走到哪里都自带视觉中心。</div>
+                                <div class="trait-desc">拥有天生吸引他人目光的磁场。</div>
+                                <div class="toggle-dot"></div>
+                            </div>
+                            <div class="card-face face-yin">
+                                <div class="trait-desc">光芒过盛。不经意间容易让人产生压迫感与刺目感。</div>
+                                <div class="toggle-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="trait-label">先天气质特性</div>
+                </div>
+
+                <!-- 卡片 6：性格底色特性 (示范：黑色词条) -->
+                <div class="trait-wrapper">
+                    <div class="blind-box" onclick="handleCardClick(this)">
+                        <div class="unopened-cover center-text">
+                            <svg class="cover-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="4" y="4" width="16" height="16" rx="2" ry="2"/>
+                            </svg>
+                            我天生具有怎样的性格底色？
+                            <div class="open-hint">开启词卡</div>
+                        </div>
+                        <div class="flip-card tier-black">
+                            <div class="card-face face-yang">
+                                <div class="trait-title">坚如磐石</div>
+                                <div class="trait-annotation">内心拥有极强的稳定性。</div>
+                                <div class="trait-desc">不随波逐流，能在混沌中稳住阵脚。</div>
+                                <div class="toggle-dot"></div>
+                            </div>
+                            <div class="card-face face-yin">
+                                <div class="trait-desc">过度自我防备，难以听取外界声音，错失变通良机。</div>
+                                <div class="toggle-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="trait-label">性格底色特性</div>
+                </div>
+
+                <!-- 卡片 7：社会人格特性 -->
+                <div class="trait-wrapper">
+                    <div class="blind-box" onclick="handleCardClick(this)">
+                        <div class="unopened-cover center-text">
+                            <svg class="cover-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M8 8a4 4 0 1 0 0 8c2.67 0 4-4 6-4a4 4 0 1 1 0 8c-2.67 0-4-4-6-4" />
+                            </svg>
+                            我与世界如何互动？
+                            <div class="open-hint">开启词卡</div>
+                        </div>
+                        <div class="flip-card">
+                            <div class="card-face face-yang">
+                                <div class="trait-title">八面玲珑</div>
+                                <div class="trait-annotation">极高的社交敏锐度。</div>
+                                <div class="trait-desc">在复杂的人际网络中如鱼得水。</div>
+                                <div class="toggle-dot"></div>
+                            </div>
+                            <div class="card-face face-yin">
+                                <div class="trait-desc">过度迎合而失去自我，难以建立深刻联结。</div>
+                                <div class="toggle-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="trait-label">社会人格特性</div>
+                </div>
+
+                <!-- 卡片 8：情感特性 -->
+                <div class="trait-wrapper">
+                    <div class="blind-box" onclick="handleCardClick(this)">
+                        <div class="unopened-cover center-text">
+                            <svg class="cover-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                            </svg>
+                            我在最亲密的关系里是什么样子？
+                            <div class="open-hint">开启词卡</div>
+                        </div>
+                        <div class="flip-card">
+                            <div class="card-face face-yang">
+                                <div class="trait-title">深情专一</div>
+                                <div class="trait-annotation">拥有极其纯粹的情感内核。</div>
+                                <div class="trait-desc">一旦认准，便愿意倾注所有温柔与耐心。</div>
+                                <div class="toggle-dot"></div>
+                            </div>
+                            <div class="card-face face-yin">
+                                <div class="trait-desc">容易陷入偏执与内耗，画地为牢，无法轻松释怀。</div>
+                                <div class="toggle-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="trait-label">情感特性</div>
+                </div>
+
+                <!-- 卡片 9：潜在驱动力特性 -->
+                <div class="trait-wrapper">
+                    <div class="blind-box" onclick="handleCardClick(this)">
+                        <div class="unopened-cover center-text">
+                            <svg class="cover-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            [预留接入后端]<br>你潜意识深处藏着怎样的动力秘密？
+                            <div class="open-hint">开启词卡</div>
+                        </div>
+                        <div class="flip-card">
+                            <div class="card-face face-yang">
+                                <div class="trait-title">追求极致</div>
+                                <div class="trait-annotation">不断突破边界的内驱力。</div>
+                                <div class="trait-desc">对完美有天生的感知，总能精益求精。</div>
+                                <div class="toggle-dot"></div>
+                            </div>
+                            <div class="card-face face-yin">
+                                <div class="trait-desc">容不下一点瑕疵，常将自己逼入死胡同导致动作变形。</div>
+                                <div class="toggle-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="trait-label">潜在驱动力特性</div>
+                </div>
+
+                <!-- 卡片 10：终极倾向特性 -->
+                <div class="trait-wrapper">
+                    <div class="blind-box" onclick="handleCardClick(this)">
+                        <div class="unopened-cover center-text">
+                            <svg class="cover-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="7" y1="17" x2="17" y2="7"/>
+                                <polyline points="7 7 17 7 17 17"/>
+                            </svg>
+                            我这一生，最终要走向哪里？
+                            <div class="open-hint">开启词卡</div>
+                        </div>
+                        <div class="flip-card">
+                            <div class="card-face face-yang">
+                                <div class="trait-title">登峰造极</div>
+                                <div class="trait-annotation">注定要在某领域抵达顶峰。</div>
+                                <div class="trait-desc">有傲视群雄的气概与持续攀登的耐力。</div>
+                                <div class="toggle-dot"></div>
+                            </div>
+                            <div class="card-face face-yin">
+                                <div class="trait-desc">巅峰之后的虚无与孤独，容易在绝境中自我隔离。</div>
+                                <div class="toggle-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="trait-label">终极倾向特性</div>
+                </div>
+            </div>
+
+            <div class="traits-footer">
+                <div class="traits-note">说明：释义参考滴天髓等东方古籍哲学，凝视自我，不为迷信。</div>
+            </div>
+        </div>
+
+        <!-- ================= Tab 3: 八维评估 ================= -->
+        <div id="tab-3" class="tab-content">
+            <div class="radar-container">
+                <div class="radar-box">
+                    <div class="radar-title">显性矩阵剖面</div>
+                    <div class="radar-canvas-wrap"><canvas id="radar-explicit"></canvas></div>
+                    <div class="radar-desc">
+                        代表你已向外界展现、且被世俗法则激活的维面特质。图中可见你的能量偏向于外放与破局，这使你在现实物质层面的争夺中往往游刃有余。
+                    </div>
+                </div>
+                <div class="radar-box">
+                    <div class="radar-title">隐性矩阵剖面</div>
+                    <div class="radar-canvas-wrap"><canvas id="radar-implicit"></canvas></div>
+                    <div class="radar-desc">
+                        代表你灵魂深处尚未完全开发、或被理性刻意压抑的潜能维度。这种内在的稳定与灵性，在未来的特定潮汐里，将成为你逆风翻盘的隐秘锚点。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // ================= 1. 页面加载转场 =================
+        window.addEventListener('load', () => {
+            const transitionEl = document.getElementById('page-transition');
+            setTimeout(() => {
+                transitionEl.classList.add('loaded');
+                startNumberDecoding();
+            }, 500);
+        });
+
+        // ================= 2. 数字解码特效 =================
+        function startNumberDecoding() {
+            const targetNumber = 1533;
+            const numberEl = document.getElementById('qi-number');
+            let duration = 2400; let startTime = null;
+            numberEl.classList.add('decoding');
+
+            function animationStep(timestamp) {
+                if (!startTime) startTime = timestamp;
+                const progress = timestamp - startTime;
+                const easeProgress = 1 - Math.pow(1 - Math.min(progress / duration, 1), 3);
+                const currentNum = Math.floor(easeProgress * targetNumber);
+                numberEl.innerText = currentNum.toString().padStart(4, '0');
+                if (progress < duration) requestAnimationFrame(animationStep);
+                else { numberEl.innerText = targetNumber; numberEl.classList.remove('decoding'); }
+            }
+            requestAnimationFrame(animationStep);
+        }
+
+        // ================= 3. 丝滑胶囊导航切换 =================
+        const btns = document.querySelectorAll('.segment-btn');
+        const slider = document.getElementById('segment-slider');
+        const contents = document.querySelectorAll('.tab-content');
+        let radarInitialized = false;
+
+        function updateSlider(activeBtn) {
+            slider.style.width = activeBtn.offsetWidth + 'px';
+            slider.style.transform = `translateX(${activeBtn.offsetLeft - 6}px)`;
+        }
+
+        btns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const targetId = e.target.getAttribute('data-target');
+                btns.forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                updateSlider(e.target);
+
+                contents.forEach(content => {
+                    if (content.id === targetId) {
+                        content.style.display = 'flex';
+                        void content.offsetWidth; 
+                        content.classList.add('active');
+                        
+                        if (targetId === 'tab-1') startNumberDecoding();
+                        if (targetId === 'tab-3' && !radarInitialized) {
+                            initRadars(); radarInitialized = true;
+                        }
+                    } else {
+                        content.classList.remove('active');
+                        setTimeout(() => { if (!content.classList.contains('active')) content.style.display = 'none'; }, 400);
+                    }
+                });
+            });
+        });
+
+        window.addEventListener('resize', () => {
+            const activeBtn = document.querySelector('.segment-btn.active');
+            if (activeBtn) updateSlider(activeBtn);
+            resizeCanvas();
+            if (radarInitialized) initRadars(); 
+        });
+        setTimeout(() => updateSlider(document.querySelector('.segment-btn.active')), 100);
+
+        // ================= 4. 盲盒点击翻转逻辑 =================
+        function handleCardClick(boxElement) {
+            const cover = boxElement.querySelector('.unopened-cover');
+            const flipCard = boxElement.querySelector('.flip-card');
+            
+            // 点击时：如果遮罩没开则开遮罩；如果开了则翻转阴阳面
+            if (!cover.classList.contains('opened')) {
+                cover.classList.add('opened');
+            } else {
+                flipCard.classList.toggle('is-yin');
+            }
+        }
+
+        // ================= 5. 底层安静的星尘画布 =================
+        const bgCanvas = document.getElementById('bg-canvas');
+        const bgCtx = bgCanvas.getContext('2d');
+        let w, h, particles = [];
+
+        function resizeCanvas() {
+            w = window.innerWidth; h = window.innerHeight;
+            bgCanvas.width = w; bgCanvas.height = h;
+        }
+        resizeCanvas();
+
+        class DustParticle {
+            constructor() {
+                this.x = Math.random() * w; this.y = Math.random() * h;
+                this.size = Math.random() * 1.5;
+                this.speedX = (Math.random() - 0.5) * 0.1; this.speedY = (Math.random() - 0.5) * 0.1;
+                this.alpha = Math.random() * 0.4;
+            }
+            update() {
+                this.x += this.speedX; this.y += this.speedY;
+                if (this.x < 0) this.x = w; if (this.x > w) this.x = 0;
+                if (this.y < 0) this.y = h; if (this.y > h) this.y = 0;
+            }
+            draw() {
+                bgCtx.beginPath(); bgCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                bgCtx.fillStyle = `rgba(234, 222, 199, ${this.alpha})`; bgCtx.fill();
+            }
+        }
+        const pCount = w > 800 ? 150 : 50;
+        for(let i=0; i<pCount; i++) particles.push(new DustParticle());
+        function animateBg() {
+            bgCtx.clearRect(0, 0, w, h);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animateBg);
+        }
+        animateBg();
+
+        // ================= 6. 雷达图算法 =================
+        function drawRadarChart(canvasId, dataValues, isExplicit) {
+            const cvs = document.getElementById(canvasId);
+            const ctx = cvs.getContext('2d');
+            const size = 320; 
+            const dpr = window.devicePixelRatio || 1;
+            
+            cvs.width = size * dpr; cvs.height = size * dpr;
+            cvs.style.width = size + 'px'; cvs.style.height = size + 'px';
+            ctx.scale(dpr, dpr);
+            
+            const centerX = size / 2; const centerY = size / 2;
+            const radius = 95; const sides = 8; const angleStep = (Math.PI * 2) / sides;
+            const labels = ['智慧谋略', '领导决断', '亲和仁爱', '行动执行', '艺术才华', '社交人缘', '稳定耐心', '理财经营'];
+            
+            ctx.clearRect(0, 0, size, size);
+
+            ctx.lineWidth = 1;
+            for (let level = 1; level <= 6; level++) {
+                ctx.beginPath();
+                const r = radius * (level / 6);
+                for (let i = 0; i < sides; i++) {
+                    const angle = i * angleStep - Math.PI / 2;
+                    const x = centerX + Math.cos(angle) * r;
+                    const y = centerY + Math.sin(angle) * r;
+                    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                }
+                ctx.closePath();
+                ctx.strokeStyle = `rgba(234, 222, 199, ${level === 6 ? 0.3 : 0.05})`;
+                ctx.stroke();
+            }
+
+            ctx.beginPath();
+            for (let i = 0; i < sides; i++) {
+                const angle = i * angleStep - Math.PI / 2;
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(centerX + Math.cos(angle) * radius, centerY + Math.sin(angle) * radius);
+            }
+            ctx.strokeStyle = 'rgba(234, 222, 199, 0.1)';
+            ctx.stroke();
+
+            ctx.font = '300 12px "PingFang SC", "Microsoft YaHei", sans-serif';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            for (let i = 0; i < sides; i++) {
+                const angle = i * angleStep - Math.PI / 2;
+                const x = centerX + Math.cos(angle) * (radius + 30);
+                const y = centerY + Math.sin(angle) * (radius + 30);
+                ctx.fillText(labels[i], x, y);
+            }
+
+            ctx.beginPath();
+            for (let i = 0; i < sides; i++) {
+                const angle = i * angleStep - Math.PI / 2;
+                const valRadius = radius * (dataValues[i] / 10);
+                const x = centerX + Math.cos(angle) * valRadius;
+                const y = centerY + Math.sin(angle) * valRadius;
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+
+            if(isExplicit) {
+                ctx.fillStyle = 'rgba(234, 222, 199, 0.2)';
+                ctx.strokeStyle = 'rgba(234, 222, 199, 1)';
+                ctx.shadowColor = 'rgba(234, 222, 199, 0.5)';
+            } else {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.shadowColor = 'rgba(255, 255, 255, 0.2)';
+            }
+            ctx.shadowBlur = 10; ctx.fill();
+            ctx.lineWidth = 1.5; ctx.stroke();
+            ctx.shadowBlur = 0; 
+
+            for (let i = 0; i < sides; i++) {
+                const angle = i * angleStep - Math.PI / 2;
+                const valRadius = radius * (dataValues[i] / 10);
+                const x = centerX + Math.cos(angle) * valRadius;
+                const y = centerY + Math.sin(angle) * valRadius;
+                ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2);
+                ctx.fillStyle = isExplicit ? '#FFF' : '#AAA';
+                ctx.fill();
+            }
+        }
+
+        function initRadars() {
+            drawRadarChart('radar-explicit', [8, 9, 5, 8, 4, 7, 5, 7], true);
+            drawRadarChart('radar-implicit', [6, 4, 8, 4, 9, 6, 8, 5], false);
+        }
+
+    </script>
+</body>
+</html>

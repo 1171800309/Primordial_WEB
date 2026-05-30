@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>一炁文化 YI QI | 逆熵求己</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #050507;
+            --bg-solid: #08080a;
+            --text-white: #FFFFFF;
+            --text-muted: rgba(255, 255, 255, 0.55);
+            --text-dark: rgba(255, 255, 255, 0.3);
+            --gold-light: #EADEC7;
+            --gold-dim: rgba(234, 222, 199, 0.15);
+            
+            --font-serif: 'Noto Serif SC', STSong, serif;
+            --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", sans-serif;
+            --bezier-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-white);
+            font-family: var(--font-sans);
+            overflow-x: hidden;
+            line-height: 2;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::-webkit-scrollbar { width: 0; background: transparent; }
+
+        .ink-blend { mix-blend-mode: screen; background-color: transparent; object-fit: contain; }
+
+        /* ================= 导航栏 ================= */
+        header {
+            position: fixed; top: 0; left: 0; width: 100%; height: 80px;
+            padding: 0 5%; z-index: 100;
+            display: flex; justify-content: space-between; align-items: center;
+            background: linear-gradient(180deg, rgba(5,5,7,0.8) 0%, transparent 100%);
+            backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+        }
+
+        /* 高级 Logo 组合排版 */
+        .brand-container {
+            display: flex; align-items: center; gap: 14px; text-decoration: none;
+        }
+        
+        /* 图片 Logo 样式 (适度放大) */
+        .real-logo {
+            width: 46px; 
+            height: 46px; 
+            transition: transform 0.4s ease, filter 0.4s ease;
+        }
+        
+        .brand-container:hover .real-logo {
+            transform: scale(1.08);
+            filter: brightness(1.3);
+        }
+
+        .brand-text {
+            display: flex; align-items: center; gap: 12px;
+        }
+        .brand-text .zh {
+            font-family: var(--font-serif); font-size: 20px; color: var(--gold-light);
+            letter-spacing: 4px; font-weight: 300;
+        }
+        .brand-text .en {
+            font-family: var(--font-sans); font-size: 11px; color: var(--text-dark);
+            letter-spacing: 6px; text-transform: uppercase; margin-top: 2px;
+        }
+
+        .nav-btn {
+            font-size: 14px; letter-spacing: 0.1em; color: var(--text-white);
+            text-decoration: none; padding: 8px 24px; border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 40px; transition: all 0.4s ease;
+        }
+        .nav-btn:hover { border-color: var(--gold-light); color: var(--bg-color); background: var(--gold-light); }
+
+        /* ================= 布局与动效基础 ================= */
+        .reveal {
+            opacity: 0; transform: translateY(40px);
+            transition: opacity 1.2s var(--bezier-smooth), transform 1.2s var(--bezier-smooth);
+        }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+        .delay-1 { transition-delay: 0.15s; }
+        .delay-2 { transition-delay: 0.3s; }
+
+        .title-huge { font-family: var(--font-serif); font-size: clamp(32px, 5vw, 64px); font-weight: 300; letter-spacing: 0.08em; line-height: 1.4; color: var(--text-white); }
+        .text-body { font-size: clamp(14px, 1.5vw, 16px); color: var(--text-muted); letter-spacing: 0.1em; font-weight: 300; }
+        .highlight-gold { color: var(--gold-light); font-weight: 400; }
+
+        .section-transparent { background: transparent; }
+        .section-solid { background: var(--bg-solid); position: relative; z-index: 10; border-top: 1px solid rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.03); }
+
+        /* ================= 第一屏：破冰 ================= */
+        #screen-1 { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 0 5%; position: relative; z-index: 1; }
+        
+        /* 首屏中央大 Logo (显著放大) */
+        .hero-logo {
+            width: 110px; height: 110px; margin-bottom: 24px;
+            filter: drop-shadow(0 0 20px rgba(234, 222, 199, 0.3));
+            animation: pulseHeroLogo 4s infinite ease-in-out;
+        }
+        @keyframes pulseHeroLogo {
+            0%, 100% { transform: scale(0.95); filter: drop-shadow(0 0 15px rgba(234,222,199,0.15)); }
+            50% { transform: scale(1.05); filter: drop-shadow(0 0 40px rgba(234,222,199,0.6)); }
+        }
+
+        #screen-1 .title-huge { margin-bottom: 30px; background: linear-gradient(180deg, #FFF 0%, rgba(255,255,255,0.6) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: clamp(40px, 6vw, 80px); }
+        #screen-1 .text-body { max-width: 800px; line-height: 2.2; margin-bottom: 60px; }
+
+        /* ================= 第二屏：释义 (左右分栏) ================= */
+        #screen-2 { padding: 150px 5%; min-height: 100vh; display: flex; align-items: center; }
+        .split-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; max-width: 1400px; margin: 0 auto; width: 100%; align-items: center; }
+        .canvas-container-gas { width: 100%; aspect-ratio: 1/1; position: relative; border-radius: 50%; overflow: hidden; background: radial-gradient(circle, rgba(234, 222, 199, 0.03) 0%, transparent 70%); }
+        #gas-canvas { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+        
+        /* ================= 第三屏：磁场推演 ================= */
+        #screen-3 { padding: 150px 5%; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .states-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; width: 100%; max-width: 1200px; margin-bottom: 80px; }
+        .state-box { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        .state-canvas-wrap { width: 200px; height: 200px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden; background: #030304; }
+        .state-canvas-wrap canvas { width: 100%; height: 100%; }
+        .state-label { font-family: var(--font-serif); font-size: 16px; color: var(--gold-light); letter-spacing: 0.2em; }
+        .screen-3-text { max-width: 800px; text-align: center; font-size: 16px; line-height: 2.2; color: var(--text-muted); }
+
+        /* ================= 第四屏：了解自己 (先天恒炁) ================= */
+        #screen-4 { padding: 150px 5%; }
+        .section-header { text-align: center; margin-bottom: 80px; }
+        
+        /* 精简后的12宫格 */
+        .grid-12 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; max-width: 1400px; margin: 0 auto; }
+        .card-mini { background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.05); padding: 30px; border-radius: 4px; transition: all 0.4s ease; display: flex; flex-direction: column; gap: 16px; }
+        .card-mini:hover { background: rgba(234, 222, 199, 0.03); border-color: rgba(234, 222, 199, 0.2); transform: translateY(-4px); }
+        .icon-svg { width: 24px; height: 24px; stroke: var(--gold-light); fill: none; stroke-width: 1.5; }
+        .card-mini h4 { font-family: var(--font-serif); font-size: 16px; color: var(--text-white); font-weight: 300; letter-spacing: 0.1em; }
+        .card-mini p { font-size: 13px; color: var(--text-muted); line-height: 1.8; font-weight: 300; }
+
+        /* ================= 第五屏：后天变炁 ================= */
+        #screen-5 { padding: 150px 5%; border-top: 1px solid rgba(255,255,255,0.03); }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 1000px; margin: 0 auto; }
+        .card-large { background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.05); padding: 50px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 24px; }
+        .abstract-icon { width: 60px; height: 60px; border: 1px dashed var(--gold-light); border-radius: 50%; position: relative; animation: slowSpin 20s linear infinite; }
+        .abstract-icon::after { content: ''; position: absolute; width: 30px; height: 30px; border: 1px solid rgba(255,255,255,0.3); top: 15px; left: 15px; transform: rotate(45deg); }
+
+        /* ================= 第六屏：万炁之城 ================= */
+        #screen-6 { padding: 150px 5%; text-align: center; border-top: 1px solid rgba(255,255,255,0.03); }
+        .store-box { max-width: 800px; margin: 0 auto; padding: 80px 40px; border: 1px solid rgba(234, 222, 199, 0.1); background: radial-gradient(circle at center, rgba(234, 222, 199, 0.02) 0%, transparent 100%); }
+        .store-note { margin-top: 80px; font-size: 12px; color: var(--text-dark); letter-spacing: 0.2em; }
+
+        /* ================= 第七屏：FAQ ================= */
+        #screen-7 { padding: 150px 5%; min-height: 100vh; position: relative; z-index: 1; }
+        .faq-container { max-width: 1000px; margin: 80px auto 0; }
+        .faq-item { display: flex; gap: 60px; padding: 40px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .faq-q { flex: 1; font-family: var(--font-serif); font-size: 18px; color: var(--text-white); font-weight: 300; letter-spacing: 0.05em; line-height: 1.6; }
+        .faq-a { flex: 2; font-size: 15px; color: var(--text-muted); font-weight: 300; line-height: 2; }
+
+        /* 全局底层星云画布 */
+        #global-nebula { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; opacity: 0.6; }
+
+        @keyframes slowSpin { 100% { transform: rotate(360deg); } }
+
+        @media (max-width: 900px) {
+            .split-layout, .grid-2 { grid-template-columns: 1fr; }
+            .states-container { grid-template-columns: 1fr; gap: 60px; }
+            .faq-item { flex-direction: column; gap: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 全局星云画布 -->
+    <canvas id="global-nebula"></canvas>
+
+    <header>
+        <a href="#" class="brand-container">
+            <img src="logo.png" alt="一炁" class="real-logo ink-blend">
+            <div class="brand-text">
+                <span class="zh">一炁文化</span>
+                <span class="en">YI QI</span>
+            </div>
+        </a>
+        <a href="#" class="nav-btn">登录</a>
+    </header>
+
+    <!-- 首屏 (透明，显示底层星云) -->
+    <section id="screen-1" class="section-transparent">
+        <img src="logo.png" alt="一炁" class="hero-logo reveal ink-blend">
+        <h1 class="title-huge reveal delay-1">由炁始，逆熵求己</h1>
+        <div class="text-body reveal delay-2">
+            人先天得炁而生，顺熵失炁则“亡”，宇宙万物皆有炁，炁有其数，炁有其性。<br>
+            观己之炁，察万物炁，运己之炁，顺万物炁之势，逆己炁之熵。
+        </div>
+    </section>
+
+    <!-- 第二屏：释义 -->
+    <section id="screen-2" class="section-solid">
+        <div class="split-layout">
+            <div class="canvas-container-gas reveal">
+                <canvas id="gas-canvas"></canvas>
+            </div>
+            <div class="reveal delay-1">
+                <h2 class="title-huge" style="margin-bottom: 30px;">炁</h2>
+                <div class="text-body">
+                    读作 <span class="highlight-gold">qì</span>。<br>
+                    它是你与生俱来的“出厂能量电池”。<br><br>
+                    为什么有时你充满干劲，有时却莫名内耗？<br>
+                    为什么换了个环境，突然觉得诸事顺遂、心情大好？<br><br>
+                    这些看不见、摸不着，却真实影响你情绪起伏、状态好坏的底层磁场，<br>
+                    被称为「炁」。<br>
+                    它不是玄学，而是你在这个宇宙中专属的频率。
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 第三屏：关联磁场 -->
+    <section id="screen-3" class="section-solid">
+        <div class="states-container">
+            <div class="state-box reveal">
+                <div class="state-canvas-wrap"><canvas id="state-nourish"></canvas></div>
+                <div class="state-label">滋养</div>
+                <div style="font-size: 13px; color: var(--text-dark);">外部环境大炁场滋养“你”</div>
+            </div>
+            <div class="state-box reveal delay-1">
+                <div class="state-canvas-wrap"><canvas id="state-suppress"></canvas></div>
+                <div class="state-label">压制</div>
+                <div style="font-size: 13px; color: var(--text-dark);">外部环境压制“你”</div>
+            </div>
+            <div class="state-box reveal delay-2">
+                <div class="state-canvas-wrap"><canvas id="state-clash"></canvas></div>
+                <div class="state-label">混战</div>
+                <div style="font-size: 13px; color: var(--text-dark);">外部环境与“你”互相混战</div>
+            </div>
+        </div>
+        <div class="screen-3-text reveal">
+            为什么有些关系总是无底线地消耗你？<br>
+            不是性格不合，是底层磁场的错位。<br><br>
+            在「一炁」，没有吉凶，只有周期。没有相克，只有碰撞。<br>
+            「炁」并不决定你明天会赚多少钱，而是决定了当你遇到危机时——<br>
+            你的能量特质是更适合<span class="highlight-gold">化身为山去沉淀</span>，还是<span class="highlight-gold">汇聚成海去顺流</span>。<br>
+            理解了你的炁，你就理解了自己为何做出那些选择。
+        </div>
+    </section>
+
+    <!-- 第四屏：了解自己 (先天恒炁 12宫格) -->
+    <section id="screen-4" class="section-solid">
+        <div class="section-header reveal">
+            <h2 class="title-huge">逆熵求己的第一步，<br>是先了解自己。</h2>
+        </div>
+        <div class="grid-12">
+            <div class="card-mini reveal"><svg class="icon-svg"><rect x="4" y="4" width="16" height="16"/><line x1="4" y1="12" x2="20" y2="12"/></svg><h4>先天特性</h4><p>生命底层的“源代码”，不因环境改变。你扮演无数角色，但核心的“性”早已写定。</p></div>
+            <div class="card-mini reveal"><svg class="icon-svg"><polygon points="12,2 22,20 2,20"/></svg><h4>先天禀性</h4><p>“我携带什么样的能量，来到一个什么样的世界？”</p></div>
+            <div class="card-mini reveal"><svg class="icon-svg"><path d="M5 12h14M12 5l7 7-7 7"/></svg><h4>先天行为特性</h4><p>与生俱来的“行动方式”——不是你要做什么，而是无论做什么都改不掉的“做法”。</p></div>
+            <div class="card-mini reveal"><svg class="icon-svg"><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="10" stroke-dasharray="4 4"/></svg><h4>先天天赋特性</h4><p>“我的能量在先天环境中被激发出了什么天赋？”</p></div>
+            <div class="card-mini reveal"><svg class="icon-svg"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14"/></svg><h4>先天气质特性</h4><p>“我带着怎样的气质？”</p></div>
+            <div class="card-mini reveal"><svg class="icon-svg"><rect x="4" y="4" width="16" height="16" rx="2"/></svg><h4>先天性格底色特性</h4><p>“我的能量被先天环境塑造出了什么性格底色？”</p></div>
+            <div class="card-mini reveal"><svg class="icon-svg"><circle cx="8" cy="12" r="4"/><circle cx="16" cy="12" r="4"/></svg><h4>先天社会人格特性</h4><p>“我与社会的关系模式”——你带着什么样的社会人格，面对什么样的社会期待。</p></div>
+            <div class="card-mini reveal"><svg class="icon-svg"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg><h4>先天情感特性</h4><p>“我在最亲密的关系里是什么样子？”</p></div>
+            <div class="card-mini reveal"><svg class="icon-svg"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg><h4>先天潜在驱动力</h4><p>“我内心深处最渴望什么、最被什么推动。”</p></div>
+            <div class="card-mini reveal"><svg class="icon-svg"><line x1="2" y1="22" x2="22" y2="2"/><line x1="22" y1="2" x2="16" y2="2"/><line x1="22" y1="2" x2="22" y2="8"/></svg><h4>先天终极倾向</h4><p>与生俱来的终极倾向——“我这一生，最终要走向哪里？”</p></div>
+            <div class="card-mini reveal"><svg class="icon-svg"><polygon points="12,2 15,9 22,9 16,14 18,21 12,17 6,21 8,14 2,9 9,9"/></svg><h4>先天深层原始冲动</h4><p>“我在极端情境下才会被激活的原始本能”。</p></div>
+            <div class="card-mini reveal"><svg class="icon-svg"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><h4>先天隐藏特性</h4><p>“我内心深处藏着但自己未必知道的才能”。</p></div>
+        </div>
+    </section>
+
+    <!-- 第五屏：后天变炁 -->
+    <section id="screen-5" class="section-solid">
+        <div class="section-header reveal">
+            <h2 class="title-huge">若能清楚明确时空维度下<br>“炁”的基调，便可顺势而为。</h2>
+        </div>
+        <div class="grid-2">
+            <div class="card-large reveal">
+                <div class="abstract-icon"></div>
+                <h3 style="font-family: var(--font-serif); font-size: 24px; font-weight: 300;">大运·变·炁场</h3>
+                <p class="text-body">“这十年，我被什么样的能量包裹着？<br>外部的环境是什么基调？内部的推力是什么方向？”</p>
+            </div>
+            <div class="card-large reveal delay-1">
+                <div class="abstract-icon" style="animation-direction: reverse; border-style: dotted;"></div>
+                <h3 style="font-family: var(--font-serif); font-size: 24px; font-weight: 300;">流年·变·炁场</h3>
+                <p class="text-body">“这一年，舞台上在演什么戏？<br>幕后什么力量在推动？”</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 第六屏：万炁之城 -->
+    <section id="screen-6" class="section-solid">
+        <div class="store-box reveal">
+            <h2 class="title-huge" style="margin-bottom: 24px;">万炁之城</h2>
+            <p class="text-body">世间万物皆有其炁，我们收集了很多有意思的“炁物”。<br>欢迎探索。</p>
+        </div>
+        <div class="store-note reveal delay-1">不仅止于此，更多深度内容期待你的探索。</div>
+    </section>
+
+    <!-- 第七屏：FAQ -->
+    <section id="screen-7" class="section-transparent">
+        <h2 class="title-huge reveal" style="text-align: center;">探索指南</h2>
+        <div class="faq-container">
+            <div class="faq-item reveal">
+                <div class="faq-q">Q1：「一炁」和市面上的算命软件有什么区别？</div>
+                <div class="faq-a">我们不占卜，不恐吓，不卖转运物。传统算命试图告诉你“明天会发生什么”，这是一种宿命的束缚；而「一炁」结合东方哲学与心理学，只让你看见“你本来的能量结构是怎样的”。我们不是预言机，我们是一面映照你底层磁场的镜子。</div>
+            </div>
+            <div class="faq-item reveal delay-1">
+                <div class="faq-q">Q2：你们真的能算出我的「命运」吗？</div>
+                <div class="faq-a">命运不是一句写死的判词，而是“你的底层性格 × 你做出的选择 × 外部时间周期”。我们无法算出你会遇见谁、赚多少钱，但通过观测你的「先天炁性」，我们能告诉你，为何你总是被某一类人吸引，为何在某个阶段感到严重内耗。</div>
+            </div>
+            <div class="faq-item reveal">
+                <div class="faq-q">Q3：输入我的真实出生时间，隐私安全吗？</div>
+                <div class="faq-a">极致安全。你的时间数据仅用于瞬间的“时空参数对齐”与“能量场生成”。系统采用非对称加密处理，阅后即焚，绝不留存。在「一炁」，我们只凝视时空的规律，绝不窥探个人的隐私。</div>
+            </div>
+            <div class="faq-item reveal delay-1">
+                <div class="faq-q">Q4：我应该如何正确看待生成的分析结果？</div>
+                <div class="faq-a">请把它当成一次“向内的自我冥想”，而不是“不容置疑的圣旨”。当你顺遂时，用它印证你的天赋；当你低谷时，用它接纳自己的能量周期。所有结果仅作文化探索与心理参考。请永远记住：命虽天定，炁由我造。</div>
+            </div>
+        </div>
+        <div style="text-align:center; margin-top: 100px;" class="reveal">
+            <div style="font-size:12px; color:rgba(255,255,255,0.2); letter-spacing:0.2em;">© YI QI. 逆熵求己，方为大道。</div>
+        </div>
+    </section>
+
+    <script>
+        // ================= 滚动视差 =================
+        document.addEventListener("DOMContentLoaded", () => {
+            const observer = new IntersectionObserver((entries, obs) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                        obs.unobserve(entry.target);
+                    }
+                });
+            }, { root: null, rootMargin: "0px", threshold: 0.15 });
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+        });
+
+        // ================= 辅助函数：Canvas 缩放 =================
+        function setupCanvas(id) {
+            const cvs = document.getElementById(id);
+            const ctx = cvs.getContext('2d');
+            const rect = cvs.parentElement.getBoundingClientRect();
+            cvs.width = rect.width;
+            cvs.height = rect.height;
+            return { cvs, ctx, w: rect.width, h: rect.height };
+        }
+
+        // ================= 1. 全局星云引擎 =================
+        const globalCvs = document.getElementById('global-nebula');
+        const glCtx = globalCvs.getContext('2d');
+        let glW = window.innerWidth, glH = window.innerHeight;
+        globalCvs.width = glW; globalCvs.height = glH;
+        
+        let glParticles = [];
+        for(let i=0; i<300; i++) {
+            glParticles.push({
+                r: Math.random() * (glW>800?600:300) + 20,
+                a: Math.random() * Math.PI * 2,
+                s: (Math.random()>0.5?1:-1) * (0.0001 + Math.random()*0.0002),
+                size: Math.random() * 1.5,
+                color: Math.random()>0.7 ? `rgba(234,222,199,0.3)` : `rgba(255,255,255,0.2)`,
+                w: Math.random() * Math.PI * 2
+            });
+        }
+        
+        function drawGlobal() {
+            glCtx.clearRect(0,0,glW,glH);
+            const grad = glCtx.createRadialGradient(glW/2, glH/2, 0, glW/2, glH/2, glH);
+            grad.addColorStop(0, 'rgba(234, 222, 199, 0.05)'); grad.addColorStop(1, 'transparent');
+            glCtx.fillStyle = grad; glCtx.fillRect(0,0,glW,glH);
+
+            glParticles.forEach(p => {
+                p.a += p.s; p.w += 0.01;
+                const r = p.r + Math.sin(p.w)*10;
+                const x = glW/2 + Math.cos(p.a) * r;
+                const y = glH/2 + Math.sin(p.a) * r * 0.7;
+                glCtx.beginPath(); glCtx.arc(x, y, p.size, 0, Math.PI*2);
+                glCtx.fillStyle = p.color; glCtx.fill();
+            });
+        }
+
+        // ================= 2. 混沌气态画布 (布朗运动) =================
+        let gas = setupCanvas('gas-canvas');
+        let gasParticles = [];
+        for(let i=0; i<150; i++) {
+            gasParticles.push({
+                x: Math.random() * gas.w, y: Math.random() * gas.h,
+                vx: (Math.random()-0.5)*1, vy: (Math.random()-0.5)*1,
+                size: Math.random() * 2 + 0.5,
+                alpha: Math.random() * 0.5 + 0.1
+            });
+        }
+        function drawGas() {
+            gas.ctx.fillStyle = 'rgba(5,5,7,0.1)'; gas.ctx.fillRect(0,0,gas.w,gas.h);
+            gasParticles.forEach(p => {
+                // 布朗随机游走
+                p.vx += (Math.random()-0.5)*0.2; p.vy += (Math.random()-0.5)*0.2;
+                // 摩擦力
+                p.vx *= 0.98; p.vy *= 0.98;
+                p.x += p.vx; p.y += p.vy;
+                // 边界环绕
+                if(p.x < 0) p.x = gas.w; if(p.x > gas.w) p.x = 0;
+                if(p.y < 0) p.y = gas.h; if(p.y > gas.h) p.y = 0;
+                
+                gas.ctx.beginPath(); gas.ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+                gas.ctx.fillStyle = `rgba(234,222,199,${p.alpha})`; gas.ctx.fill();
+            });
+        }
+
+        // ================= 3. 磁场推演：滋养 (上升聚合) =================
+        let nsh = setupCanvas('state-nourish');
+        let nshP = [];
+        for(let i=0; i<60; i++) nshP.push({ x: Math.random()*nsh.w, y: nsh.h + Math.random()*50, s: Math.random()*1+0.5 });
+        function drawNourish() {
+            nsh.ctx.fillStyle = 'rgba(3,3,4,0.2)'; nsh.ctx.fillRect(0,0,nsh.w,nsh.h);
+            nsh.ctx.beginPath(); nsh.ctx.arc(nsh.w/2, nsh.h/2, 20, 0, Math.PI*2);
+            nsh.ctx.fillStyle = 'rgba(234,222,199,0.1)'; nsh.ctx.fill();
+            nshP.forEach(p => {
+                p.y -= p.s; p.x += (nsh.w/2 - p.x)*0.01; // 向中心靠拢并上升
+                if(p.y < nsh.h/2 - 20) { p.y = nsh.h + 10; p.x = Math.random()*nsh.w; }
+                nsh.ctx.beginPath(); nsh.ctx.arc(p.x, p.y, 1.5, 0, Math.PI*2);
+                nsh.ctx.fillStyle = 'rgba(234,222,199,0.8)'; nsh.ctx.fill();
+            });
+        }
+
+        // ================= 4. 磁场推演：压制 (重力下坠) =================
+        let sup = setupCanvas('state-suppress');
+        let supP = [];
+        for(let i=0; i<80; i++) supP.push({ x: Math.random()*sup.w, y: -Math.random()*sup.h, v: Math.random()*2+1 });
+        function drawSuppress() {
+            sup.ctx.fillStyle = 'rgba(3,3,4,0.2)'; sup.ctx.fillRect(0,0,sup.w,sup.h);
+            sup.ctx.beginPath(); sup.ctx.arc(sup.w/2, sup.h-30, 15, 0, Math.PI*2);
+            sup.ctx.fillStyle = 'rgba(255,255,255,0.2)'; sup.ctx.fill();
+            supP.forEach(p => {
+                p.y += p.v;
+                if(p.y > sup.h-30) { p.y = -10; p.x = Math.random()*sup.w; }
+                sup.ctx.beginPath(); sup.ctx.fillRect(p.x, p.y, 1, 8); // 线条感
+                sup.ctx.fillStyle = 'rgba(255,255,255,0.4)'; sup.ctx.fill();
+            });
+        }
+
+        // ================= 5. 磁场推演：混战 (无序对撞) =================
+        let cls = setupCanvas('state-clash');
+        let clsP = [];
+        for(let i=0; i<50; i++) clsP.push({ x: cls.w/2, y: cls.h/2, vx: (Math.random()-0.5)*4, vy: (Math.random()-0.5)*4 });
+        function drawClash() {
+            cls.ctx.fillStyle = 'rgba(3,3,4,0.3)'; cls.ctx.fillRect(0,0,cls.w,cls.h);
+            clsP.forEach(p => {
+                p.x += p.vx; p.y += p.vy;
+                if(p.x < 0 || p.x > cls.w) p.vx *= -1;
+                if(p.y < 0 || p.y > cls.h) p.vy *= -1;
+                cls.ctx.beginPath(); cls.ctx.arc(p.x, p.y, 2, 0, Math.PI*2);
+                cls.ctx.fillStyle = Math.random()>0.5 ? 'rgba(234,222,199,0.8)' : 'rgba(255,255,255,0.5)';
+                cls.ctx.fill();
+            });
+        }
+
+        // ================= 统一定时器 =================
+        function animateAll() {
+            drawGlobal();
+            drawGas();
+            drawNourish();
+            drawSuppress();
+            drawClash();
+            requestAnimationFrame(animateAll);
+        }
+        animateAll();
+
+        // 窗口缩放处理
+        window.addEventListener('resize', () => {
+            glW = window.innerWidth; glH = window.innerHeight;
+            globalCvs.width = glW; globalCvs.height = glH;
+            gas = setupCanvas('gas-canvas');
+            nsh = setupCanvas('state-nourish');
+            sup = setupCanvas('state-suppress');
+            cls = setupCanvas('state-clash');
+        });
+    </script>
+</body>
+</html>

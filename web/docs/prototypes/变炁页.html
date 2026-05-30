@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>一炁 YI QI | 后天变炁域</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #050507;
+            --text-white: #FFFFFF;
+            --text-muted: rgba(255, 255, 255, 0.55);
+            --text-dark: rgba(255, 255, 255, 0.3);
+            --gold-light: #EADEC7;
+            
+            --font-serif: 'Noto Serif SC', STSong, serif;
+            --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", sans-serif;
+            --bezier-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-color); color: var(--text-white);
+            font-family: var(--font-sans); overflow-x: hidden;
+            -webkit-font-smoothing: antialiased; min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+
+        /* ================= 页面转场遮罩 ================= */
+        #page-transition {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: var(--bg-color); z-index: 9999;
+            display: flex; justify-content: center; align-items: center;
+            transition: opacity 1s var(--bezier-smooth), visibility 1s;
+        }
+        #page-transition.loaded { opacity: 0; visibility: hidden; }
+        .transition-ring {
+            width: 60px; height: 60px; border-radius: 50%; border: 1px dashed rgba(234, 222, 199, 0.5);
+            animation: spin 4s linear infinite;
+        }
+
+        /* ================= 底层星尘画布 ================= */
+        #bg-canvas {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 0; opacity: 0.5; pointer-events: none;
+        }
+
+        /* ================= 顶部 UI ================= */
+        .top-nav {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100px;
+            padding: 0 5%; z-index: 100; display: flex; justify-content: space-between; align-items: center;
+            pointer-events: none;
+        }
+        
+        .top-left-brand { 
+            display: flex; align-items: center; gap: 14px; text-decoration: none; 
+            pointer-events: auto; mix-blend-mode: screen; 
+        }
+        .real-logo { 
+            width: 36px; height: 36px; transition: transform 0.4s ease, filter 0.4s ease; 
+            filter: drop-shadow(0 0 5px rgba(234,222,199,0.2));
+        }
+        .top-left-brand:hover .real-logo { 
+            transform: scale(1.08); filter: drop-shadow(0 0 15px rgba(234,222,199,0.6)); 
+        }
+        .brand-text { font-family: var(--font-serif); font-size: 18px; color: var(--gold-light); letter-spacing: 4px; font-weight: 300; }
+
+        .back-btn {
+            position: fixed; top: 90px; left: 5%; z-index: 100; display: flex; align-items: center; gap: 8px;
+            font-size: 13px; color: var(--text-muted); letter-spacing: 0.2em; text-decoration: none; transition: all 0.3s ease;
+            pointer-events: auto; padding: 8px 0;
+        }
+        .back-btn:hover { color: var(--gold-light); transform: translateX(-5px); }
+
+        /* ================= 全局右侧返回黑点 ================= */
+        .right-return-dot {
+            position: fixed; top: 50%; right: 30px; transform: translateY(-50%); z-index: 950;
+            display: flex; align-items: center; justify-content: flex-end; text-decoration: none; cursor: pointer;
+        }
+        .right-return-dot .dot-core {
+            width: 16px; height: 16px; border-radius: 50%; background: #000;
+            border: 1px solid rgba(234, 222, 199, 0.4);
+            box-shadow: 0 0 10px rgba(234, 222, 199, 0.2), inset 0 0 5px rgba(255,255,255,0.05);
+            position: relative; transition: all 0.4s var(--bezier-smooth); z-index: 2;
+        }
+        .right-return-dot .return-label {
+            position: absolute; right: 8px; white-space: nowrap; font-size: 13px; color: var(--gold-light);
+            letter-spacing: 0.2em; opacity: 0; transform: translateX(20px);
+            transition: all 0.4s var(--bezier-smooth); z-index: 1; padding-right: 20px;
+        }
+        .right-return-dot:hover .dot-core { transform: scale(0.6); box-shadow: 0 0 15px rgba(234, 222, 199, 0.8); background: var(--gold-light); border-color: var(--gold-light); }
+        .right-return-dot:hover .return-label { opacity: 1; transform: translateX(0); }
+
+        /* ================= 页面主体容器 ================= */
+        .main-content {
+            position: relative; z-index: 10; flex-grow: 1; display: flex; flex-direction: column; align-items: center;
+            padding-top: 120px; padding-bottom: 80px; width: 100%;
+        }
+
+        .page-title {
+            font-family: var(--font-serif); font-size: clamp(28px, 4vw, 40px); color: var(--text-white); font-weight: 300; letter-spacing: 0.15em;
+            margin-bottom: 40px; text-align: center;
+        }
+
+        /* 胶囊切换控件 */
+        .segment-control {
+            display: flex; align-items: center; background: rgba(15, 15, 17, 0.6);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 40px; padding: 6px; margin-bottom: 60px; position: relative;
+        }
+        .segment-btn {
+            padding: 12px 36px; border-radius: 30px; border: none; background: transparent;
+            font-family: var(--font-serif); font-size: 16px; color: var(--text-muted);
+            letter-spacing: 0.1em; cursor: pointer; transition: all 0.4s ease; position: relative; z-index: 2; outline: none;
+        }
+        .segment-btn.active { color: var(--bg-color); font-weight: 600; }
+        .segment-slider {
+            position: absolute; top: 6px; left: 6px; height: calc(100% - 12px); background: var(--gold-light); border-radius: 30px;
+            transition: transform 0.5s var(--bezier-smooth), width 0.5s var(--bezier-smooth); z-index: 1; box-shadow: 0 4px 15px rgba(234, 222, 199, 0.3);
+        }
+
+        /* ================= Tab 内容区 ================= */
+        .tab-content {
+            display: none; width: 100%; max-width: 1200px;
+            opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .tab-content.active { display: block; opacity: 1; transform: translateY(0); }
+
+        .buff-layout {
+            display: flex; justify-content: center; align-items: center; gap: 120px;
+            width: 100%; padding: 40px 0;
+        }
+
+        /* --- 左侧：数值面板 --- */
+        .buff-left { display: flex; flex-direction: column; align-items: flex-start; position: relative; }
+        .buff-label { font-size: 15px; color: var(--text-muted); letter-spacing: 0.15em; margin-bottom: 10px; z-index: 2; }
+        .buff-number-wrap { display: flex; align-items: baseline; gap: 8px; z-index: 2; }
+        
+        /* 基础数字样式 */
+        .huge-number {
+            font-family: var(--font-serif); font-size: clamp(100px, 12vw, 180px);
+            font-weight: 600; letter-spacing: 0.05em; line-height: 1;
+            transition: all 0.8s var(--bezier-smooth);
+        }
+        .huge-number.decoding { filter: blur(5px); opacity: 0.8; }
+        
+        .huge-percent { font-family: var(--font-serif); font-size: clamp(50px, 6vw, 80px); font-weight: 300; transition: color 0.8s; }
+        .buff-status { font-size: 18px; letter-spacing: 0.2em; font-family: var(--font-serif); margin-left: 10px; padding-bottom: 20px; transition: color 0.8s; }
+
+        /* ================= 两大情绪价值风格 ================= */
+        
+        /* 1. 多巴胺/离火金丹风格 (增幅) SSR级出金感 */
+        .theme-fire {
+            background: linear-gradient(135deg, #F9D423 0%, #FF4E50 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            animation: firePulse 2.5s infinite alternate;
+        }
+        .theme-fire-text { color: #FF4E50; text-shadow: 0 0 10px rgba(255, 78, 80, 0.4); }
+        .theme-fire-percent { color: rgba(249, 212, 35, 0.7); }
+        .theme-fire-glow {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 350px; height: 350px; border-radius: 50%; z-index: -1; pointer-events: none;
+            background: radial-gradient(circle, rgba(255, 78, 80, 0.25) 0%, rgba(249, 212, 35, 0.05) 50%, transparent 70%);
+            animation: spinGlow 8s linear infinite;
+        }
+
+        /* 2. 深渊/坎水冰银风格 (降幅) 绝境潜龙感 */
+        .theme-water {
+            background: linear-gradient(135deg, #E2EBEE 0%, #89F7FE 50%, #66A6FF 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            animation: waterPulse 3s infinite alternate;
+        }
+        .theme-water-text { color: #89F7FE; text-shadow: 0 0 10px rgba(137, 247, 254, 0.4); }
+        .theme-water-percent { color: rgba(102, 166, 255, 0.7); }
+        .theme-water-glow {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 350px; height: 350px; border-radius: 50%; z-index: -1; pointer-events: none;
+            background: radial-gradient(circle, rgba(102, 166, 255, 0.2) 0%, rgba(137, 247, 254, 0.05) 50%, transparent 70%);
+            animation: spinGlow 12s linear infinite reverse;
+        }
+
+        @keyframes firePulse {
+            0% { filter: drop-shadow(0 10px 20px rgba(255, 78, 80, 0.4)); }
+            100% { filter: drop-shadow(0 10px 45px rgba(249, 212, 35, 0.8)); }
+        }
+        @keyframes waterPulse {
+            0% { filter: drop-shadow(0 10px 20px rgba(102, 166, 255, 0.3)); }
+            100% { filter: drop-shadow(0 10px 40px rgba(137, 247, 254, 0.7)); }
+        }
+        @keyframes spinGlow {
+            0% { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
+            50% { transform: translate(-50%, -50%) rotate(180deg) scale(1.1); }
+            100% { transform: translate(-50%, -50%) rotate(360deg) scale(1); }
+        }
+
+        /* --- 右侧：阴阳 3D 卡片 --- */
+        .buff-right { width: 100%; max-width: 420px; }
+        .trait-wrapper { display: flex; flex-direction: column; align-items: center; gap: 24px; perspective: 1200px; }
+        
+        .flip-card { width: 100%; aspect-ratio: 4 / 3; position: relative; transform-style: preserve-3d; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+        .flip-card.is-yin { transform: rotateY(180deg); }
+        
+        .card-face {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; backface-visibility: hidden;
+            border-radius: 16px; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            padding: 40px; text-align: center; cursor: pointer;
+        }
+        
+        .face-yang {
+            background: linear-gradient(145deg, rgba(55, 55, 60, 0.95), rgba(20, 20, 25, 0.95)); 
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(234, 222, 199, 0.4); 
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), inset 0 0 30px rgba(234, 222, 199, 0.08);
+        }
+        .face-yin {
+            background: rgba(5, 5, 7, 0.95); border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: rotateY(180deg); box-shadow: inset 0 0 40px rgba(0,0,0,1);
+        }
+
+        .trait-title { font-family: var(--font-serif); font-size: 28px; margin-bottom: 10px; font-weight: 400; letter-spacing: 0.15em; }
+        .face-yang .trait-title { color: var(--gold-light); text-shadow: 0 0 15px rgba(234, 222, 199, 0.4); }
+        .face-yin .trait-title { color: var(--text-muted); }
+
+        .trait-subtitle { font-size: 13px; letter-spacing: 0.1em; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); width: 80%; }
+        .face-yang .trait-subtitle { color: rgba(255, 255, 255, 0.65); border-bottom-color: rgba(234, 222, 199, 0.2); }
+        .face-yin .trait-subtitle { color: var(--text-dark); }
+
+        .trait-desc { font-size: 14px; line-height: 2; font-weight: 300; letter-spacing: 0.05em; }
+        .face-yang .trait-desc { color: rgba(255, 255, 255, 0.8); }
+        .face-yin .trait-desc { color: rgba(255, 255, 255, 0.4); }
+
+        .toggle-dot { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); width: 10px; height: 10px; border-radius: 50%; transition: all 0.3s ease; }
+        .face-yang .toggle-dot { background: #000; border: 1px solid rgba(255,255,255,0.3); }
+        .face-yin .toggle-dot { background: #FFF; box-shadow: 0 0 10px rgba(255,255,255,0.8); }
+
+        .trait-label { font-family: var(--font-serif); font-size: 16px; color: var(--text-white); letter-spacing: 0.1em; }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* 响应式 */
+        @media (max-width: 1024px) {
+            .buff-layout { flex-direction: column; gap: 60px; text-align: center; }
+            .buff-left { align-items: center; }
+            .segment-btn { padding: 10px 20px; font-size: 14px; }
+            .huge-number { font-size: 100px; }
+            
+            .right-return-dot { top: 90px; right: 5%; transform: none; }
+            .right-return-dot .return-label { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="page-transition"><div class="transition-ring"></div></div>
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="top-nav">
+        <a href="#" class="top-left-brand">
+            <img src="logo.png" alt="一炁" class="real-logo">
+            <span class="brand-text">一炁文化</span>
+        </a>
+    </div>
+    
+    <a href="index.html" class="back-btn">← 返回中枢</a>
+
+    <!-- 全局右侧返回黑点 -->
+    <a href="万炁之城.html" class="right-return-dot">
+        <div class="return-label">返回万炁之城 →</div>
+        <div class="dot-core"></div>
+    </a>
+
+    <main class="main-content">
+        <h1 class="page-title">后天 · 变 · 炁域</h1>
+
+        <div class="segment-control" id="segment-control">
+            <div class="segment-slider" id="segment-slider"></div>
+            <button class="segment-btn active" data-target="tab-dayun">大运之炁</button>
+            <button class="segment-btn" data-target="tab-liunian">流年之炁</button>
+        </div>
+
+        <!-- ================= Tab 1: 大运 (正数增幅 - SSR抽卡多巴胺风格) ================= -->
+        <div id="tab-dayun" class="tab-content active">
+            <div class="buff-layout">
+                <div class="buff-left">
+                    <div id="glow-dayun" class="buff-bg-glow"></div>
+                    <div class="buff-label">当前大运能量场，给我的BUFF为：</div>
+                    <div class="buff-number-wrap">
+                        <span class="huge-number" id="num-dayun">0</span>
+                        <span class="huge-percent" id="pct-dayun">%</span>
+                        <span class="buff-status" id="status-dayun">--</span>
+                    </div>
+                </div>
+                <div class="buff-right">
+                    <div class="trait-wrapper">
+                        <div class="flip-card" onclick="this.classList.toggle('is-yin')">
+                            <div class="card-face face-yang">
+                                <div class="trait-title">暴走模式</div>
+                                <div class="trait-subtitle">最能打的十年，也最能惹事的十年</div>
+                                <div class="trait-desc">不服就干，不合理就推翻。<br>这十年的战斗力与创造力双双拉满。</div>
+                                <div class="toggle-dot"></div>
+                            </div>
+                            <div class="card-face face-yin">
+                                <div class="trait-title">暴走模式</div>
+                                <div class="trait-subtitle">最能打的十年，也最能惹事的十年</div>
+                                <div class="trait-desc">干着干着就上头了。<br>极易越界，把不该干的也干了。</div>
+                                <div class="toggle-dot"></div>
+                            </div>
+                        </div>
+                        <div class="trait-label">我的当前大运词条</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= Tab 2: 流年 (负数降幅 - 深渊潜龙冰银风格) ================= -->
+        <div id="tab-liunian" class="tab-content">
+            <div class="buff-layout">
+                <div class="buff-left">
+                    <div id="glow-liunian" class="buff-bg-glow"></div>
+                    <div class="buff-label">今年流年能量场，给我的BUFF为：</div>
+                    <div class="buff-number-wrap">
+                        <span class="huge-number" id="num-liunian">0</span>
+                        <span class="huge-percent" id="pct-liunian">%</span>
+                        <span class="buff-status" id="status-liunian">--</span>
+                    </div>
+                </div>
+                <div class="buff-right">
+                    <div class="trait-wrapper">
+                        <div class="flip-card" onclick="this.classList.toggle('is-yin')">
+                            <div class="card-face face-yang">
+                                <div class="trait-title">潜渊模式</div>
+                                <div class="trait-subtitle">蛰伏的年份，积蓄力量的周期</div>
+                                <div class="trait-desc">外部环境主打压力与挑战。<br>趁势沉淀，将压力转化为向内生长的潜能。</div>
+                                <div class="toggle-dot"></div>
+                            </div>
+                            <div class="card-face face-yin">
+                                <div class="trait-title">潜渊模式</div>
+                                <div class="trait-subtitle">蛰伏的年份，积蓄力量的周期</div>
+                                <div class="trait-desc">强行出头容易遭遇硬仗。<br>若强行抗争，极易被现实的重量压垮。</div>
+                                <div class="toggle-dot"></div>
+                            </div>
+                        </div>
+                        <div class="trait-label">我的当前流年词条</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        window.addEventListener('load', () => {
+            const transitionEl = document.getElementById('page-transition');
+            setTimeout(() => {
+                transitionEl.classList.add('loaded');
+                animateBuffNumber('num-dayun', 15, 'status-dayun', 'glow-dayun', 'pct-dayun');
+            }, 500);
+        });
+
+        // ================= 2. 核心：带惯性的数字解码引擎与主题动态挂载 =================
+        function animateBuffNumber(elementId, targetValue, statusId, glowId, pctId) {
+            const el = document.getElementById(elementId);
+            const statusEl = document.getElementById(statusId);
+            const glowEl = document.getElementById(glowId);
+            const pctEl = document.getElementById(pctId);
+            if(!el || !statusEl || !glowEl || !pctEl) return;
+
+            const duration = 2000; 
+            let startTime = null;
+            
+            // 初始化样式
+            el.className = 'huge-number decoding';
+
+            // 根据正负值注入强烈的多巴胺或深渊风格
+            if (targetValue >= 0) {
+                el.classList.add('theme-fire');
+                statusEl.innerText = "增幅";
+                statusEl.className = 'buff-status theme-fire-text';
+                glowEl.className = 'buff-bg-glow theme-fire-glow';
+                pctEl.className = 'huge-percent theme-fire-percent';
+            } else {
+                el.classList.add('theme-water');
+                statusEl.innerText = "降幅";
+                statusEl.className = 'buff-status theme-water-text';
+                glowEl.className = 'buff-bg-glow theme-water-glow';
+                pctEl.className = 'huge-percent theme-water-percent';
+            }
+
+            function animationStep(timestamp) {
+                if (!startTime) startTime = timestamp;
+                const progress = Math.min((timestamp - startTime) / duration, 1);
+                const easeProgress = 1 - Math.pow(1 - progress, 3);
+                
+                let currentNum = Math.floor(easeProgress * targetValue);
+                el.innerText = currentNum > 0 ? '+' + currentNum : currentNum;
+
+                if (progress < 1) {
+                    requestAnimationFrame(animationStep);
+                } else {
+                    el.innerText = targetValue > 0 ? '+' + targetValue : targetValue;
+                    el.classList.remove('decoding');
+                }
+            }
+            requestAnimationFrame(animationStep);
+        }
+
+        // ================= 3. 丝滑胶囊导航切换 =================
+        const btns = document.querySelectorAll('.segment-btn');
+        const slider = document.getElementById('segment-slider');
+        const contents = document.querySelectorAll('.tab-content');
+
+        function updateSlider(activeBtn) {
+            slider.style.width = activeBtn.offsetWidth + 'px';
+            slider.style.transform = `translateX(${activeBtn.offsetLeft - 6}px)`;
+        }
+
+        btns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const targetId = e.target.getAttribute('data-target');
+                btns.forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                updateSlider(e.target);
+
+                contents.forEach(content => {
+                    if (content.id === targetId) {
+                        content.style.display = 'block';
+                        void content.offsetWidth; 
+                        content.classList.add('active');
+                        
+                        // 触发视觉盛宴
+                        if (targetId === 'tab-dayun') animateBuffNumber('num-dayun', 15, 'status-dayun', 'glow-dayun', 'pct-dayun');
+                        if (targetId === 'tab-liunian') animateBuffNumber('num-liunian', -8, 'status-liunian', 'glow-liunian', 'pct-liunian');
+
+                    } else {
+                        content.classList.remove('active');
+                        setTimeout(() => { if (!content.classList.contains('active')) content.style.display = 'none'; }, 400);
+                    }
+                });
+            });
+        });
+
+        window.addEventListener('resize', () => {
+            const activeBtn = document.querySelector('.segment-btn.active');
+            if (activeBtn) updateSlider(activeBtn);
+            resizeCanvas();
+        });
+        setTimeout(() => updateSlider(document.querySelector('.segment-btn.active')), 100);
+
+        // ================= 4. 底层安静星尘画布 =================
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let w, h, particles = [];
+
+        function resizeCanvas() {
+            w = window.innerWidth; h = window.innerHeight;
+            canvas.width = w; canvas.height = h;
+        }
+        resizeCanvas();
+
+        class DustParticle {
+            constructor() {
+                this.x = Math.random() * w; this.y = Math.random() * h;
+                this.size = Math.random() * 1.5;
+                this.speedX = (Math.random() - 0.5) * 0.1; this.speedY = (Math.random() - 0.5) * 0.1;
+                this.alpha = Math.random() * 0.4;
+            }
+            update() {
+                this.x += this.speedX; this.y += this.speedY;
+                if (this.x < 0) this.x = w; if (this.x > w) this.x = 0;
+                if (this.y < 0) this.y = h; if (this.y > h) this.y = 0;
+            }
+            draw() {
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(234, 222, 199, ${this.alpha})`; ctx.fill();
+            }
+        }
+        const pCount = w > 800 ? 150 : 50;
+        for(let i=0; i<pCount; i++) particles.push(new DustParticle());
+
+        function animateBg() {
+            ctx.clearRect(0, 0, w, h);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animateBg);
+        }
+        animateBg();
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>一炁 YI QI | 隐藏词卡</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #050507;
+            --text-white: #FFFFFF;
+            --text-muted: rgba(255, 255, 255, 0.55);
+            --text-dark: rgba(255, 255, 255, 0.3);
+            --gold-light: #EADEC7;
+            --gold-legendary: #D4AF37;
+            --gold-glow: rgba(212, 175, 55, 0.6);
+            
+            --font-serif: 'Noto Serif SC', STSong, serif;
+            --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", sans-serif;
+            --bezier-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-color); color: var(--text-white);
+            font-family: var(--font-sans); overflow-x: hidden;
+            -webkit-font-smoothing: antialiased; min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+
+        .ink-blend { mix-blend-mode: screen; background-color: transparent; object-fit: contain; }
+
+        /* ================= 底层星尘画布 ================= */
+        #bg-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; opacity: 0.8; pointer-events: none; }
+        
+        .holy-glow {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 80vw; height: 80vw; max-width: 1000px; max-height: 1000px;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.08) 0%, transparent 60%);
+            z-index: 1; pointer-events: none; animation: pulseGlow 8s infinite alternate;
+        }
+        @keyframes pulseGlow { 0% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.9); } 100% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); } }
+
+        /* ================= 导航栏 ================= */
+        .top-nav {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100px;
+            padding: 0 5%; z-index: 100; display: flex; justify-content: space-between; align-items: center; pointer-events: none;
+        }
+        .top-left-brand { display: flex; align-items: center; gap: 14px; text-decoration: none; pointer-events: auto; mix-blend-mode: screen; }
+        .real-logo { width: 36px; height: 36px; transition: transform 0.4s ease, filter 0.4s ease; filter: drop-shadow(0 0 5px rgba(234,222,199,0.2)); }
+        .brand-text { font-family: var(--font-serif); font-size: 18px; color: var(--gold-light); letter-spacing: 4px; font-weight: 300; }
+        
+        /* ================= 左右导航点 (阴阳门) ================= */
+        .nav-dot-btn {
+            position: fixed; top: 50%; transform: translateY(-50%); z-index: 100;
+            display: flex; align-items: center; text-decoration: none; cursor: pointer;
+            transition: all 0.3s ease; pointer-events: auto;
+        }
+        .nav-dot-btn.left { left: 40px; }
+        .nav-dot-btn.right { right: 40px; }
+
+        .nav-dot-btn .dot-core {
+            width: 16px; height: 16px; border-radius: 50%;
+            position: relative; transition: transform 0.4s var(--bezier-smooth), box-shadow 0.4s ease, border-color 0.4s ease;
+            z-index: 2;
+        }
+        
+        /* 白点 (返回) */
+        .nav-dot-btn.left .dot-core {
+            background: #FFF;
+            box-shadow: 0 0 15px rgba(255,255,255,0.8), 0 0 30px rgba(255,255,255,0.4), inset 0 0 5px rgba(0,0,0,0.2);
+        }
+        
+        /* 黑点 (前往万炁之城) */
+        .nav-dot-btn.right .dot-core {
+            background: #050507;
+            border: 1px solid rgba(255,255,255,0.5);
+            box-shadow: 0 0 15px rgba(255,255,255,0.2), inset 0 0 8px rgba(0,0,0,1);
+        }
+
+        /* 隐藏文字标签 */
+        .nav-dot-btn .nav-label {
+            position: absolute; white-space: nowrap;
+            font-size: 13px; color: var(--text-white); letter-spacing: 0.15em;
+            transition: all 0.4s var(--bezier-smooth);
+            text-shadow: 0 0 10px rgba(255,255,255,0.2);
+            opacity: 0; z-index: 1; pointer-events: none;
+        }
+
+        .nav-dot-btn.left .nav-label { left: 8px; transform: translateX(-20px); padding-left: 20px; }
+        .nav-dot-btn.right .nav-label { right: 8px; transform: translateX(20px); padding-right: 20px; }
+
+        /* 悬停动效：点缩小、光晕增强、文字滑出 */
+        .nav-dot-btn:hover .dot-core { transform: scale(0.6); }
+        .nav-dot-btn.left:hover .dot-core { box-shadow: 0 0 25px rgba(255,255,255,1), 0 0 40px rgba(255,255,255,0.6); }
+        .nav-dot-btn.right:hover .dot-core { box-shadow: 0 0 20px rgba(255,255,255,0.6); border-color: #FFF; }
+        
+        .nav-dot-btn.left:hover .nav-label { opacity: 1; transform: translateX(0); color: var(--gold-light); text-shadow: 0 0 15px var(--gold-glow); }
+        .nav-dot-btn.right:hover .nav-label { opacity: 1; transform: translateX(0); color: var(--gold-light); text-shadow: 0 0 15px var(--gold-glow); }
+
+        /* ================= 拦截弹窗 ================= */
+        #discovery-modal {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(5, 5, 7, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            z-index: 9999; display: flex; justify-content: center; align-items: center;
+            transition: opacity 1.2s var(--bezier-smooth), visibility 1.2s;
+        }
+        #discovery-modal.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        
+        .modal-box {
+            text-align: center; position: relative; padding: 60px 40px;
+            border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 4px;
+            background: linear-gradient(180deg, rgba(10,10,12,0.9) 0%, rgba(5,5,7,0.9) 100%);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 40px rgba(212, 175, 55, 0.1);
+            max-width: 500px; transform: scale(0.95); opacity: 0; animation: modalEnter 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes modalEnter { to { transform: scale(1); opacity: 1; } }
+
+        .modal-ring {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 150%; height: 150%; border-radius: 50%; border: 1px dashed rgba(212, 175, 55, 0.15);
+            animation: spin 30s linear infinite; pointer-events: none; z-index: -1;
+        }
+        .modal-title { font-family: var(--font-serif); font-size: 32px; color: var(--gold-legendary); letter-spacing: 0.3em; margin-bottom: 24px; text-shadow: 0 0 20px rgba(212, 175, 55, 0.4); }
+        .modal-desc { font-size: 14px; color: var(--text-muted); line-height: 2; letter-spacing: 0.1em; margin-bottom: 40px; }
+        .modal-desc span { color: var(--text-white); font-weight: 600; text-shadow: 0 0 8px rgba(255,255,255,0.5); }
+        
+        .reveal-btn {
+            background: transparent; border: 1px solid var(--gold-legendary); color: var(--gold-legendary);
+            padding: 16px 40px; font-family: var(--font-serif); font-size: 15px; letter-spacing: 0.2em;
+            cursor: pointer; position: relative; overflow: hidden; transition: all 0.6s ease;
+        }
+        .reveal-btn::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.3), transparent); transition: left 0.6s ease;
+        }
+        .reveal-btn:hover { background: rgba(212, 175, 55, 0.1); box-shadow: 0 0 20px rgba(212, 175, 55, 0.3); }
+        .reveal-btn:hover::before { left: 100%; }
+
+        /* ================= 主体内容区 ================= */
+        .main-content {
+            position: relative; z-index: 10; flex-grow: 1; display: flex; flex-direction: column; align-items: center;
+            padding-top: 140px; padding-bottom: 100px; width: 100%;
+            opacity: 0; filter: blur(10px); transform: translateY(30px); transition: all 1.5s var(--bezier-smooth);
+        }
+        .main-content.revealed { opacity: 1; filter: blur(0); transform: translateY(0); }
+
+        .page-title { font-family: var(--font-serif); font-size: clamp(28px, 4vw, 36px); color: var(--gold-legendary); font-weight: 300; letter-spacing: 0.2em; margin-bottom: 16px; text-align: center; text-shadow: 0 0 30px rgba(212, 175, 55, 0.4); }
+        .page-subtitle { font-size: 13px; color: var(--text-muted); letter-spacing: 0.3em; margin-bottom: 80px; text-transform: uppercase; }
+
+        /* ================= 隐藏卡片左右布局 ================= */
+        .ur-cards-container {
+            display: flex; justify-content: center; gap: 80px; width: 100%; max-width: 1200px; padding: 0 20px;
+            flex-wrap: wrap;
+        }
+
+        .ur-card-wrapper {
+            width: 100%; max-width: 420px; aspect-ratio: 1 / 1.35; perspective: 1500px; position: relative;
+        }
+        
+        .ur-card-wrapper { animation: floatCard 6s ease-in-out infinite alternate; }
+        .ur-card-wrapper:nth-child(2) { animation-delay: -3s; }
+        @keyframes floatCard { 0% { transform: translateY(0px); } 100% { transform: translateY(-15px); } }
+
+        .blind-box { width: 100%; height: 100%; position: relative; cursor: pointer; transform-style: preserve-3d; transition: transform 0.6s var(--bezier-smooth); }
+        .blind-box:hover { transform: scale(1.02); }
+
+        .unopened-cover {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10;
+            background: radial-gradient(circle at 50% 50%, #151515 0%, #050507 100%);
+            border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 12px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 40px;
+            font-family: var(--font-serif); font-size: 16px; color: var(--gold-light); letter-spacing: 0.15em; line-height: 2.2; text-align: center;
+            box-shadow: inset 0 0 60px rgba(0,0,0,0.8), 0 10px 30px rgba(0,0,0,0.8), 0 0 20px rgba(212,175,55,0.1);
+            transition: all 0.8s var(--bezier-smooth);
+        }
+        
+        .unopened-cover.opened { opacity: 0; pointer-events: none; transform: scale(1.1) translateZ(50px); filter: blur(15px); }
+
+        .flip-card { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1); }
+        .flip-card.is-yin { transform: rotateY(180deg); }
+        .card-face { position: absolute; top: 0; left: 0; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 12px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; text-align: center; }
+
+        .face-yang { 
+            background: #FFFCF2; border: 1px solid rgba(212, 175, 55, 0.8); 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6), 0 0 30px rgba(212, 175, 55, 0.2), inset 0 0 20px rgba(212, 175, 55, 0.1); 
+        }
+        .face-yin { 
+            background: #050507; border: 1px solid rgba(212, 175, 55, 0.4); 
+            box-shadow: inset 0 0 50px rgba(0,0,0,1), 0 0 30px rgba(212, 175, 55, 0.1); transform: rotateY(180deg); 
+        }
+        
+        .trait-title { font-family: var(--font-serif); font-size: 36px; font-weight: 600; margin-bottom: 12px; letter-spacing: 0.15em; color: #B8860B; }
+        .trait-annotation { font-family: var(--font-sans); font-size: 14px; opacity: 0.8; margin-bottom: 24px; font-weight: 300; color: #B8860B; }
+        .trait-desc { font-size: 16px; line-height: 1.8; font-weight: 400; }
+        
+        .face-yang .trait-desc { color: #B8860B; }
+        .face-yin .trait-desc { color: rgba(212, 175, 55, 0.7); font-weight: 300; font-family: var(--font-serif); letter-spacing: 0.1em; }
+
+        .toggle-dot { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); width: 14px; height: 14px; border-radius: 50%; transition: all 0.3s ease; }
+        .face-yang .toggle-dot { background: #B8860B; border: 2px solid #FFF; box-shadow: 0 2px 10px rgba(184, 134, 11, 0.5); }
+        .face-yin .toggle-dot { background: #050507; border: 2px solid rgba(212, 175, 55, 0.6); box-shadow: 0 0 15px rgba(212, 175, 55, 0.8); }
+
+        .trait-label-bottom { position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%); font-family: var(--font-serif); font-size: 16px; color: var(--gold-legendary); letter-spacing: 0.2em; white-space: nowrap; text-shadow: 0 0 10px rgba(212,175,55,0.3); }
+
+        @keyframes spin { 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+
+        @media (max-width: 900px) {
+            .ur-cards-container { gap: 80px; }
+            .nav-dot-btn.left { left: 20px; }
+            .nav-dot-btn.right { right: 20px; }
+            .nav-dot-btn .nav-label { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+    <div class="holy-glow"></div>
+
+    <!-- 拦截弹窗 -->
+    <div id="discovery-modal">
+        <div class="modal-box">
+            <div class="modal-ring"></div>
+            <div class="modal-title">机缘触发</div>
+            <div class="modal-desc">系统在你的深层能量场中，侦测到未知的炁场剧烈波动...<br>你已解锁极少数人具备的 <span>「隐藏词卡」</span></div>
+            <button class="reveal-btn" onclick="revealHiddenCards()">查看隐藏词卡</button>
+        </div>
+    </div>
+
+    <!-- 顶部 UI -->
+    <div class="top-nav">
+        <a href="#" class="top-left-brand">
+            <img src="logo.png" alt="一炁" class="real-logo ink-blend">
+            <span class="brand-text">一炁文化</span>
+        </a>
+    </div>
+
+    <!-- 左侧：返回白点 -->
+    <a href="先天特性词卡.html" class="nav-dot-btn left">
+        <div class="dot-core"></div>
+        <div class="nav-label">← 返回恒炁域</div>
+    </a>
+
+    <!-- 右侧：前往黑点 -->
+    <a href="万炁之城.html" class="nav-dot-btn right">
+        <div class="dot-core"></div>
+        <div class="nav-label">进入万炁之城 →</div>
+    </a>
+
+    <!-- 主体内容 -->
+    <main class="main-content" id="main-content">
+        <h1 class="page-title">隐藏词卡</h1>
+        <div class="page-subtitle">HIDDEN TRAITS</div>
+
+        <div class="ur-cards-container">
+            
+            <!-- 隐藏卡 1：深层原始冲动特性 -->
+            <div class="ur-card-wrapper">
+                <div class="blind-box" onclick="handleCardClick(this)">
+                    <div class="unopened-cover">
+                        “我在极端情境下<br>才会被激活的原始本能”
+                    </div>
+                    <div class="flip-card">
+                        <!-- 阳面：有词名释义 -->
+                        <div class="card-face face-yang">
+                            <div class="trait-title">修罗</div>
+                            <div class="trait-annotation">撕裂常规的毁灭与重塑之力。</div>
+                            <div class="trait-desc">在绝境与极度高压下，常规道德与理性会被瞬间剥离，爆发出纯粹的生存与反击本能。</div>
+                            <div class="toggle-dot"></div>
+                        </div>
+                        <!-- 阴面：无词名，仅有描述 -->
+                        <div class="card-face face-yin">
+                            <div class="trait-desc">一旦开启，极其容易带来不可逆的破坏，甚至在狂热中反噬自身曾经最珍视的羁绊与事物。</div>
+                            <div class="toggle-dot"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="trait-label-bottom">深层原始冲动特性</div>
+            </div>
+
+            <!-- 隐藏卡 2：隐藏能力特性 -->
+            <div class="ur-card-wrapper">
+                <div class="blind-box" onclick="handleCardClick(this)">
+                    <div class="unopened-cover">
+                        “我内心深处藏着<br>但自己未必知道的才能”
+                    </div>
+                    <div class="flip-card">
+                        <!-- 阳面：有词名释义 -->
+                        <div class="card-face face-yang">
+                            <div class="trait-title">虚空造物</div>
+                            <div class="trait-annotation">无中生有的直觉构筑力。</div>
+                            <div class="trait-desc">能够从绝对的无序和混乱中，瞬间抓取核心规律，凭直觉搭建出全新的规则或系统。</div>
+                            <div class="toggle-dot"></div>
+                        </div>
+                        <!-- 阴面：无词名，仅有描述 -->
+                        <div class="card-face face-yin">
+                            <div class="trait-desc">过于超前与跳跃的思维内核，常使得在世俗沟通中显得极其孤僻与傲慢，难以被同频理解。</div>
+                            <div class="toggle-dot"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="trait-label-bottom">隐藏能力特性</div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // ================= 弹窗与页面显影逻辑 =================
+        function revealHiddenCards() {
+            const modal = document.getElementById('discovery-modal');
+            const mainContent = document.getElementById('main-content');
+            
+            // 隐藏弹窗，解除背景模糊
+            modal.classList.add('hidden');
+            mainContent.classList.add('revealed');
+        }
+
+        // ================= 盲盒点击翻转逻辑 =================
+        function handleCardClick(boxElement) {
+            const cover = boxElement.querySelector('.unopened-cover');
+            const flipCard = boxElement.querySelector('.flip-card');
+            
+            // 点击时：如果遮罩没开则开遮罩并伴随碎裂消失感；如果开了则翻转阴阳面
+            if (!cover.classList.contains('opened')) {
+                cover.classList.add('opened');
+            } else {
+                flipCard.classList.toggle('is-yin');
+            }
+        }
+
+        // ================= 强化版上升能量粒子背景 =================
+        const bgCanvas = document.getElementById('bg-canvas');
+        const bgCtx = bgCanvas.getContext('2d');
+        let w, h, particles = [];
+
+        function resizeCanvas() {
+            w = window.innerWidth; h = window.innerHeight;
+            bgCanvas.width = w; bgCanvas.height = h;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        class GoldParticle {
+            constructor() {
+                this.x = Math.random() * w; 
+                this.y = Math.random() * h;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = (Math.random() - 0.5) * 0.3; 
+                this.speedY = -(Math.random() * 0.5 + 0.2); 
+                this.alpha = Math.random() * 0.6;
+                this.glow = Math.random() > 0.8; 
+            }
+            update() {
+                this.x += this.speedX; 
+                this.y += this.speedY;
+                
+                if (this.y < -10) {
+                    this.y = h + 10;
+                    this.x = Math.random() * w;
+                }
+                if (this.x < 0) this.x = w; 
+                if (this.x > w) this.x = 0;
+            }
+            draw() {
+                bgCtx.beginPath(); 
+                bgCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                if (this.glow) {
+                    bgCtx.fillStyle = `rgba(212, 175, 55, ${this.alpha + 0.3})`; 
+                    bgCtx.shadowBlur = 10;
+                    bgCtx.shadowColor = '#D4AF37';
+                } else {
+                    bgCtx.fillStyle = `rgba(234, 222, 199, ${this.alpha})`; 
+                    bgCtx.shadowBlur = 0;
+                }
+                bgCtx.fill();
+            }
+        }
+        
+        const pCount = w > 800 ? 120 : 60;
+        for(let i=0; i<pCount; i++) particles.push(new GoldParticle());
+        
+        function animateBg() {
+            bgCtx.clearRect(0, 0, w, h);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animateBg);
+        }
+        animateBg();
+    </script>
+</body>
+</html>

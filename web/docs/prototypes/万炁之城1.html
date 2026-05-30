@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>一炁 YI QI | 万炁之城</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #050507;
+            --text-white: #FFFFFF;
+            --text-muted: rgba(255, 255, 255, 0.55);
+            --text-dark: rgba(255, 255, 255, 0.3);
+            --gold-light: #EADEC7;
+            
+            --font-serif: 'Noto Serif SC', STSong, serif;
+            --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", sans-serif;
+            --bezier-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-color); color: var(--text-white);
+            font-family: var(--font-sans); overflow-x: hidden;
+            -webkit-font-smoothing: antialiased; min-height: 100vh;
+        }
+
+        .ink-blend { mix-blend-mode: screen; background-color: transparent; border-radius: 0; }
+
+        /* ================= 页面转场遮罩 ================= */
+        #page-transition {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: var(--bg-color); z-index: 9999;
+            display: flex; justify-content: center; align-items: center;
+            transition: opacity 1s var(--bezier-smooth), visibility 1s;
+        }
+        #page-transition.loaded { opacity: 0; visibility: hidden; }
+        .transition-ring {
+            width: 60px; height: 60px; border-radius: 50%; border: 1px dashed rgba(255, 255, 255, 0.5);
+            animation: spin 4s linear infinite;
+        }
+
+        /* ================= 底层感知粒子画布 ================= */
+        #bg-canvas {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 0; opacity: 0.6; pointer-events: none;
+        }
+
+        /* ================= 全局顶部导航 ================= */
+        .top-nav {
+            position: fixed; top: 35px; left: 0; width: 100%; padding: 0 5%;
+            z-index: 900; display: flex; justify-content: space-between; align-items: center;
+            pointer-events: none;
+        }
+        .top-left-brand {
+            display: flex; align-items: center; gap: 14px; text-decoration: none;
+            pointer-events: auto; mix-blend-mode: screen;
+        }
+        .real-logo {
+            width: 40px; height: 40px; filter: drop-shadow(0 0 5px rgba(234,222,199,0.2));
+            transition: transform 0.4s ease, filter 0.4s ease;
+        }
+        .top-left-brand:hover .real-logo { transform: scale(1.1) rotate(5deg); filter: drop-shadow(0 0 15px rgba(234,222,199,0.6)); }
+        .brand-text { font-family: var(--font-serif); font-size: 16px; color: var(--text-white); letter-spacing: 4px; font-weight: 300; }
+        .brand-text .en { font-family: var(--font-sans); letter-spacing: 2px; margin-left: 4px; }
+
+        /* ================= 全局左侧返回白点 ================= */
+        .left-return-dot {
+            position: fixed; top: 50%; left: 30px; transform: translateY(-50%); z-index: 950; /* 提升层级，确保全局可见 */
+            display: flex; align-items: center; text-decoration: none; cursor: pointer;
+            transition: opacity 0.6s var(--bezier-smooth), visibility 0.6s;
+        }
+        .dot-core {
+            width: 16px; height: 16px; border-radius: 50%; background: #FFF;
+            box-shadow: 0 0 15px rgba(255,255,255,0.8), inset 0 0 5px rgba(0,0,0,0.2);
+            position: relative; transition: all 0.4s var(--bezier-smooth); z-index: 2;
+        }
+        .return-label {
+            position: absolute; left: 8px; white-space: nowrap; font-size: 13px; color: #FFF;
+            letter-spacing: 0.2em; opacity: 0; transform: translateX(-20px);
+            transition: all 0.4s var(--bezier-smooth); z-index: 1; padding-left: 20px;
+        }
+        .left-return-dot:hover .dot-core { transform: scale(0.6); }
+        .left-return-dot:hover .return-label { opacity: 1; transform: translateX(0); }
+
+        /* ================= 视图切换容器 ================= */
+        .view-container {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100vh; overflow: hidden;
+            transition: opacity 0.8s var(--bezier-smooth), transform 0.8s var(--bezier-smooth), filter 0.8s var(--bezier-smooth);
+            z-index: 10;
+        }
+        .view-hidden { opacity: 0; pointer-events: none; visibility: hidden; transform: scale(0.98); }
+        .view-active { opacity: 1; pointer-events: auto; visibility: visible; transform: scale(1); }
+        
+        .bg-mode { transform: scale(0.98); filter: blur(4px); opacity: 0.5; pointer-events: none; }
+
+        /* ================= 视图 1：万炁大门 (上下分隔版) ================= */
+        #portal-view {
+            display: flex; flex-direction: column;
+        }
+
+        .locked-section {
+            flex: 0 0 60%; width: 100%; position: relative;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            border-bottom: 1px solid rgba(255,255,255,0.05); padding-top: 40px;
+        }
+        
+        .locked-content {
+            display: flex; flex-direction: column; align-items: center; z-index: 1;
+        }
+
+        .center-logo {
+            width: 70px; height: 70px; margin-bottom: 20px;
+            animation: pulseLogo 4s infinite ease-in-out;
+        }
+        @keyframes pulseLogo {
+            0%, 100% { transform: scale(0.95); filter: drop-shadow(0 0 10px rgba(234,222,199,0.1)); }
+            50% { transform: scale(1.05); filter: drop-shadow(0 0 25px rgba(234,222,199,0.3)); }
+        }
+
+        .portal-title {
+            font-family: var(--font-serif); font-size: 26px; color: var(--gold-light);
+            letter-spacing: 0.3em; margin-bottom: 40px; text-shadow: 0 0 20px rgba(234, 222, 199, 0.2);
+            margin-left: 0.3em;
+        }
+
+        .portals-grid { display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; max-width: 1000px; padding: 0 20px; }
+        .portal-item { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .portal-icon {
+            width: 75px; height: 75px; border-radius: 50%;
+            background: rgba(15, 15, 17, 0.6); border: 1px solid rgba(255,255,255,0.1);
+            display: flex; justify-content: center; align-items: center;
+        }
+        .portal-icon svg { width: 35px; height: 35px; color: rgba(255,255,255,0.5); }
+        .portal-name { font-family: var(--font-serif); font-size: 14px; color: var(--text-muted); letter-spacing: 0.2em; }
+
+        .lock-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(5, 5, 7, 0.25); backdrop-filter: blur(3.5px); -webkit-backdrop-filter: blur(3.5px);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 10;
+        }
+        .lock-icon { width: 44px; height: 44px; color: rgba(255,255,255,0.8); margin-bottom: 20px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.2)); }
+        .lock-text {
+            font-family: var(--font-serif); font-size: 20px; color: var(--gold-light);
+            letter-spacing: 0.3em; margin-left: 0.3em; text-shadow: 0 0 15px rgba(234, 222, 199, 0.3);
+        }
+
+        .unlocked-section {
+            flex: 0 0 40%; width: 100%; position: relative;
+            display: flex; align-items: center; justify-content: center;
+            background: radial-gradient(ellipse at top center, rgba(234, 222, 199, 0.04) 0%, transparent 60%);
+        }
+
+        .mystery-box-wrapper {
+            display: flex; flex-direction: column; align-items: center; gap: 20px;
+            cursor: pointer; transition: transform 0.5s ease;
+        }
+        .mystery-box-wrapper:hover { transform: translateY(-10px); }
+
+        .mystery-box-icon {
+            width: 110px; height: 110px; position: relative;
+            animation: boxFloat 4s ease-in-out infinite;
+        }
+        @keyframes boxFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        
+        .mystery-box-glow {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 140px; height: 140px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(180, 100, 255, 0.2) 0%, rgba(255, 78, 80, 0.1) 40%, transparent 70%);
+            z-index: -1; animation: glowPulse 3s ease-in-out infinite alternate;
+        }
+        @keyframes glowPulse { 0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.6; } 100% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; } }
+
+        .mystery-box-icon svg { width: 100%; height: 100%; filter: drop-shadow(0 0 10px rgba(180, 100, 255, 0.4)); transition: filter 0.3s; }
+        .mystery-box-wrapper:hover .mystery-box-icon svg { filter: drop-shadow(0 0 20px rgba(255, 78, 80, 0.6)); }
+
+        .box-name {
+            font-family: var(--font-serif); font-size: 18px; color: var(--text-white);
+            letter-spacing: 0.3em; margin-left: 0.3em; transition: color 0.3s, text-shadow 0.3s;
+        }
+        .mystery-box-wrapper:hover .box-name { color: var(--gold-light); text-shadow: 0 0 15px rgba(234, 222, 199, 0.5); }
+
+
+        /* ================= 视图 2：万炁之城 (盲盒商品页) ================= */
+        #store-view { 
+            overflow-y: auto; overflow-x: hidden; 
+            background: rgba(5, 5, 7, 0.3);
+            z-index: 20; 
+        }
+
+        .top-right-user {
+            position: fixed; top: 35px; right: 5%; z-index: 100;
+            display: flex; align-items: center; gap: 20px;
+        }
+        .icon-btn {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 50px; padding: 8px 16px; display: flex; align-items: center; gap: 8px;
+            color: var(--text-muted); font-size: 13px; text-decoration: none; letter-spacing: 0.1em;
+            transition: all 0.3s ease; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        }
+        .icon-btn:hover { border-color: var(--gold-light); color: var(--gold-light); background: rgba(234, 222, 199, 0.05); }
+
+        .store-content {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding-top: 120px; padding-bottom: 80px; width: 100%; min-height: 100vh;
+        }
+
+        .product-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px;
+            width: 100%; max-width: 1300px; padding: 0 5%;
+        }
+
+        .product-wrapper { perspective: 1200px; width: 100%; }
+        .product-card { width: 100%; height: 220px; position: relative; transform-style: preserve-3d; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+        .product-card.is-yin { transform: rotateX(180deg); } 
+
+        .card-face {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; backface-visibility: hidden;
+            border-radius: 16px; display: flex; align-items: center; padding: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .face-yang {
+            background: rgba(20, 20, 22, 0.75); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-color: rgba(234, 222, 199, 0.2); box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+        }
+        .face-yin {
+            background: rgba(2, 2, 3, 0.95); transform: rotateX(180deg);
+            box-shadow: inset 0 0 40px rgba(0,0,0,1); border-color: rgba(255,255,255,0.02);
+        }
+
+        .product-img { width: 120px; height: 120px; border-radius: 12px; flex-shrink: 0; margin-right: 24px; position: relative; overflow: hidden; }
+        .face-yang .product-img { background: radial-gradient(circle at top left, #2a2a30, #0a0a0c); border: 1px solid rgba(255,255,255,0.05); }
+        .face-yin .product-img { background: radial-gradient(circle at bottom right, #1a0505, #000); border: 1px solid rgba(255,0,0,0.1); }
+        
+        .abstract-qi { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; height: 80%; filter: blur(12px); border-radius: 50%; }
+        
+        .box-1 .abstract-qi { background: rgba(100, 200, 255, 0.4); animation: pulse 3s infinite alternate; }
+        .box-2 .abstract-qi { background: rgba(180, 100, 255, 0.4); animation: pulse 4s infinite alternate; }
+        .box-3 .abstract-qi { background: rgba(212, 175, 55, 0.4); animation: pulse 5s infinite alternate; }
+
+        .face-yin .abstract-qi { background: rgba(150, 0, 0, 0.4); animation: pulse 2s infinite alternate-reverse; }
+
+        .product-info { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; height: 100%; position: relative; }
+        
+        .product-title { font-family: var(--font-serif); font-size: 20px; letter-spacing: 0.1em; margin-bottom: 8px; }
+        .face-yang .product-title { color: var(--text-white); }
+        .face-yin .product-title { color: #888; text-decoration: line-through rgba(255,255,255,0.2); }
+
+        .product-price { font-family: monospace; font-size: 18px; margin-bottom: 16px; letter-spacing: 0.05em; }
+        .face-yang .product-price { color: var(--gold-light); }
+        .face-yin .product-price { color: #555; }
+
+        .product-desc { font-size: 13px; line-height: 1.8; color: var(--text-muted); font-weight: 300; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+        .toggle-btn { position: absolute; right: 0; bottom: 0; width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 10; }
+        .toggle-dot { width: 12px; height: 12px; border-radius: 50%; transition: all 0.3s ease; }
+        .face-yang .toggle-dot { background: #000; border: 1px solid rgba(255,255,255,0.4); }
+        .face-yin .toggle-dot { background: #FFF; box-shadow: 0 0 10px rgba(255,255,255,0.8); }
+        .toggle-btn:hover .toggle-dot { transform: scale(1.3); }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes pulse { 0% { transform: translate(-50%, -50%) scale(0.7); } 100% { transform: translate(-50%, -50%) scale(1.3); } }
+
+        /* 响应式 */
+        @media (max-width: 1100px) {
+            .product-grid { grid-template-columns: repeat(2, 1fr); }
+            .left-return-dot { top: 90px; left: 5%; transform: none; }
+            .return-label { display: none; }
+        }
+        @media (max-width: 768px) {
+            .product-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 600px) {
+            .card-face { padding: 16px; }
+            .product-img { width: 90px; height: 90px; margin-right: 16px; }
+            .locked-section { flex: 0 0 70%; padding-top: 80px; }
+            .unlocked-section { flex: 0 0 30%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="page-transition"><div class="transition-ring"></div></div>
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- 全局顶部导航 -->
+    <div class="top-nav">
+        <a href="#" class="top-left-brand">
+            <img src="logo.png" alt="一炁" class="real-logo ink-blend">
+            <div class="brand-text">一炁文化<span class="en">YIQI</span></div>
+        </a>
+    </div>
+
+    <!-- ================= 全局左侧返回交互组 ================= -->
+    <!-- 默认返回：首页能量中枢 -->
+    <a href="index.html" class="left-return-dot" id="global-return-dot">
+        <div class="dot-core"></div>
+        <div class="return-label">← 返回能量中枢</div>
+    </a>
+
+    <!-- 盲盒商城返回：退回到万炁大门 (初始隐藏) -->
+    <a href="javascript:void(0)" class="left-return-dot" id="store-return-dot" onclick="closeStore()" style="opacity: 0; visibility: hidden; pointer-events: none;">
+        <div class="dot-core"></div>
+        <div class="return-label">← 返回万炁之门</div>
+    </a>
+
+    <!-- ================= 视图 1：万炁大门 ================= -->
+    <div id="portal-view" class="view-container view-active">
+        
+        <div class="locked-section">
+            <div class="lock-overlay">
+                <svg class="lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="5" y="11" width="14" height="10" rx="2" ry="2"></rect>
+                    <path d="M8 11V7a4 4 0 0 1 8 0v4"></path>
+                </svg>
+                <div class="lock-text">炁机未至，暂未开放</div>
+            </div>
+
+            <div class="locked-content">
+                <img src="logo.png" alt="一炁" class="center-logo ink-blend">
+                <div class="portal-title">万炁之城</div>
+                
+                <div class="portals-grid">
+                    <div class="portal-item">
+                        <div class="portal-icon">
+                            <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M10,50 Q50,15 90,50 Q50,85 10,50" stroke-width="3"/><circle cx="50" cy="50" r="16"/><circle cx="50" cy="50" r="6" fill="currentColor"/>
+                            </svg>
+                        </div>
+                        <div class="portal-name">眼</div>
+                    </div>
+                    <div class="portal-item">
+                        <div class="portal-icon">
+                            <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M60,20 A30,30 0 1,0 60,80 A20,20 0 1,1 60,40 A10,10 0 1,0 60,60" stroke-width="3" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <div class="portal-name">耳</div>
+                    </div>
+                    <div class="portal-item">
+                        <div class="portal-icon">
+                            <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M50,85 C40,85 35,75 40,65 C45,55 50,45 50,25" stroke-width="3" stroke-linecap="round"/>
+                                <path d="M50,85 C60,85 65,75 60,65 C55,55 50,45 50,25" stroke-width="3" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <div class="portal-name">鼻</div>
+                    </div>
+                    <div class="portal-item">
+                        <div class="portal-icon">
+                            <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M50,15 C80,50 80,85 50,85 C20,85 20,50 50,15 Z" stroke-width="3"/><line x1="50" y1="40" x2="50" y2="75" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <div class="portal-name">舌</div>
+                    </div>
+                    <div class="portal-item">
+                        <div class="portal-icon">
+                            <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="50" cy="50" r="10" fill="currentColor"/><circle cx="50" cy="50" r="16" stroke-dasharray="4 4"/>
+                                <path d="M38,38 Q10,20 15,5 T5,15" stroke-width="2"/><path d="M62,62 Q90,80 85,95 T95,85" stroke-width="2"/>
+                            </svg>
+                        </div>
+                        <div class="portal-name">触</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="unlocked-section">
+            <div class="mystery-box-wrapper" onclick="openStore()">
+                <div class="mystery-box-icon">
+                    <div class="mystery-box-glow"></div>
+                    <svg viewBox="0 0 100 100" fill="none" stroke="currentColor">
+                        <polygon points="50,55 85,35 85,75 50,95" fill="rgba(20,20,25,0.9)" stroke="rgba(234,222,199,0.4)" stroke-width="1.5"/>
+                        <polygon points="15,35 50,55 50,95 15,75" fill="rgba(15,15,18,0.9)" stroke="rgba(234,222,199,0.3)" stroke-width="1.5"/>
+                        <polygon points="50,15 85,35 50,55 15,35" fill="rgba(25,25,30,0.9)" stroke="rgba(234,222,199,0.5)" stroke-width="1.5"/>
+                        <ellipse cx="50" cy="35" rx="10" ry="5" stroke="#b464ff" stroke-width="1" fill="rgba(180,100,255,0.2)"/>
+                        <circle cx="50" cy="35" r="2" fill="#ff4e50">
+                            <animate attributeName="opacity" values="1;0.2;1" dur="1.5s" repeatCount="indefinite" />
+                            <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite" />
+                        </circle>
+                        <path d="M50,35 L40,10 M50,35 L60,10 M50,35 L50,0" stroke="rgba(180,100,255,0.4)" stroke-width="1.5">
+                            <animate attributeName="stroke-dasharray" values="0,50; 50,0" dur="2s" repeatCount="indefinite"/>
+                        </path>
+                    </svg>
+                </div>
+                <div class="box-name">怪炁盲盒</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ================= 视图 2：盲盒商店 ================= -->
+    <div id="store-view" class="view-container view-hidden">
+        
+        <div class="top-right-user">
+            <a href="#" class="icon-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                炁匣
+            </a>
+            <a href="#" class="icon-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                归处
+            </a>
+        </div>
+
+        <div class="store-content">
+            <div class="product-grid">
+                
+                <div class="product-wrapper">
+                    <div class="product-card" onclick="flipCard(this, event)">
+                        <div class="card-face face-yang box-1">
+                            <div class="product-img"><div class="abstract-qi"></div></div>
+                            <div class="product-info">
+                                <div class="product-title">名称待定</div>
+                                <div class="product-price">¥ 50.00</div>
+                                <div class="product-desc">介绍待定...</div>
+                                <div class="toggle-btn"><div class="toggle-dot"></div></div>
+                            </div>
+                        </div>
+                        <div class="card-face face-yin box-1">
+                            <div class="product-img"><div class="abstract-qi"></div></div>
+                            <div class="product-info">
+                                <div class="product-title">名称待定</div>
+                                <div class="product-price">¥ 50.00</div>
+                                <div class="product-desc">介绍待定...</div>
+                                <div class="toggle-btn"><div class="toggle-dot"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-wrapper">
+                    <div class="product-card" onclick="flipCard(this, event)">
+                        <div class="card-face face-yang box-2">
+                            <div class="product-img"><div class="abstract-qi"></div></div>
+                            <div class="product-info">
+                                <div class="product-title">名称待定</div>
+                                <div class="product-price">¥ 200.00</div>
+                                <div class="product-desc">介绍待定...</div>
+                                <div class="toggle-btn"><div class="toggle-dot"></div></div>
+                            </div>
+                        </div>
+                        <div class="card-face face-yin box-2">
+                            <div class="product-img"><div class="abstract-qi"></div></div>
+                            <div class="product-info">
+                                <div class="product-title">名称待定</div>
+                                <div class="product-price">¥ 200.00</div>
+                                <div class="product-desc">介绍待定...</div>
+                                <div class="toggle-btn"><div class="toggle-dot"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-wrapper">
+                    <div class="product-card" onclick="flipCard(this, event)">
+                        <div class="card-face face-yang box-3">
+                            <div class="product-img"><div class="abstract-qi"></div></div>
+                            <div class="product-info">
+                                <div class="product-title">名称待定</div>
+                                <div class="product-price">¥ 500.00</div>
+                                <div class="product-desc">介绍待定...</div>
+                                <div class="toggle-btn"><div class="toggle-dot"></div></div>
+                            </div>
+                        </div>
+                        <div class="card-face face-yin box-3">
+                            <div class="product-img"><div class="abstract-qi"></div></div>
+                            <div class="product-info">
+                                <div class="product-title">名称待定</div>
+                                <div class="product-price">¥ 500.00</div>
+                                <div class="product-desc">介绍待定...</div>
+                                <div class="toggle-btn"><div class="toggle-dot"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ================= 1. 页面加载遮罩 =================
+        window.addEventListener('load', () => {
+            const transitionEl = document.getElementById('page-transition');
+            setTimeout(() => { transitionEl.classList.add('loaded'); }, 500);
+        });
+
+        // ================= 2. 视图切换与白点接力逻辑 =================
+        const portalView = document.getElementById('portal-view');
+        const storeView = document.getElementById('store-view');
+        
+        const globalReturnBtn = document.getElementById('global-return-dot');
+        const storeReturnBtn = document.getElementById('store-return-dot');
+
+        function openStore() {
+            portalView.classList.add('bg-mode');
+            storeView.classList.remove('view-hidden');
+            storeView.classList.add('view-active');
+
+            // 切换为商城专属返回点
+            if(globalReturnBtn) {
+                globalReturnBtn.style.opacity = '0';
+                globalReturnBtn.style.visibility = 'hidden';
+                globalReturnBtn.style.pointerEvents = 'none';
+            }
+            if(storeReturnBtn) {
+                storeReturnBtn.style.opacity = '1';
+                storeReturnBtn.style.visibility = 'visible';
+                storeReturnBtn.style.pointerEvents = 'auto';
+            }
+        }
+
+        function closeStore() {
+            portalView.classList.remove('bg-mode');
+            storeView.classList.remove('view-active');
+            storeView.classList.add('view-hidden');
+
+            // 切回全局首页返回点
+            if(storeReturnBtn) {
+                storeReturnBtn.style.opacity = '0';
+                storeReturnBtn.style.visibility = 'hidden';
+                storeReturnBtn.style.pointerEvents = 'none';
+            }
+            if(globalReturnBtn) {
+                globalReturnBtn.style.opacity = '1';
+                globalReturnBtn.style.visibility = 'visible';
+                globalReturnBtn.style.pointerEvents = 'auto';
+            }
+        }
+
+        function flipCard(cardElement, event) {
+            if(event.target.classList.contains('toggle-btn') || event.target.classList.contains('toggle-dot')) {
+                cardElement.classList.toggle('is-yin');
+            } else {
+                alert('进入盲盒详情页：' + cardElement.querySelector(cardElement.classList.contains('is-yin') ? '.face-yin .product-title' : '.face-yang .product-title').innerText);
+            }
+        }
+
+        // ================= 3. 底层星尘粒子画布 =================
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let w, h, particles = [];
+
+        function resizeCanvas() {
+            w = window.innerWidth; h = window.innerHeight;
+            canvas.width = w; canvas.height = h;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * w; this.y = Math.random() * h;
+                this.size = Math.random() * 2 + 0.5;
+                this.vx = (Math.random() - 0.5) * 0.4;
+                this.vy = (Math.random() - 0.5) * 0.4;
+                this.alpha = Math.random() * 0.3;
+            }
+            update() {
+                this.x += this.vx; this.y += this.vy;
+                this.vx += (Math.random() - 0.5) * 0.02;
+                this.vy += (Math.random() - 0.5) * 0.02;
+                
+                if(this.vx > 0.5) this.vx = 0.5; if(this.vx < -0.5) this.vx = -0.5;
+                if(this.vy > 0.5) this.vy = 0.5; if(this.vy < -0.5) this.vy = -0.5;
+
+                if (this.x < 0) this.x = w; if (this.x > w) this.x = 0;
+                if (this.y < 0) this.y = h; if (this.y > h) this.y = 0;
+            }
+            draw() {
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(234, 222, 199, ${this.alpha})`; ctx.fill();
+            }
+        }
+        const pCount = w > 800 ? 100 : 40;
+        for(let i=0; i<pCount; i++) particles.push(new Particle());
+
+        function animateBg() {
+            ctx.clearRect(0, 0, w, h);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animateBg);
+        }
+        animateBg();
+
+    </script>
+</body>
+</html>
