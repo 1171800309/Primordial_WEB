@@ -1,177 +1,189 @@
 <template>
-  <div class="yiqi-auth-page register-auth">
-    <MysticCanvasBackground />
-    <div class="yiqi-auth-vignette" />
-    <div class="register-box yiqi-glass-panel yiqi-glass-panel--wide">
-      <div class="yiqi-title-block register-head">
-        <h1 class="yiqi-brand register-brand">开启命格</h1>
-        <p class="yiqi-subtitle">创建命盘 · 出生地辰与历法</p>
+  <AuthPageShell
+    title="开启命格"
+    subtitle="录入时空坐标，对齐先天之炁"
+    wide
+    scrollable
+    :show-hero-logo="false"
+    :header-link="{ to: '/login', label: '已有命格' }"
+  >
+    <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="auth-form">
+      <div class="auth-section-title">基础信息</div>
+      <el-row :gutter="16">
+        <el-col :xs="24" :sm="12">
+          <el-form-item label="用户名称" prop="username">
+            <el-input v-model="form.username" placeholder="请输入用户名称" />
+          </el-form-item>
+        </el-col>
+        <el-col :xs="24" :sm="12">
+          <el-form-item label="手机号" prop="phone">
+            <el-input v-model="form.phone" placeholder="请输入手机号" />
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row :gutter="16">
+        <el-col :xs="24" :sm="12">
+          <el-form-item label="密码" prop="password">
+            <el-input v-model="form.password" type="password" show-password placeholder="请输入密码" />
+          </el-form-item>
+        </el-col>
+        <el-col :xs="24" :sm="12">
+          <el-form-item label="邮箱（可选）" prop="email">
+            <el-input v-model="form.email" placeholder="请输入邮箱" />
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row :gutter="16">
+        <el-col :xs="24" :sm="12">
+          <el-form-item label="性别" prop="gender">
+            <el-radio-group v-model="form.gender">
+              <el-radio label="male">男</el-radio>
+              <el-radio label="female">女</el-radio>
+            </el-radio-group>
+          </el-form-item>
+        </el-col>
+        <el-col :xs="24" :sm="12">
+          <el-form-item label="历法类型" prop="calendarType">
+            <el-radio-group v-model="form.calendarType" @change="onCalendarTypeChange">
+              <el-radio label="solar">阳历</el-radio>
+              <el-radio label="lunar">农历</el-radio>
+            </el-radio-group>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <div class="auth-section-title">出生坐标</div>
+      <el-row :gutter="16">
+        <el-col :xs="24" :sm="12">
+          <el-form-item label="省" prop="province">
+            <el-select v-model="form.province" placeholder="请选择省" style="width: 100%" @change="onProvinceChange">
+              <el-option v-for="item in provinces" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :xs="24" :sm="12">
+          <el-form-item label="市" prop="city">
+            <el-select
+              v-model="form.city"
+              placeholder="请选择市"
+              style="width: 100%"
+              :disabled="!form.province"
+              @change="onCityChange"
+            >
+              <el-option v-for="item in cities" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <p class="auth-coords-hint">经纬已固定为<strong>东经</strong>基准（北京时间参考），与所选省市无关。</p>
+
+      <div class="auth-section-title">出生时辰</div>
+      <el-row :gutter="16">
+        <el-col :xs="24" :sm="8">
+          <el-form-item label="出生年" prop="birthYear">
+            <el-select v-model="form.birthYear" placeholder="请选择年" style="width: 100%" @change="onBirthYearChange">
+              <el-option v-for="item in calendarYearOptions" :key="item" :label="item" :value="item" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :xs="24" :sm="8">
+          <el-form-item label="出生月" prop="birthMonth">
+            <el-select
+              v-model="form.birthMonth"
+              placeholder="请选择月"
+              style="width: 100%"
+              :disabled="!form.birthYear"
+              @change="onBirthMonthChange"
+            >
+              <el-option v-for="item in calendarMonthOptions" :key="item" :label="item" :value="item" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :xs="24" :sm="8">
+          <el-form-item label="出生日" prop="birthDay">
+            <el-select
+              v-model="form.birthDay"
+              placeholder="请选择日"
+              style="width: 100%"
+              :disabled="!form.birthMonth"
+              @change="onBirthDayChange"
+            >
+              <el-option v-for="item in calendarDayOptions" :key="item" :label="item" :value="item" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row :gutter="16">
+        <el-col :xs="24" :sm="8">
+          <el-form-item label="年柱">
+            <el-input :model-value="pillarThree.yearPillar" readonly placeholder="自动计算" />
+          </el-form-item>
+        </el-col>
+        <el-col :xs="24" :sm="8">
+          <el-form-item label="月柱">
+            <el-input :model-value="pillarThree.monthPillar" readonly placeholder="自动计算" />
+          </el-form-item>
+        </el-col>
+        <el-col :xs="24" :sm="8">
+          <el-form-item label="日柱">
+            <el-input :model-value="pillarThree.dayPillar" readonly placeholder="自动计算" />
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row :gutter="16">
+        <el-col :span="24">
+          <el-form-item label="出生时间" prop="birthTime">
+            <el-time-picker
+              v-model="form.birthTime"
+              placeholder="请选择出生时间"
+              value-format="HH:mm:ss"
+              format="HH时mm分ss秒"
+              style="width: 100%"
+              @change="onBirthTimeChange"
+            />
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row :gutter="16">
+        <el-col :span="24">
+          <el-form-item label="时柱">
+            <el-input :model-value="hourPillar" readonly placeholder="根据省市与出生时间自动计算（东经基准）" />
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <div class="auth-actions">
+        <button type="button" class="auth-submit-btn" :disabled="loading" @click="onSubmit">
+          {{ loading ? '时空对齐中…' : '开启命格' }}
+        </button>
+        <button type="button" class="auth-ghost-btn" @click="goLogin">返回登录</button>
       </div>
-      <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="register-form">
-        <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="用户名称" prop="username">
-              <el-input v-model="form.username" placeholder="请输入用户名称" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="手机号" prop="phone">
-              <el-input v-model="form.phone" placeholder="请输入手机号" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="密码" prop="password">
-              <el-input v-model="form.password" type="password" show-password placeholder="请输入密码" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="邮箱（可选）" prop="email">
-              <el-input v-model="form.email" placeholder="请输入邮箱" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="性别" prop="gender">
-              <el-radio-group v-model="form.gender">
-                <el-radio label="male">男</el-radio>
-                <el-radio label="female">女</el-radio>
-              </el-radio-group>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="历法类型" prop="calendarType">
-              <el-radio-group v-model="form.calendarType" @change="onCalendarTypeChange">
-                <el-radio label="solar">阳历</el-radio>
-                <el-radio label="lunar">农历</el-radio>
-              </el-radio-group>
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="省" prop="province">
-              <el-select v-model="form.province" placeholder="请选择省" style="width: 100%;" @change="onProvinceChange">
-                <el-option
-                  v-for="item in provinces"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="市" prop="city">
-              <el-select v-model="form.city" placeholder="请选择市" style="width: 100%;" :disabled="!form.province" @change="onCityChange">
-                <el-option
-                  v-for="item in cities"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <p class="register-coords-hint">经纬已固定为<strong>东经</strong>基准（北京时间参考），与所选省市无关。</p>
-
-        <el-row :gutter="16">
-          <el-col :span="8">
-            <el-form-item label="出生年" prop="birthYear">
-              <el-select v-model="form.birthYear" placeholder="请选择年" style="width: 100%;" @change="onBirthYearChange">
-                <el-option v-for="item in calendarYearOptions" :key="item" :label="item" :value="item" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="出生月" prop="birthMonth">
-              <el-select v-model="form.birthMonth" placeholder="请选择月" style="width: 100%;" :disabled="!form.birthYear" @change="onBirthMonthChange">
-                <el-option v-for="item in calendarMonthOptions" :key="item" :label="item" :value="item" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="出生日" prop="birthDay">
-              <el-select v-model="form.birthDay" placeholder="请选择日" style="width: 100%;" :disabled="!form.birthMonth" @change="onBirthDayChange">
-                <el-option v-for="item in calendarDayOptions" :key="item" :label="item" :value="item" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row :gutter="16">
-          <el-col :span="8">
-            <el-form-item label="年柱">
-              <el-input :model-value="pillarThree.yearPillar" readonly placeholder="自动计算" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="月柱">
-              <el-input :model-value="pillarThree.monthPillar" readonly placeholder="自动计算" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="日柱">
-              <el-input :model-value="pillarThree.dayPillar" readonly placeholder="自动计算" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row :gutter="16">
-          <el-col :span="24">
-            <el-form-item label="出生时间" prop="birthTime">
-              <el-time-picker
-                v-model="form.birthTime"
-                placeholder="请选择出生时间"
-                value-format="HH:mm:ss"
-                format="HH时mm分ss秒"
-                style="width: 100%;"
-                @change="onBirthTimeChange"
-              />
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row :gutter="16">
-          <el-col :span="24">
-            <el-form-item label="时柱">
-              <el-input :model-value="hourPillar" readonly placeholder="根据省市与出生时间自动计算（东经基准）" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-form-item>
-          <el-button type="primary" :loading="loading" class="yiqi-btn-ritual" @click="onSubmit">
-            {{ loading ? '推演命盘中…' : '开启命格' }}
-          </el-button>
-          <el-button class="yiqi-btn-ghost" @click="goLogin">返回天机</el-button>
-        </el-form-item>
-      </el-form>
-    </div>
-  </div>
+    </el-form>
+  </AuthPageShell>
 </template>
 
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { register } from '@/api/auth'
+import { register, login } from '@/api/auth'
 import { getCities, getHourPillar, getProvinces } from '@/api/region'
 import { getCalendarDays, getCalendarMonths, getCalendarYears, getPillarThree } from '@/api/calendar'
-import { touchSession, clearSession } from '@/utils/session'
-import MysticCanvasBackground from '@/components/MysticCanvasBackground.vue'
+import { extractAuthPayload, saveAuthSession, navigateToHub, skipTokenValidationOnce } from '@/utils/authSession'
+import { persistBaziAnalysis } from '@/utils/baziAnalysis'
+import { ensureBaziAnalysis } from '@/utils/userData'
+import AuthPageShell from '@/components/layout/AuthPageShell.vue'
+import { fetchAuthPublicKey } from '@/utils/passwordCipher'
 
 const router = useRouter()
 const formRef = ref()
 const loading = ref(false)
 
-/** 注册与时柱接口统一使用东经坐标（经度为正，中国境内），与区县接口常见「经度,纬度」格式一致 */
 const REGISTER_EAST_LONGITUDE_COORDINATES = '116.407526,39.904030'
 
 const provinces = ref([])
@@ -179,12 +191,9 @@ const cities = ref([])
 const calendarYearOptions = ref([])
 const calendarMonthOptions = ref([])
 const calendarDayOptions = ref([])
-const pillarThree = ref({
-  yearPillar: '',
-  monthPillar: '',
-  dayPillar: ''
-})
+const pillarThree = ref({ yearPillar: '', monthPillar: '', dayPillar: '' })
 const hourPillar = ref('')
+
 const form = reactive({
   username: '',
   password: '',
@@ -225,30 +234,13 @@ const normalizeList = (data) => {
 const normalizeRegionOptions = (items, type) => {
   return items
     .map((item) => {
-      if (typeof item === 'string') {
-        return { label: item, value: item }
-      }
-
+      if (typeof item === 'string') return { label: item, value: item }
       if (!item || typeof item !== 'object') return null
-
-      const label =
-        item.label ||
-        item.name ||
-        item.fullName ||
-        item.cityName ||
-        item.districtName ||
-        item.coordinates ||
-        ''
-
+      const label = item.label || item.name || item.fullName || item.cityName || item.districtName || item.coordinates || ''
       let value = item.value
       if (value == null || value === '') {
-        if (type === 'district') {
-          value = item.coordinates || item.coordinate || item.lngLat || label
-        } else {
-          value = item.fullName || item.name || item.cityName || label
-        }
+        value = type === 'district' ? item.coordinates || item.coordinate || item.lngLat || label : item.fullName || item.name || item.cityName || label
       }
-
       if (!label || value == null || value === '') return null
       return { label: String(label), value: String(value) }
     })
@@ -263,15 +255,9 @@ const buildBirthDateTime = () => {
   const year = String(form.birthYear)
   const month = String(form.birthMonth)
   const day = String(form.birthDay)
-
-  if (form.calendarType === 'lunar') {
-    // 后端已支持农历字符串（如 1999-正-十五 02:00:04）
-    return `${year}-${month}-${day} ${time}`
-  }
-
+  if (form.calendarType === 'lunar') return `${year}-${month}-${day} ${time}`
   const numericDate = /^\d{1,4}$/.test(year) && /^\d{1,2}$/.test(month) && /^\d{1,2}$/.test(day)
   if (!numericDate) return ''
-
   return `${year}-${pad2(month)}-${pad2(day)} ${time}`
 }
 
@@ -282,11 +268,7 @@ const loadProvinces = async () => {
 
 const loadCalendarYears = async () => {
   const res = await getCalendarYears(form.calendarType)
-  const yearsFromMap =
-    form.calendarType === 'lunar'
-      ? res?.data?.lunarYears || res?.lunarYears
-      : res?.data?.solarYears || res?.solarYears
-
+  const yearsFromMap = form.calendarType === 'lunar' ? res?.data?.lunarYears || res?.lunarYears : res?.data?.solarYears || res?.solarYears
   calendarYearOptions.value = Array.isArray(yearsFromMap) ? yearsFromMap : normalizeList(res)
 }
 
@@ -326,22 +308,12 @@ const onBirthMonthChange = async () => {
 const onBirthDayChange = async () => {
   pillarThree.value = { yearPillar: '', monthPillar: '', dayPillar: '' }
   if (!form.birthYear || !form.birthMonth || !form.birthDay) return
-
-  const res = await getPillarThree(
-    form.calendarType,
-    form.birthYear,
-    form.birthMonth,
-    form.birthDay
-  )
-
+  const res = await getPillarThree(form.calendarType, form.birthYear, form.birthMonth, form.birthDay)
   const formatPillar = (pillar) => {
     if (!pillar) return ''
     if (typeof pillar === 'string') return pillar
-    const tianGan = pillar.tianGan || ''
-    const diZhi = pillar.diZhi || ''
-    return `${tianGan}${diZhi}`.trim()
+    return `${pillar.tianGan || ''}${pillar.diZhi || ''}`.trim()
   }
-
   pillarThree.value = {
     yearPillar: formatPillar(res?.data?.yearPillar || res?.yearPillar),
     monthPillar: formatPillar(res?.data?.monthPillar || res?.monthPillar),
@@ -354,7 +326,6 @@ const onProvinceChange = async () => {
   form.city = ''
   hourPillar.value = ''
   cities.value = []
-
   if (!form.province) return
   const res = await getCities(form.province)
   cities.value = normalizeRegionOptions(normalizeList(res), 'city')
@@ -365,7 +336,6 @@ const onCityChange = async () => {
   await updateHourPillar()
 }
 
-/** 阳历：hour-pillar 用的 birthDate yyyy-MM-dd */
 const buildSolarBirthDateForHourApi = () => {
   if (form.calendarType !== 'solar') return ''
   if (!form.birthYear || !form.birthMonth || !form.birthDay) return ''
@@ -380,17 +350,8 @@ const updateHourPillar = async () => {
   hourPillar.value = ''
   if (!form.province || !form.city || !form.birthTime) return
   if (!form.birthYear || !form.birthMonth || !form.birthDay) return
-
-  const birthTime =
-    form.birthTime.length === 5 ? `${form.birthTime}:00` : form.birthTime
-
-  const params = {
-    province: form.province,
-    city: form.city,
-    coordinates: REGISTER_EAST_LONGITUDE_COORDINATES,
-    birthTime
-  }
-
+  const birthTime = form.birthTime.length === 5 ? `${form.birthTime}:00` : form.birthTime
+  const params = { province: form.province, city: form.city, coordinates: REGISTER_EAST_LONGITUDE_COORDINATES, birthTime }
   if (form.calendarType === 'lunar') {
     params.calendarType = 'lunar'
     params.birthYear = String(form.birthYear)
@@ -401,14 +362,10 @@ const updateHourPillar = async () => {
     if (!birthDate) return
     params.birthDate = birthDate
   }
-
   try {
     const res = await getHourPillar(params)
     const d = res?.data ?? res ?? {}
-    const gz =
-      (typeof d.hourGanZhi === 'string' && d.hourGanZhi.trim()) ||
-      `${d.hourTianGan || ''}${d.hourDiZhi || ''}`.trim()
-    hourPillar.value = gz || ''
+    hourPillar.value = (typeof d.hourGanZhi === 'string' && d.hourGanZhi.trim()) || `${d.hourTianGan || ''}${d.hourDiZhi || ''}`.trim() || ''
   } catch {
     hourPillar.value = ''
   }
@@ -444,55 +401,46 @@ const onSubmit = async () => {
       city: form.city,
       district: REGISTER_EAST_LONGITUDE_COORDINATES
     })
-    const payload = res?.data || res || {}
 
-    const token =
-      payload?.token ||
-      res?.token ||
-      payload?.accessToken ||
-      res?.accessToken ||
-      ''
-    const user =
-      payload?.user ||
-      res?.user || {
-        id: payload?.id,
-        username: payload?.username || form.username,
-        userType: payload?.userType || form.userType,
-        gender: form.gender
-      }
-    const baziAnalysis = payload?.baziAnalysis ?? null
-    const hourSummary = {
-      hourTianGan: payload?.hourTianGan || '',
-      hourDiZhi: payload?.hourDiZhi || '',
-      hourGanZhi: payload?.hourGanZhi || hourPillar.value || '',
-      actualBirthTime: payload?.actualTime ?? payload?.actualBirthTime ?? '',
-      longitudeCorrectionMinutes: payload?.longitudeCorrectionMinutes ?? ''
+    const fallbackUser = {
+      username: form.username,
+      userType: form.userType,
+      gender: form.gender
+    }
+    let auth = extractAuthPayload(res, fallbackUser)
+
+    if (auth.hourSummary && !auth.hourSummary.hourGanZhi && hourPillar.value) {
+      auth.hourSummary.hourGanZhi = hourPillar.value
     }
 
-    localStorage.setItem('baziAnalysis', JSON.stringify(baziAnalysis))
-    localStorage.setItem('hourSummary', JSON.stringify(hourSummary))
+    if (!auth.token) {
+      const loginRes = await login({
+        username: form.username,
+        password: form.password
+      })
+      auth = extractAuthPayload(loginRes, fallbackUser)
+      if (auth.hourSummary && !auth.hourSummary.hourGanZhi && hourPillar.value) {
+        auth.hourSummary.hourGanZhi = hourPillar.value
+      }
+    }
 
-    if (token) {
-      clearSession()
-      localStorage.setItem('token', token)
-      localStorage.setItem('user', JSON.stringify(user))
-      localStorage.setItem('baziAnalysis', JSON.stringify(baziAnalysis))
-      localStorage.setItem('hourSummary', JSON.stringify(hourSummary))
-      touchSession()
-      ElMessage.success('命格已启')
-      router.push('/index')
+    if (!saveAuthSession({ token: auth.token, user: auth.user })) {
+      ElMessage.error('注册成功但未获取登录凭证，请手动登录')
+      await router.replace('/login')
       return
     }
 
-    ElMessage.success('命盘已立，请回天机关卡登录')
-    router.push('/login')
+    if (auth.baziAnalysis != null) {
+      persistBaziAnalysis(auth.baziAnalysis)
+    } else {
+      ensureBaziAnalysis().catch(() => {})
+    }
+
+    skipTokenValidationOnce()
+    ElMessage.success('命格已启')
+    await navigateToHub(router)
   } catch (error) {
-    const msg =
-      error?.response?.data?.message ||
-      error?.response?.data?.msg ||
-      error?.response?.data?.error ||
-      error?.message ||
-      '注册失败'
+    const msg = error?.response?.data?.message || error?.response?.data?.msg || error?.response?.data?.error || error?.message || '注册失败'
     ElMessage.error(msg)
   } finally {
     loading.value = false
@@ -504,56 +452,12 @@ const goLogin = () => {
 }
 
 onMounted(async () => {
+  fetchAuthPublicKey().catch(() => {})
   try {
     await loadProvinces()
     await loadCalendarYears()
-  } catch (error) {
+  } catch {
     ElMessage.error('初始化数据失败')
   }
 })
 </script>
-
-<style scoped>
-.register-auth {
-  align-items: flex-start;
-  padding-top: 32px;
-  padding-bottom: 32px;
-}
-
-.register-head {
-  margin-bottom: 20px;
-}
-
-.register-brand {
-  letter-spacing: 0.42em;
-  text-indent: 0.42em;
-  font-size: clamp(22px, 3.2vw, 30px);
-}
-
-.register-form :deep(.el-row) {
-  margin-bottom: 0;
-}
-
-.register-form :deep(.el-form-item) {
-  margin-bottom: 16px;
-}
-
-.register-form :deep(.el-date-editor),
-.register-form :deep(.el-date-editor .el-input__wrapper) {
-  width: 100%;
-}
-
-.register-coords-hint {
-  margin: -4px 0 12px;
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--yiqi-text-muted, #9a9a8e);
-  letter-spacing: 0.04em;
-}
-
-.register-coords-hint strong {
-  color: var(--yiqi-gold, #c89b3c);
-  font-weight: 600;
-}
-</style>
-

@@ -1,0 +1,165 @@
+        :root {
+            --bg-color: #050507;
+            --bg-solid: #08080a;
+            --text-white: #FFFFFF;
+            --text-muted: rgba(255, 255, 255, 0.55);
+            --text-dark: rgba(255, 255, 255, 0.3);
+            --gold-light: #EADEC7;
+            --gold-dim: rgba(234, 222, 199, 0.15);
+            
+            --font-serif: 'Noto Serif SC', STSong, serif;
+            --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", sans-serif;
+            --bezier-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-white);
+            font-family: var(--font-sans);
+            overflow-x: hidden;
+            line-height: 2;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::-webkit-scrollbar { width: 0; background: transparent; }
+
+        .ink-blend { mix-blend-mode: screen; background-color: transparent; object-fit: contain; }
+
+        /* ================= 导航栏 ================= */
+        header {
+            position: fixed; top: 0; left: 0; width: 100%; height: 80px;
+            padding: 0 5%; z-index: 100;
+            display: flex; justify-content: space-between; align-items: center;
+            background: linear-gradient(180deg, rgba(5,5,7,0.8) 0%, transparent 100%);
+            backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+        }
+
+        /* 高级 Logo 组合排版 */
+        .brand-container {
+            display: flex; align-items: center; gap: 14px; text-decoration: none;
+        }
+        
+        /* 图片 Logo 样式 (适度放大) */
+        .real-logo {
+            width: 46px; 
+            height: 46px; 
+            transition: transform 0.4s ease, filter 0.4s ease;
+        }
+        
+        .brand-container:hover .real-logo {
+            transform: scale(1.08);
+            filter: brightness(1.3);
+        }
+
+        .brand-text {
+            display: flex; align-items: center; gap: 12px;
+        }
+        .brand-text .zh {
+            font-family: var(--font-serif); font-size: 20px; color: var(--gold-light);
+            letter-spacing: 4px; font-weight: 300;
+        }
+        .brand-text .en {
+            font-family: var(--font-sans); font-size: 11px; color: var(--text-dark);
+            letter-spacing: 6px; text-transform: uppercase; margin-top: 2px;
+        }
+
+        .nav-btn {
+            font-size: 14px; letter-spacing: 0.1em; color: var(--text-white);
+            text-decoration: none; padding: 8px 24px; border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 40px; transition: all 0.4s ease;
+        }
+        .nav-btn:hover { border-color: var(--gold-light); color: var(--bg-color); background: var(--gold-light); }
+
+        /* ================= 布局与动效基础 ================= */
+        .reveal {
+            opacity: 0; transform: translateY(40px);
+            transition: opacity 1.2s var(--bezier-smooth), transform 1.2s var(--bezier-smooth);
+        }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+        .delay-1 { transition-delay: 0.15s; }
+        .delay-2 { transition-delay: 0.3s; }
+
+        .title-huge { font-family: var(--font-serif); font-size: clamp(32px, 5vw, 64px); font-weight: 300; letter-spacing: 0.08em; line-height: 1.4; color: var(--text-white); }
+        .text-body { font-size: clamp(14px, 1.5vw, 16px); color: var(--text-muted); letter-spacing: 0.1em; font-weight: 300; }
+        .highlight-gold { color: var(--gold-light); font-weight: 400; }
+
+        .section-transparent { background: transparent; }
+        .section-solid { background: var(--bg-solid); position: relative; z-index: 10; border-top: 1px solid rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.03); }
+
+        /* ================= 第一屏：破冰 ================= */
+        #screen-1 { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 0 5%; position: relative; z-index: 1; }
+        
+        /* 首屏中央大 Logo (显著放大) */
+        .hero-logo {
+            width: 110px; height: 110px; margin-bottom: 24px;
+            filter: drop-shadow(0 0 20px rgba(234, 222, 199, 0.3));
+            animation: pulseHeroLogo 4s infinite ease-in-out;
+        }
+        @keyframes pulseHeroLogo {
+            0%, 100% { transform: scale(0.95); filter: drop-shadow(0 0 15px rgba(234,222,199,0.15)); }
+            50% { transform: scale(1.05); filter: drop-shadow(0 0 40px rgba(234,222,199,0.6)); }
+        }
+
+        #screen-1 .title-huge { margin-bottom: 30px; background: linear-gradient(180deg, #FFF 0%, rgba(255,255,255,0.6) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: clamp(40px, 6vw, 80px); }
+        #screen-1 .text-body { max-width: 800px; line-height: 2.2; margin-bottom: 60px; }
+
+        /* ================= 第二屏：释义 (左右分栏) ================= */
+        #screen-2 { padding: 150px 5%; min-height: 100vh; display: flex; align-items: center; }
+        .split-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; max-width: 1400px; margin: 0 auto; width: 100%; align-items: center; }
+        .canvas-container-gas { width: 100%; aspect-ratio: 1/1; position: relative; border-radius: 50%; overflow: hidden; background: radial-gradient(circle, rgba(234, 222, 199, 0.03) 0%, transparent 70%); }
+        #gas-canvas { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+        
+        /* ================= 第三屏：磁场推演 ================= */
+        #screen-3 { padding: 150px 5%; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .states-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; width: 100%; max-width: 1200px; margin-bottom: 80px; }
+        .state-box { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        .state-canvas-wrap { width: 200px; height: 200px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden; background: #030304; }
+        .state-canvas-wrap canvas { width: 100%; height: 100%; }
+        .state-label { font-family: var(--font-serif); font-size: 16px; color: var(--gold-light); letter-spacing: 0.2em; }
+        .screen-3-text { max-width: 800px; text-align: center; font-size: 16px; line-height: 2.2; color: var(--text-muted); }
+
+        /* ================= 第四屏：了解自己 (先天恒炁) ================= */
+        #screen-4 { padding: 150px 5%; }
+        .section-header { text-align: center; margin-bottom: 80px; }
+        
+        /* 精简后的12宫格 */
+        .grid-12 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; max-width: 1400px; margin: 0 auto; }
+        .card-mini { background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.05); padding: 30px; border-radius: 4px; transition: all 0.4s ease; display: flex; flex-direction: column; gap: 16px; }
+        .card-mini:hover { background: rgba(234, 222, 199, 0.03); border-color: rgba(234, 222, 199, 0.2); transform: translateY(-4px); }
+        .icon-svg { width: 24px; height: 24px; stroke: var(--gold-light); fill: none; stroke-width: 1.5; }
+        .card-mini h4 { font-family: var(--font-serif); font-size: 16px; color: var(--text-white); font-weight: 300; letter-spacing: 0.1em; }
+        .card-mini p { font-size: 13px; color: var(--text-muted); line-height: 1.8; font-weight: 300; }
+
+        /* ================= 第五屏：后天变炁 ================= */
+        #screen-5 { padding: 150px 5%; border-top: 1px solid rgba(255,255,255,0.03); }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 1000px; margin: 0 auto; }
+        .card-large { background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.05); padding: 50px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 24px; }
+        .abstract-icon { width: 60px; height: 60px; border: 1px dashed var(--gold-light); border-radius: 50%; position: relative; animation: slowSpin 20s linear infinite; }
+        .abstract-icon::after { content: ''; position: absolute; width: 30px; height: 30px; border: 1px solid rgba(255,255,255,0.3); top: 15px; left: 15px; transform: rotate(45deg); }
+
+        /* ================= 第六屏：万炁之城 ================= */
+        #screen-6 { padding: 150px 5%; text-align: center; border-top: 1px solid rgba(255,255,255,0.03); }
+        .store-box { max-width: 800px; margin: 0 auto; padding: 80px 40px; border: 1px solid rgba(234, 222, 199, 0.1); background: radial-gradient(circle at center, rgba(234, 222, 199, 0.02) 0%, transparent 100%); }
+        .store-note { margin-top: 80px; font-size: 12px; color: var(--text-dark); letter-spacing: 0.2em; }
+
+        /* ================= 第七屏：FAQ ================= */
+        #screen-7 { padding: 150px 5%; min-height: 100vh; position: relative; z-index: 1; }
+        .faq-container { max-width: 1000px; margin: 80px auto 0; }
+        .faq-item { display: flex; gap: 60px; padding: 40px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .faq-q { flex: 1; font-family: var(--font-serif); font-size: 18px; color: var(--text-white); font-weight: 300; letter-spacing: 0.05em; line-height: 1.6; }
+        .faq-a { flex: 2; font-size: 15px; color: var(--text-muted); font-weight: 300; line-height: 2; }
+
+        /* 全局底层星云画布 */
+        #global-nebula { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; opacity: 0.6; }
+
+        @keyframes slowSpin { 100% { transform: rotate(360deg); } }
+
+        @media (max-width: 900px) {
+            .split-layout, .grid-2 { grid-template-columns: 1fr; }
+            .states-container { grid-template-columns: 1fr; gap: 60px; }
+            .faq-item { flex-direction: column; gap: 20px; }
+        }

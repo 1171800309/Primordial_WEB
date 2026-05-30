@@ -1,0 +1,242 @@
+        :root {
+            --bg-color: #050507;
+            --text-white: #FFFFFF;
+            --text-muted: rgba(255, 255, 255, 0.55);
+            --text-dark: rgba(255, 255, 255, 0.3);
+            --gold-light: #EADEC7;
+            
+            --font-serif: 'Noto Serif SC', STSong, serif;
+            --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", sans-serif;
+            --bezier-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-color); color: var(--text-white);
+            font-family: var(--font-sans); overflow-x: hidden;
+            -webkit-font-smoothing: antialiased; min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+
+        /* ================= 页面转场遮罩 ================= */
+        #page-transition {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: var(--bg-color); z-index: 9999;
+            display: flex; justify-content: center; align-items: center;
+            transition: opacity 1s var(--bezier-smooth), visibility 1s;
+        }
+        #page-transition.loaded { opacity: 0; visibility: hidden; }
+        .transition-ring {
+            width: 60px; height: 60px; border-radius: 50%; border: 1px dashed rgba(234, 222, 199, 0.5);
+            animation: spin 4s linear infinite;
+        }
+
+        /* ================= 底层星尘画布 ================= */
+        #bg-canvas {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 0; opacity: 0.5; pointer-events: none;
+        }
+
+        /* ================= 顶部 UI ================= */
+        .top-nav {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100px;
+            padding: 0 5%; z-index: 100; display: flex; justify-content: space-between; align-items: center;
+            pointer-events: none;
+        }
+        
+        .top-left-brand { 
+            display: flex; align-items: center; gap: 14px; text-decoration: none; 
+            pointer-events: auto; mix-blend-mode: screen; 
+        }
+        .real-logo { 
+            width: 36px; height: 36px; transition: transform 0.4s ease, filter 0.4s ease; 
+            filter: drop-shadow(0 0 5px rgba(234,222,199,0.2));
+        }
+        .top-left-brand:hover .real-logo { 
+            transform: scale(1.08); filter: drop-shadow(0 0 15px rgba(234,222,199,0.6)); 
+        }
+        .brand-text { font-family: var(--font-serif); font-size: 18px; color: var(--gold-light); letter-spacing: 4px; font-weight: 300; }
+
+        .back-btn {
+            position: fixed; top: 90px; left: 5%; z-index: 100; display: flex; align-items: center; gap: 8px;
+            font-size: 13px; color: var(--text-muted); letter-spacing: 0.2em; text-decoration: none; transition: all 0.3s ease;
+            pointer-events: auto; padding: 8px 0;
+        }
+        .back-btn:hover { color: var(--gold-light); transform: translateX(-5px); }
+
+        /* ================= 全局右侧返回黑点 ================= */
+        .right-return-dot {
+            position: fixed; top: 50%; right: 30px; transform: translateY(-50%); z-index: 950;
+            display: flex; align-items: center; justify-content: flex-end; text-decoration: none; cursor: pointer;
+        }
+        .right-return-dot .dot-core {
+            width: 16px; height: 16px; border-radius: 50%; background: #000;
+            border: 1px solid rgba(234, 222, 199, 0.4);
+            box-shadow: 0 0 10px rgba(234, 222, 199, 0.2), inset 0 0 5px rgba(255,255,255,0.05);
+            position: relative; transition: all 0.4s var(--bezier-smooth); z-index: 2;
+        }
+        .right-return-dot .return-label {
+            position: absolute; right: 8px; white-space: nowrap; font-size: 13px; color: var(--gold-light);
+            letter-spacing: 0.2em; opacity: 0; transform: translateX(20px);
+            transition: all 0.4s var(--bezier-smooth); z-index: 1; padding-right: 20px;
+        }
+        .right-return-dot:hover .dot-core { transform: scale(0.6); box-shadow: 0 0 15px rgba(234, 222, 199, 0.8); background: var(--gold-light); border-color: var(--gold-light); }
+        .right-return-dot:hover .return-label { opacity: 1; transform: translateX(0); }
+
+        /* ================= 页面主体容器 ================= */
+        .bianqi-page .main-content {
+            position: relative; z-index: 10; flex-grow: 1; display: flex; flex-direction: column; align-items: center;
+            padding-top: 120px; padding-bottom: 80px; width: 100%;
+        }
+
+        .bianqi-page .page-title {
+            font-family: var(--font-serif); font-size: clamp(28px, 4vw, 40px); color: var(--text-white); font-weight: 300; letter-spacing: 0.15em;
+            margin-bottom: 40px; text-align: center;
+        }
+
+        /* 胶囊切换控件 */
+        .bianqi-page .segment-control {
+            display: flex; align-items: center; background: rgba(15, 15, 17, 0.6);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 40px; padding: 6px; margin-bottom: 60px; position: relative;
+        }
+        .bianqi-page .segment-btn {
+            padding: 12px 36px; border-radius: 30px; border: none; background: transparent;
+            font-family: var(--font-serif); font-size: 16px; color: var(--text-muted);
+            letter-spacing: 0.1em; cursor: pointer; transition: all 0.4s ease; position: relative; z-index: 2; outline: none;
+        }
+        .bianqi-page .segment-btn.active { color: var(--bg-color); font-weight: 600; }
+        .bianqi-page .segment-slider {
+            position: absolute; top: 6px; left: 6px; height: calc(100% - 12px); background: var(--gold-light); border-radius: 30px;
+            transition: transform 0.5s var(--bezier-smooth), width 0.5s var(--bezier-smooth); z-index: 1; box-shadow: 0 4px 15px rgba(234, 222, 199, 0.3);
+        }
+
+        /* ================= Tab 内容区 ================= */
+        .bianqi-page .tab-content {
+            display: none; width: 100%; max-width: 1200px;
+            opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .bianqi-page .tab-content.active { display: block; opacity: 1; transform: translateY(0); }
+
+        .buff-layout {
+            display: flex; justify-content: center; align-items: center; gap: 120px;
+            width: 100%; padding: 40px 0;
+        }
+
+        /* --- 左侧：数值面板 --- */
+        .buff-left { display: flex; flex-direction: column; align-items: flex-start; position: relative; }
+        .buff-label { font-size: 15px; color: var(--text-muted); letter-spacing: 0.15em; margin-bottom: 10px; z-index: 2; }
+        .buff-number-wrap { display: flex; align-items: baseline; gap: 8px; z-index: 2; }
+        
+        /* 基础数字样式 */
+        .bianqi-page .huge-number {
+            font-family: var(--font-serif); font-size: clamp(100px, 12vw, 180px);
+            font-weight: 600; letter-spacing: 0.05em; line-height: 1;
+            transition: all 0.8s var(--bezier-smooth);
+        }
+        .bianqi-page .huge-number.decoding { filter: blur(5px); opacity: 0.8; }
+        
+        .huge-percent { font-family: var(--font-serif); font-size: clamp(50px, 6vw, 80px); font-weight: 300; transition: color 0.8s; }
+        .buff-status { font-size: 18px; letter-spacing: 0.2em; font-family: var(--font-serif); margin-left: 10px; padding-bottom: 20px; transition: color 0.8s; }
+
+        /* ================= 两大情绪价值风格 ================= */
+        
+        /* 1. 多巴胺/离火金丹风格 (增幅) SSR级出金感 */
+        .theme-fire {
+            background: linear-gradient(135deg, #F9D423 0%, #FF4E50 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            animation: firePulse 2.5s infinite alternate;
+        }
+        .theme-fire-text { color: #FF4E50; text-shadow: 0 0 10px rgba(255, 78, 80, 0.4); }
+        .theme-fire-percent { color: rgba(249, 212, 35, 0.7); }
+        .theme-fire-glow {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 350px; height: 350px; border-radius: 50%; z-index: -1; pointer-events: none;
+            background: radial-gradient(circle, rgba(255, 78, 80, 0.25) 0%, rgba(249, 212, 35, 0.05) 50%, transparent 70%);
+            animation: spinGlow 8s linear infinite;
+        }
+
+        /* 2. 深渊/坎水冰银风格 (降幅) 绝境潜龙感 */
+        .theme-water {
+            background: linear-gradient(135deg, #E2EBEE 0%, #89F7FE 50%, #66A6FF 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            animation: waterPulse 3s infinite alternate;
+        }
+        .theme-water-text { color: #89F7FE; text-shadow: 0 0 10px rgba(137, 247, 254, 0.4); }
+        .theme-water-percent { color: rgba(102, 166, 255, 0.7); }
+        .theme-water-glow {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 350px; height: 350px; border-radius: 50%; z-index: -1; pointer-events: none;
+            background: radial-gradient(circle, rgba(102, 166, 255, 0.2) 0%, rgba(137, 247, 254, 0.05) 50%, transparent 70%);
+            animation: spinGlow 12s linear infinite reverse;
+        }
+
+        @keyframes firePulse {
+            0% { filter: drop-shadow(0 10px 20px rgba(255, 78, 80, 0.4)); }
+            100% { filter: drop-shadow(0 10px 45px rgba(249, 212, 35, 0.8)); }
+        }
+        @keyframes waterPulse {
+            0% { filter: drop-shadow(0 10px 20px rgba(102, 166, 255, 0.3)); }
+            100% { filter: drop-shadow(0 10px 40px rgba(137, 247, 254, 0.7)); }
+        }
+        @keyframes spinGlow {
+            0% { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
+            50% { transform: translate(-50%, -50%) rotate(180deg) scale(1.1); }
+            100% { transform: translate(-50%, -50%) rotate(360deg) scale(1); }
+        }
+
+        /* --- 右侧：阴阳 3D 卡片 --- */
+        .buff-right { width: 100%; max-width: 420px; }
+        .bianqi-page .trait-wrapper { display: flex; flex-direction: column; align-items: center; gap: 24px; perspective: 1200px; }
+        
+        .bianqi-page .flip-card { width: 100%; aspect-ratio: 4 / 3; position: relative; transform-style: preserve-3d; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+        .bianqi-page .flip-card.is-yin { transform: rotateY(180deg); }
+        
+        .bianqi-page .card-face {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; backface-visibility: hidden;
+            border-radius: 16px; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            padding: 40px; text-align: center; cursor: pointer;
+        }
+        
+        .bianqi-page .face-yang {
+            background: linear-gradient(145deg, rgba(55, 55, 60, 0.95), rgba(20, 20, 25, 0.95)); 
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(234, 222, 199, 0.4); 
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), inset 0 0 30px rgba(234, 222, 199, 0.08);
+        }
+        .bianqi-page .face-yin {
+            background: rgba(5, 5, 7, 0.95); border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: rotateY(180deg); box-shadow: inset 0 0 40px rgba(0,0,0,1);
+        }
+
+        .bianqi-page .trait-title { font-family: var(--font-serif); font-size: 28px; margin-bottom: 10px; font-weight: 400; letter-spacing: 0.15em; }
+        .bianqi-page .face-yang .trait-title { color: var(--gold-light); text-shadow: 0 0 15px rgba(234, 222, 199, 0.4); }
+        .bianqi-page .face-yin .trait-title { color: var(--text-muted); }
+
+        .bianqi-page .trait-subtitle { font-size: 13px; letter-spacing: 0.1em; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); width: 80%; }
+        .bianqi-page .face-yang .trait-subtitle { color: rgba(255, 255, 255, 0.65); border-bottom-color: rgba(234, 222, 199, 0.2); }
+        .bianqi-page .face-yin .trait-subtitle { color: var(--text-dark); }
+
+        .bianqi-page .trait-desc { font-size: 14px; line-height: 2; font-weight: 300; letter-spacing: 0.05em; }
+        .bianqi-page .face-yang .trait-desc { color: rgba(255, 255, 255, 0.8); }
+        .bianqi-page .face-yin .trait-desc { color: rgba(255, 255, 255, 0.4); }
+
+        .bianqi-page .toggle-dot { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); width: 10px; height: 10px; border-radius: 50%; transition: all 0.3s ease; }
+        .bianqi-page .face-yang .toggle-dot { background: #000; border: 1px solid rgba(255,255,255,0.3); }
+        .bianqi-page .face-yin .toggle-dot { background: #FFF; box-shadow: 0 0 10px rgba(255,255,255,0.8); }
+
+        .bianqi-page .trait-label { font-family: var(--font-serif); font-size: 16px; color: var(--text-white); letter-spacing: 0.1em; }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* 响应式 */
+        @media (max-width: 1024px) {
+            .buff-layout { flex-direction: column; gap: 60px; text-align: center; }
+            .buff-left { align-items: center; }
+            .bianqi-page .segment-btn { padding: 10px 20px; font-size: 14px; }
+            .bianqi-page .huge-number { font-size: 100px; }
+            
+            .right-return-dot { top: 90px; right: 5%; transform: none; }
+            .right-return-dot .return-label { display: none; }
+        }

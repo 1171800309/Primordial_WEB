@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import { isSessionIdleExpired, touchSession, clearSession, getIdleTimeoutMs } from '@/utils/session'
+import { isOversizedToken } from '@/utils/tokenGuard'
 
 const baseURL =
   import.meta.env.VITE_API_BASE_URL !== undefined
@@ -26,6 +27,15 @@ request.interceptors.request.use(
     }
 
     if (token) {
+      if (isOversizedToken(token)) {
+        clearSession()
+        if (window.location.pathname !== '/login') {
+          ElMessage.warning('登录凭证已过期，请重新登录')
+          window.location.href = '/login'
+        }
+        return Promise.reject(new Error('登录凭证已过期，请重新登录'))
+      }
+
       config.headers.Authorization = `Bearer ${token}`
       touchSession()
     }
@@ -53,20 +63,37 @@ request.interceptors.response.use(
     return res
   },
   (error) => {
-    if (error?.response?.status === 401) {
+    const config = error?.config || {}
+    const status = error?.response?.status
+
+    if (status === 401 || status === 403) {
+      if (!config.skipAuthRedirect) {
+        clearSession()
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login'
+        }
+      }
+    }
+
+    if (status === 431) {
       clearSession()
+      if (!config.skipErrorMessage) {
+        ElMessage.error('登录凭证过大已失效，请重新登录')
+      }
       if (window.location.pathname !== '/login') {
         window.location.href = '/login'
       }
     }
 
-    const serverMsg =
-      error?.response?.data?.message ||
-      error?.response?.data?.msg ||
-      error?.response?.data?.error ||
-      error.message ||
-      '网络错误'
-    ElMessage.error(serverMsg)
+    if (!config.skipErrorMessage) {
+      const serverMsg =
+        error?.response?.data?.message ||
+        error?.response?.data?.msg ||
+        error?.response?.data?.error ||
+        error.message ||
+        '网络错误'
+      ElMessage.error(serverMsg)
+    }
     return Promise.reject(error)
   }
 )

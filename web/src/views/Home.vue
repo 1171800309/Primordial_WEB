@@ -128,13 +128,11 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { logout } from '@/api/auth'
-import { analyzeByUser } from '@/api/fate'
 import {
   readStoredBaziAnalysis,
-  persistBaziAnalysis,
-  parseBaziAnalysisFromToken,
   mapBaziAnalysisToForm
 } from '@/utils/baziAnalysis'
+import { ensureBaziAnalysis } from '@/utils/userData'
 import MingPanTianJi from '@/components/destiny/MingPanTianJi.vue'
 import DestinyRevealMatrix from '@/components/destiny-form/DestinyRevealMatrix.vue'
 
@@ -198,22 +196,15 @@ const loadBaziAnalysis = async ({ force = false } = {}) => {
     }
   }
 
-  const userId = user.value?.id || user.value?.userId
-  if (!userId) {
-    baziError.value = '缺少用户ID，无法获取八字分析'
-    baziAnalysis.value = null
-    fillAnalysisForm()
-    return
-  }
-
   baziLoading.value = true
   baziError.value = ''
   try {
-    const res = await analyzeByUser(userId, user.value?.gender)
-    const next = res?.data?.baziAnalysis ?? res?.baziAnalysis ?? null
+    const next = await ensureBaziAnalysis({ force: true })
     baziAnalysis.value = next
-    persistBaziAnalysis(next)
     fillAnalysisForm()
+    if (next == null) {
+      baziError.value = baziEmptyHint
+    }
   } catch (error) {
     baziAnalysis.value = null
     baziError.value = error?.response?.data?.message || error?.message || '八字分析获取失败'
@@ -269,16 +260,9 @@ onMounted(() => {
   const cachedHourSummary = readStoredHourSummary()
   if (cachedHourSummary) hourSummary.value = cachedHourSummary
 
-  if (baziAnalysis.value == null) {
-    const fromJwt = parseBaziAnalysisFromToken(localStorage.getItem('token'))
-    if (fromJwt != null) {
-      baziAnalysis.value = fromJwt
-      persistBaziAnalysis(fromJwt)
-    }
-  }
+  if (baziAnalysis.value == null) loadBaziAnalysis()
 
   fillAnalysisForm()
-  if (baziAnalysis.value == null) loadBaziAnalysis()
 
   menuMq = window.matchMedia('(max-width: 767px)')
   applyMenuMq()

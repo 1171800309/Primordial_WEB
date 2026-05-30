@@ -1,0 +1,187 @@
+:root {
+--bg-color: #050507;
+--text-white: #FFFFFF;
+--text-muted: rgba(255, 255, 255, 0.55);
+--text-dark: rgba(255, 255, 255, 0.3);
+--gold-light: #EADEC7;
+--gold-legendary: #D4AF37;
+--gold-dim: rgba(234, 222, 199, 0.15);
+--font-serif: 'Noto Serif SC', STSong, serif;
+--font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", sans-serif;
+--bezier-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+}
+.xiantian-page *{ margin: 0; padding: 0; box-sizing: border-box; }
+.xiantian-page{
+background-color: var(--bg-color); color: var(--text-white);
+font-family: var(--font-sans); overflow-x: hidden;
+-webkit-font-smoothing: antialiased; min-height: 100vh;
+display: flex; flex-direction: column; width: 100%;
+}
+.xiantian-page .ink-blend{ mix-blend-mode: screen; background-color: transparent; border-radius: 0; object-fit: contain; }
+/* ================= 页面转场遮罩 ================= */
+.xiantian-page .page-transition{
+position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+background-color: var(--bg-color); z-index: 9999;
+display: flex; justify-content: center; align-items: center;
+transition: opacity 1s var(--bezier-smooth), visibility 1s;
+}
+.xiantian-page .page-transition.loaded{ opacity: 0; visibility: hidden; }
+.xiantian-page .transition-ring{
+width: 60px; height: 60px; border-radius: 50%; border: 1px dashed rgba(234, 222, 199, 0.5);
+animation: spin 4s linear infinite;
+}
+/* ================= 底层星尘画布 ================= */
+.xiantian-page #bg-canvas{ position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; opacity: 0.6; pointer-events: none; }
+/* ================= 顶部 UI ================= */
+.xiantian-page .top-nav{
+position: fixed; top: 0; left: 0; width: 100%; height: 100px;
+padding: 0 5%; z-index: 100; display: flex; justify-content: space-between; align-items: center;
+pointer-events: none;
+}
+.xiantian-page .top-left-brand{ display: flex; align-items: center; gap: 14px; text-decoration: none; pointer-events: auto; mix-blend-mode: screen; }
+.xiantian-page .real-logo{ width: 36px; height: 36px; transition: transform 0.4s ease, filter 0.4s ease; filter: drop-shadow(0 0 5px rgba(234,222,199,0.2)); }
+.xiantian-page .top-left-brand:hover .real-logo{ transform: scale(1.08); filter: drop-shadow(0 0 15px rgba(234,222,199,0.6)); }
+.xiantian-page .brand-text{ font-family: var(--font-serif); font-size: 18px; color: var(--gold-light); letter-spacing: 4px; font-weight: 300; }
+.xiantian-page .back-btn{
+position: fixed; top: 90px; left: 5%; z-index: 100; display: flex; align-items: center; gap: 8px;
+font-size: 13px; color: var(--text-muted); letter-spacing: 0.2em; text-decoration: none; transition: all 0.3s ease; pointer-events: auto; padding: 8px 0;
+}
+.xiantian-page .back-btn:hover{ color: var(--gold-light); transform: translateX(-5px); }
+.xiantian-page .top-right-store{ display: flex; align-items: center; gap: 12px; text-decoration: none; cursor: pointer; pointer-events: auto; }
+.xiantian-page .store-label{ font-size: 12px; color: var(--text-muted); letter-spacing: 0.1em; opacity: 0; transform: translateX(10px); transition: all 0.4s var(--bezier-smooth); }
+.xiantian-page .store-dot{
+width: 14px; height: 14px; border-radius: 50%; background: #000; border: 1px solid rgba(234, 222, 199, 0.4); box-shadow: 0 0 10px rgba(234, 222, 199, 0.2); position: relative; transition: all 0.4s ease;
+}
+.xiantian-page .store-dot::after{ content: ''; position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px; border-radius: 50%; border: 1px dashed rgba(234, 222, 199, 0.3); animation: spin 10s linear infinite; }
+.xiantian-page .top-right-store:hover .store-label{ opacity: 1; transform: translateX(0); color: var(--gold-light); }
+.xiantian-page .top-right-store:hover .store-dot{ transform: scale(1.1); box-shadow: 0 0 20px rgba(234, 222, 199, 0.5); }
+/* ================= 主体容器与导航胶囊 ================= */
+.xiantian-page .main-content{ position: relative; z-index: 10; flex-grow: 1; display: flex; flex-direction: column; align-items: center; padding-top: 120px; padding-bottom: 80px; width: 100%; opacity: 1; filter: none; transform: none; }
+.xiantian-page .page-title{ font-family: var(--font-serif); font-size: clamp(28px, 4vw, 40px); color: var(--text-white); font-weight: 300; letter-spacing: 0.15em; margin-bottom: 40px; text-align: center; }
+.xiantian-page .segment-control{ display: flex; align-items: center; background: rgba(15, 15, 17, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 40px; padding: 6px; margin-bottom: 60px; position: relative; }
+.xiantian-page .segment-btn{ padding: 12px 36px; border-radius: 30px; border: none; background: transparent; font-family: var(--font-serif); font-size: 16px; color: var(--text-muted); letter-spacing: 0.1em; cursor: pointer; transition: all 0.4s ease; position: relative; z-index: 2; outline: none; }
+.xiantian-page .segment-btn.active{ color: var(--bg-color); font-weight: 600; }
+.xiantian-page .segment-slider{ position: absolute; top: 6px; left: 6px; height: calc(100% - 12px); background: var(--gold-light); border-radius: 30px; transition: transform 0.5s var(--bezier-smooth), width 0.5s var(--bezier-smooth); z-index: 1; box-shadow: 0 4px 15px rgba(234, 222, 199, 0.3); }
+.xiantian-page .tab-content{ display: none; flex-direction: column; align-items: center; width: 100%; max-width: 1400px; opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.xiantian-page .tab-content.active{ display: flex; opacity: 1; transform: translateY(0); }
+/* ================= 模块一：炁数 ================= */
+.xiantian-page .qi-value-container{ position: relative; display: flex; flex-direction: column; align-items: center; width: 100%; margin-top: 60px; }
+.xiantian-page .resonance-ring{
+position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+width: 500px; height: 500px; border-radius: 50%; z-index: -1; pointer-events: none;
+background: radial-gradient(circle, rgba(234, 222, 199, 0.08) 0%, transparent 60%);
+box-shadow: 0 0 50px rgba(234, 222, 199, 0.05);
+border: 1px solid rgba(234, 222, 199, 0.05); animation: spinCenter 40s linear infinite;
+}
+.xiantian-page .resonance-ring::before{ content: ''; position: absolute; top: 15%; left: 15%; width: 70%; height: 70%; border-radius: 50%; border: 2px dashed rgba(234, 222, 199, 0.15); animation: spinCenter 20s linear infinite reverse; }
+.xiantian-page .resonance-ring::after{ content: ''; position: absolute; top: 30%; left: 30%; width: 40%; height: 40%; border-radius: 50%; border-top: 2px solid rgba(234, 222, 199, 0.4); border-bottom: 2px solid rgba(234, 222, 199, 0.4); animation: spinCenter 10s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite; }
+.xiantian-page .pre-text{ font-size: 15px; color: var(--text-muted); letter-spacing: 0.3em; margin-bottom: 20px; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
+.xiantian-page .huge-number{
+font-family: var(--font-serif); font-size: clamp(80px, 15vw, 180px); font-weight: 300; letter-spacing: 0.15em; line-height: 1;
+background: linear-gradient(180deg, #FFFFFF 0%, rgba(234, 222, 199, 0.6) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+filter: drop-shadow(0 0 30px rgba(234, 222, 199, 0.3)); margin-bottom: 40px; transition: filter 0.3s ease; animation: numberPulse 4s infinite alternate;
+}
+@keyframes numberPulse { 0% { filter: drop-shadow(0 0 20px rgba(234, 222, 199, 0.2)); transform: scale(0.98); } 100% { filter: drop-shadow(0 0 50px rgba(234, 222, 199, 0.6)); transform: scale(1.02); } }
+.xiantian-page .huge-number.decoding { filter: blur(8px); opacity: 0.6; transform: scale(0.9); }
+.xiantian-page .post-text { text-align: center; max-width: 600px; line-height: 2.2; font-size: 14px; color: var(--text-dark); letter-spacing: 0.1em; padding: 40px 20px; border-top: 1px solid rgba(255, 255, 255, 0.05); }
+/* ================= 模块二：炁性 (盲盒网格) ================= */
+.xiantian-page .tab-title-sub { font-family: var(--font-serif); font-size: 24px; color: var(--text-muted); letter-spacing: 0.15em; margin-bottom: 40px; }
+.xiantian-page .traits-grid-all { display: grid; grid-template-columns: repeat(5, 1fr); gap: 30px 20px; width: 100%; padding: 0 3%; margin-bottom: 60px; }
+.xiantian-page .trait-wrapper { display: flex; flex-direction: column; align-items: center; gap: 16px; perspective: 1200px; width: 100%; }
+.xiantian-page .blind-box { width: 100%; aspect-ratio: 1 / 1.15; position: relative; cursor: pointer; }
+/* 盲盒未开启封面 */
+.xiantian-page .unopened-cover {
+position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10;
+background: #FFFFFF; border-radius: 12px; border: 1px solid rgba(0,0,0,0.1);
+display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 24px;
+font-family: var(--font-serif); font-size: 13px; color: #444; letter-spacing: 0.1em; line-height: 1.8; text-align: left;
+box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: opacity 0.6s ease, transform 0.6s var(--bezier-smooth);
+}
+.xiantian-page .unopened-cover.center-text{ text-align: center; }
+.xiantian-page .unopened-cover.opened{ opacity: 0; pointer-events: none; transform: scale(0.95); }
+/* 💡 新增：盲盒左上角矢量图标样式 */
+.xiantian-page .cover-icon{
+position: absolute;
+top: 20px;
+left: 20px;
+width: 22px;
+height: 22px;
+color: rgba(0, 0, 0, 0.4); /* 深灰色，契合白底 */
+stroke-width: 1.2;
+pointer-events: none;
+}
+/* 盲盒开启引导文字样式 */
+.xiantian-page .open-hint{
+position: absolute;
+bottom: 20px;
+left: 50%;
+transform: translateX(-50%);
+font-family: var(--font-serif);
+font-size: 11px;
+color: rgba(0, 0, 0, 0.4);
+letter-spacing: 0.3em;
+pointer-events: none;
+white-space: nowrap;
+animation: hintPulse 2s infinite alternate var(--bezier-smooth);
+}
+@keyframes hintPulse {
+0% { opacity: 0.2; }
+100% { opacity: 0.8; }
+}
+/* 卡片内里本体 */
+.xiantian-page .flip-card{ position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+.xiantian-page .flip-card.is-yin{ transform: rotateY(180deg); }
+.xiantian-page .card-face{ position: absolute; top: 0; left: 0; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 12px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; }
+.xiantian-page .face-yang{ background: #FDFDFD; border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+.xiantian-page .face-yin{ background: #08080A; border: 1px solid rgba(255,255,255,0.15); box-shadow: inset 0 0 30px rgba(0,0,0,1); transform: rotateY(180deg); }
+.xiantian-page .trait-title{ font-family: var(--font-serif); font-size: 26px; font-weight: 600; margin-bottom: 8px; letter-spacing: 0.1em; }
+.xiantian-page .trait-annotation{ font-family: var(--font-sans); font-size: 12px; opacity: 0.7; margin-bottom: 16px; font-weight: 300; }
+.xiantian-page .trait-desc{ font-size: 14px; line-height: 1.6; font-weight: 400; }
+.xiantian-page .face-yang .trait-title{ color: #000; }
+.xiantian-page .face-yang .trait-annotation, .xiantian-page .face-yang .trait-desc{ color: #333; }
+.xiantian-page .face-yin .trait-title{ color: #FFF; }
+.xiantian-page .face-yin .trait-annotation, .xiantian-page .face-yin .trait-desc{ color: #AAA; font-weight: 300; }
+.xiantian-page .toggle-dot{ position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); width: 12px; height: 12px; border-radius: 50%; transition: all 0.3s ease; }
+.xiantian-page .face-yang .toggle-dot{ background: #000; border: 2px solid #FFF; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+.xiantian-page .face-yin .toggle-dot{ background: #FFF; border: 2px solid #000; box-shadow: 0 0 8px rgba(255,255,255,0.6); }
+.xiantian-page .trait-label{ font-family: var(--font-serif); font-size: 15px; color: var(--text-white); letter-spacing: 0.1em; }
+/* ==================== 词卡级别体系 (Tier System) ==================== */
+.xiantian-page .tier-gold .face-yang, .xiantian-page .tier-gold .face-yin{ border-color: rgba(212, 175, 55, 0.6); box-shadow: 0 0 20px rgba(212, 175, 55, 0.15), inset 0 0 10px rgba(212, 175, 55, 0.05); }
+.xiantian-page .tier-gold .face-yang{ background: #FFFCF2; }
+.xiantian-page .tier-gold .trait-title, .xiantian-page .tier-gold .trait-annotation, .xiantian-page .tier-gold .trait-desc{ color: #B8860B !important; }
+.xiantian-page .tier-gold .toggle-dot{ background: #B8860B !important; border-color: #B8860B !important; box-shadow: 0 0 10px rgba(184, 134, 11, 0.5) !important; }
+.xiantian-page .tier-yellow .face-yang, .xiantian-page .tier-yellow .face-yin{ border-color: rgba(249, 212, 35, 0.6); box-shadow: 0 0 20px rgba(249, 212, 35, 0.15), inset 0 0 10px rgba(249, 212, 35, 0.05); }
+.xiantian-page .tier-yellow .face-yang{ background: #FFFDF5; }
+.xiantian-page .tier-yellow .trait-title, .xiantian-page .tier-yellow .trait-annotation, .xiantian-page .tier-yellow .trait-desc{ color: #D4A000 !important; }
+.xiantian-page .tier-yellow .toggle-dot{ background: #D4A000 !important; border-color: #D4A000 !important; box-shadow: 0 0 10px rgba(212, 160, 0, 0.5) !important; }
+.xiantian-page .tier-black .face-yang, .xiantian-page .tier-black .face-yin{ border-color: rgba(136, 136, 136, 0.6); box-shadow: 0 0 20px rgba(136, 136, 136, 0.15), inset 0 0 10px rgba(136, 136, 136, 0.05); }
+.xiantian-page .tier-black .face-yang{ background: #F5F5F5; }
+.xiantian-page .tier-black .trait-title, .xiantian-page .tier-black .trait-annotation, .xiantian-page .tier-black .trait-desc{ color: #777777 !important; }
+.xiantian-page .tier-black .toggle-dot{ background: #777777 !important; border-color: #777777 !important; box-shadow: 0 0 10px rgba(119, 119, 119, 0.5) !important; }
+.xiantian-page .traits-footer{ margin-top: 40px; text-align: center; }
+.xiantian-page .traits-note{ font-size: 12px; color: var(--text-dark); letter-spacing: 0.1em; }
+/* ================= 模块三：八维评估 ================= */
+.xiantian-page .radar-container{ display: flex; gap: 100px; width: 100%; justify-content: center; align-items: center; flex-wrap: wrap; margin-top: 20px; }
+.xiantian-page .radar-box{
+display: flex; flex-direction: column; align-items: center; gap: 30px; width: 440px;
+background: rgba(10, 10, 12, 0.4); border: 1px solid rgba(255, 255, 255, 0.03); border-radius: 20px; padding: 40px;
+position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+.xiantian-page .radar-box::before, .xiantian-page .radar-box::after{ content: ''; position: absolute; width: 30px; height: 30px; border: 1px solid var(--gold-dim); pointer-events: none; }
+.xiantian-page .radar-box::before{ top: -1px; left: -1px; border-right: none; border-bottom: none; border-top-left-radius: 20px; }
+.xiantian-page .radar-box::after{ bottom: -1px; right: -1px; border-left: none; border-top: none; border-bottom-right-radius: 20px; }
+.xiantian-page .radar-canvas-wrap{ width: 320px; height: 320px; position: relative; }
+.xiantian-page .radar-canvas-wrap canvas{ width: 100%; height: 100%; display: block; }
+.xiantian-page .radar-title{ font-family: var(--font-serif); font-size: 22px; color: var(--gold-light); letter-spacing: 0.15em; }
+.xiantian-page .radar-desc{ font-size: 13px; color: var(--text-muted); line-height: 2; text-align: justify; letter-spacing: 0.05em; padding-top: 20px; border-top: 1px dashed rgba(255,255,255,0.1); }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+@keyframes spinCenter { 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+/* 响应式 */
+@media (max-width: 1400px) {.xiantian-page .traits-grid-all{ grid-template-columns: repeat(4, 1fr) } }
+@media (max-width: 1100px) {.xiantian-page .traits-grid-all{ grid-template-columns: repeat(3, 1fr) } }
+@media (max-width: 800px) {
+.xiantian-page .traits-grid-all { grid-template-columns: repeat(2, 1fr); }
+.xiantian-page .radar-container { gap: 40px; }
+.xiantian-page .huge-number { font-size: 100px; }
+}
+@media (max-width: 500px) {.xiantian-page .traits-grid-all{ grid-template-columns: 1fr; padding: 0 10% } }
