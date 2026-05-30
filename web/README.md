@@ -1,6 +1,22 @@
 # Primordial 用户前台（Web）
 
-Vue 3 + Vite 单页应用，对接用户端 API（`Primordial_API/web`）。
+Vue 3 + Vite 单页应用。
+
+## 目录结构
+
+```
+web/
+├── docs/           # 原型 HTML（不参与构建）
+├── src/            # 源码
+│   ├── api/
+│   ├── components/
+│   ├── views/
+│   └── ...
+├── index.html
+├── vite.config.js
+├── Dockerfile
+└── docker-compose.yml
+```
 
 ## 开发
 
@@ -12,29 +28,14 @@ npm run dev
 
 API 代理见 `.env`（复制自 `.env.example`），默认转发到 `http://localhost:5100`。
 
-## 构建
+后端项目路径：`Primordial_API/api/src/Primordial.Api`。
+
+## 构建与 Docker
 
 ```bash
 npm run build
-npm run preview
+docker compose up --build   # :8080
 ```
-
-## Docker
-
-```bash
-docker build -t primordial-web .
-docker compose up --build   # 默认映射 :8080
-```
-
-构建时可指定 API 地址：
-
-```bash
-docker build -t primordial-web . --build-arg VITE_API_BASE_URL=https://api.example.com
-```
-
-## 原型参考
-
-历史 HTML 原型位于 `docs/prototypes/`，不参与构建。
 
 ## 同仓库
 
