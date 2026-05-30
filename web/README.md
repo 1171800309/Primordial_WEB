@@ -26,7 +26,7 @@ npm run dev
 # http://localhost:5173
 ```
 
-API 代理见 `.env`（复制自 `.env.example`），默认转发到 `http://localhost:5100`。
+API 代理见 `.env`（复制自 `.env.example`），默认转发到 `https://127.0.0.1:58725`（与用户 API F5 调试端口一致）。
 
 后端项目路径：`Primordial_API/web/src/Primordial.Api`。
 

@@ -13,7 +13,7 @@
 
 ```bash
 # 后端
-cd ../Primordial_API/web/src/Primordial.Api && dotnet run      # :5100
+cd ../Primordial_API/web/src/Primordial.Api && dotnet run      # F5 或 :58725
 cd ../Primordial_API/admin/src/Primordial.Admin.Api && dotnet run  # :5101
 
 # 前端
