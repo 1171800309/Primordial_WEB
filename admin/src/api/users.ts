@@ -71,17 +71,15 @@ export type AuditLogResult = {
 }
 
 export function fetchUsers(page = 1, pageSize = 20) {
-  return apiRequest<UserListResult>(
-    `/api/admin/users?page=${page}&pageSize=${pageSize}`
-  )
+  return apiRequest<UserListResult>(`/users?page=${page}&pageSize=${pageSize}`)
 }
 
 export function fetchUserDetail(id: number) {
-  return apiRequest<UserDetail>(`/api/admin/users/${id}`)
+  return apiRequest<UserDetail>(`/users/${id}`)
 }
 
 export function updateUser(id: number, payload: UpdateUserPayload) {
-  return apiRequest<{ message?: string }>(`/api/admin/users/${id}`, {
+  return apiRequest<{ message?: string }>(`/users/${id}`, {
     method: 'PUT',
     body: JSON.stringify(payload),
   })
@@ -90,16 +88,14 @@ export function updateUser(id: number, payload: UpdateUserPayload) {
 export function uploadUserAvatar(id: number, file: File) {
   const form = new FormData()
   form.append('file', file)
-  return apiRequest<{ avatar: string }>(`/api/admin/users/${id}/avatar`, {
+  return apiRequest<{ avatar: string }>(`/users/${id}/avatar`, {
     method: 'POST',
     body: form,
   })
 }
 
 export function fetchUserLogs(id: number, page = 1, pageSize = 20) {
-  return apiRequest<AuditLogResult>(
-    `/api/admin/users/${id}/logs?page=${page}&pageSize=${pageSize}`
-  )
+  return apiRequest<AuditLogResult>(`/users/${id}/logs?page=${page}&pageSize=${pageSize}`)
 }
 
 export function avatarUrl(path: string | null | undefined) {

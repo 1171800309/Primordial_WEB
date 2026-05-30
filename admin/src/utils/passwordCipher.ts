@@ -1,5 +1,5 @@
 const ENCRYPTED_PREFIX = 'ENC:'
-const PUBLIC_KEY_PATH = '/api/admin/auth/public-key'
+const PUBLIC_KEY_PATH = '/auth/public-key'
 
 let cachedPublicKeyPem: string | null = null
 
@@ -58,6 +58,7 @@ export async function fetchAuthPublicKey(forceRefresh = false) {
 
 export async function encryptPassword(plainPassword: string) {
   if (!plainPassword) return plainPassword
+  if (!window.isSecureContext) return plainPassword
 
   const publicKeyPem = await fetchAuthPublicKey()
   const spki = pemToSpkiBuffer(publicKeyPem)

@@ -8,9 +8,15 @@ export default defineConfig({
     port: 5174,
     strictPort: false,
     proxy: {
-      '/api': {
+      '/auth': {
         target: 'http://localhost:5101',
         changeOrigin: true,
+        rewrite: (path) => `/api/admin${path}`,
+      },
+      '/users': {
+        target: 'http://localhost:5101',
+        changeOrigin: true,
+        rewrite: (path) => `/api/admin${path}`,
       },
       '/uploads': {
         target: 'http://localhost:5101',

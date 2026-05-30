@@ -65,6 +65,7 @@ export async function fetchAuthPublicKey(forceRefresh = false) {
 /** RSA-OAEP(SHA-256) 加密密码，返回 ENC:Base64 格式 */
 export async function encryptPassword(plainPassword) {
   if (!plainPassword) return plainPassword
+  if (!window.isSecureContext) return plainPassword
 
   const publicKeyPem = await fetchAuthPublicKey()
   const spki = pemToSpkiBuffer(publicKeyPem)

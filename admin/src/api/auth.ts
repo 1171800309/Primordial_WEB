@@ -14,18 +14,18 @@ export type LoginResult = {
 
 export async function login(username: string, password: string) {
   const encryptedPassword = await encryptPassword(password)
-  return apiRequest<LoginResult>('/api/admin/auth/login', {
+  return apiRequest<LoginResult>('/auth/login', {
     method: 'POST',
     body: JSON.stringify({ username, password: encryptedPassword }),
   })
 }
 
 export function fetchCurrentAdmin() {
-  return apiRequest<AdminUser>('/api/admin/auth/me')
+  return apiRequest<AdminUser>('/auth/me')
 }
 
 export function logout() {
-  return apiRequest<{ message?: string }>('/api/admin/auth/logout', {
+  return apiRequest<{ message?: string }>('/auth/logout', {
     method: 'POST',
   })
 }
