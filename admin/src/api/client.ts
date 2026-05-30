@@ -12,7 +12,8 @@ export async function apiRequest<T>(
 ): Promise<T> {
   const token = localStorage.getItem('admin_access_token')
   const headers = new Headers(options.headers)
-  if (!headers.has('Content-Type') && options.body) {
+  const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData
+  if (!headers.has('Content-Type') && options.body && !isFormData) {
     headers.set('Content-Type', 'application/json')
   }
   if (token) {

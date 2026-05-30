@@ -4,6 +4,7 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 import { AdminLayout } from './layout/AdminLayout'
 import { DashboardPage } from './pages/DashboardPage'
 import { LoginPage } from './pages/LoginPage'
+import { UserEditPage } from './pages/UserEditPage'
 import { UsersPage } from './pages/UsersPage'
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
           <Route element={<AdminLayout />}>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/users" element={<UsersPage />} />
+            <Route path="/users/:id" element={<UserEditPage />} />
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

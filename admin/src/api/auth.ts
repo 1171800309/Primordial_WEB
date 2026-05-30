@@ -1,4 +1,5 @@
 import { apiRequest } from './client'
+import { encryptPassword } from '../utils/passwordCipher'
 
 export type AdminUser = {
   id: number
@@ -11,10 +12,11 @@ export type LoginResult = {
   user: AdminUser
 }
 
-export function login(username: string, password: string) {
+export async function login(username: string, password: string) {
+  const encryptedPassword = await encryptPassword(password)
   return apiRequest<LoginResult>('/api/admin/auth/login', {
     method: 'POST',
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify({ username, password: encryptedPassword }),
   })
 }
 

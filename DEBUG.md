@@ -30,10 +30,12 @@
 ## 首次联调前
 
 ```bash
-# 用户 API 数据库配置（只需一次）
+# 用户 API 数据库配置（F5 会读 appsettings.Development.json，本机无 MySQL 时 Server 填局域网 IP）
 cp Primordial_API/web/src/Primordial.Api/appsettings.Development.json.example \
    Primordial_API/web/src/Primordial.Api/appsettings.Development.json
-# 编辑 MySQL 连接串
+cp Primordial_API/admin/src/Primordial.Admin.Api/appsettings.Development.json.example \
+   Primordial_API/admin/src/Primordial.Admin.Api/appsettings.Development.json
+# 编辑 Server、Password
 
 # 可选：前台 .env（默认已与 58725 对齐，可不建）
 cp Primordial_WEB/web/.env.example Primordial_WEB/web/.env
