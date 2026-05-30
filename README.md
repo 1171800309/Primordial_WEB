@@ -21,4 +21,4 @@ cd web && npm run dev    # :5173
 cd admin && npm run dev  # :5174 → 代理 :5101
 ```
 
-详见各包 `README.md`。
+详见各包 `README.md` 与 **[DEBUG.md](DEBUG.md)**（联调端口与 F5 启动顺序）。
