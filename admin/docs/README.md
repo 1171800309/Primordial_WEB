@@ -1,6 +1,5 @@
 # 管理后台说明
 
-- 登录接口：`POST /api/admin/auth/login`
-- 用户列表：`GET /api/admin/users`
-- 后端实现位于 `Primordial_API/api/src/Primordial.Api/Controllers/Admin*.cs`
-- 无需单独的 `Primordial_Admin_API` 仓库或服务
+- 后端：`Primordial_API/admin`（独立服务，端口 5101）
+- 接口前缀：`/api/admin/*`
+- 与用户 API（`Primordial_API/web`，5100）分离部署

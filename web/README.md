@@ -28,7 +28,7 @@ npm run dev
 
 API 代理见 `.env`（复制自 `.env.example`），默认转发到 `http://localhost:5100`。
 
-后端项目路径：`Primordial_API/api/src/Primordial.Api`。
+后端项目路径：`Primordial_API/web/src/Primordial.Api`。
 
 ## 构建与 Docker
 
