@@ -76,7 +76,7 @@
       </div>
       <div class="grid-12">
         <div v-for="card in traitCards" :key="card.title" class="card-mini reveal" :class="{ active: revealed }">
-          <div class="icon-placeholder" aria-hidden="true" />
+          <LandingTraitIcon :name="card.icon" />
           <h4>{{ card.title }}</h4>
           <p>{{ card.desc }}</p>
         </div>
@@ -127,6 +127,7 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from 'vue'
 import logoUrl from '@/assets/logo.png'
+import LandingTraitIcon from '@/components/landing/LandingTraitIcon.vue'
 import '@/styles/prototype-base.css'
 import '@/styles/pages/首页.css'
 
@@ -142,18 +143,18 @@ let glW = 0
 let glH = 0
 
 const traitCards = [
-  { title: '先天特性', desc: '生命底层的"源代码"，不因环境改变。你扮演无数角色，但核心的"性"早已写定。' },
-  { title: '先天禀性', desc: '"我携带什么样的能量，来到一个什么样的世界？"' },
-  { title: '先天行为特性', desc: '与生俱来的"行动方式"——不是你要做什么，而是无论做什么都改不掉的"做法"。' },
-  { title: '先天天赋特性', desc: '"我的能量在先天环境中被激发出了什么天赋？"' },
-  { title: '先天气质特性', desc: '"我带着怎样的气质？"' },
-  { title: '先天性格底色特性', desc: '"我的能量被先天环境塑造出了什么性格底色？"' },
-  { title: '先天社会人格特性', desc: '"我与社会的关系模式"——你带着什么样的社会人格，面对什么样的社会期待。' },
-  { title: '先天情感特性', desc: '"我在最亲密的关系里是什么样子？"' },
-  { title: '先天潜在驱动力', desc: '"我内心深处最渴望什么、最被什么推动。"' },
-  { title: '先天终极倾向', desc: '与生俱来的终极倾向——"我这一生，最终要走向哪里？"' },
-  { title: '先天深层原始冲动', desc: '"我在极端情境下才会被激活的原始本能"。' },
-  { title: '先天隐藏特性', desc: '"我内心深处藏着但自己未必知道的才能"。' }
+  { icon: 'book', title: '先天特性', desc: '生命底层的"源代码"，不因环境改变。你扮演无数角色，但核心的"性"早已写定。' },
+  { icon: 'triangle', title: '先天禀性', desc: '"我携带什么样的能量，来到一个什么样的世界？"' },
+  { icon: 'arrow', title: '先天行为特性', desc: '与生俱来的"行动方式"——不是你要做什么，而是无论做什么都改不掉的"做法"。' },
+  { icon: 'sun', title: '先天天赋特性', desc: '"我的能量在先天环境中被激发出了什么天赋？"' },
+  { icon: 'cross', title: '先天气质特性', desc: '"我带着怎样的气质？"' },
+  { icon: 'square', title: '先天性格底色特性', desc: '"我的能量被先天环境塑造出了什么性格底色？"' },
+  { icon: 'wave', title: '先天社会人格特性', desc: '"我与社会的关系模式"——你带着什么样的社会人格，面对什么样的社会期待。' },
+  { icon: 'heart', title: '先天情感特性', desc: '"我在最亲密的关系里是什么样子？"' },
+  { icon: 'clock', title: '先天潜在驱动力', desc: '"我内心深处最渴望什么、最被什么推动。"' },
+  { icon: 'peak', title: '先天终极倾向', desc: '与生俱来的终极倾向——"我这一生，最终要走向哪里？"' },
+  { icon: 'star', title: '先天深层原始冲动', desc: '"我在极端情境下才会被激活的原始本能"。' },
+  { icon: 'eye', title: '先天隐藏特性', desc: '"我内心深处藏着但自己未必知道的才能"。' }
 ]
 
 const faqs = [

@@ -17,7 +17,7 @@
       </router-link>
     </div>
 
-    <router-link to="/hub" class="back-btn">← 返回中枢</router-link>
+    <a href="/hub" class="back-btn" @click.prevent="goHub">← 返回中枢</a>
 
     <main class="main-content">
       <h1 class="page-title">先天 . 恒 . 炁域</h1>
@@ -68,10 +68,20 @@
                 :class="{ 'center-text': trait.coverCenter, opened: cardStates[trait.id]?.opened }"
               >
                 <CoverIcon :name="trait.iconName" />
-                <span v-html="trait.cover" />
+                <span
+                  v-if="trait.id === 't9' && trait.pendingPreview && !cardStates[trait.id]?.opened"
+                  v-html="trait.pendingPreview"
+                />
+                <span v-else v-html="trait.cover" />
                 <div class="open-hint">开启词卡</div>
               </div>
               <div class="flip-card" :class="[trait.tier, { 'is-yin': cardStates[trait.id]?.yin }]">
+                <span
+                  v-if="showTierBadge(trait)"
+                  class="tier-badge"
+                  :class="trait.tier"
+                  :title="tierTooltip(trait)"
+                >{{ tierLabel(trait) }}</span>
                 <div class="card-face face-yang">
                   <div class="trait-title">{{ trait.yang.title }}</div>
                   <div v-if="trait.yang.annotation" class="trait-annotation">{{ trait.yang.annotation }}</div>
@@ -138,9 +148,11 @@ import CoverIcon from '@/components/xiantian/CoverIcon.vue'
 import { usePageTransition } from '@/composables/usePageTransition'
 import { useDustCanvas } from '@/composables/useDustCanvas'
 import { useSegmentControl } from '@/composables/useSegmentControl'
-import { fetchMyTraitCards, fetchMyRadarCharts } from '@/api/me'
+import { fetchMyTraitCards, fetchMyRadarCharts, openMyTraitCard } from '@/api/me'
 import { resolveXianTianHenqiNumber } from '@/utils/henqi'
 import { XIANTIAN_TRAIT_SLOTS, mergeTraitCards } from '@/constants/xiantianTraitSlots'
+import { TIER_SLOTS, tierMetaFor } from '@/constants/traitTierMeta'
+import { useBackToHub } from '@/composables/useBackToHub'
 import '@/styles/prototype-base.css'
 import '@/styles/pages/xiantian-page.css'
 
@@ -176,13 +188,21 @@ const traitsError = ref('')
 const traits = ref(mergeTraitCards(XIANTIAN_TRAIT_SLOTS))
 
 const cardStates = reactive({})
+const goHub = useBackToHub()
+
+const showTierBadge = (trait) => TIER_SLOTS.has(trait.id) && Boolean(trait.tier && tierMetaFor(trait.tier))
+const tierLabel = (trait) => tierMetaFor(trait.tier)?.label ?? ''
+const tierTooltip = (trait) => {
+  const meta = tierMetaFor(trait.tier)
+  return meta ? `${meta.title}：${meta.desc}` : ''
+}
 
 const syncCardStates = (list) => {
   for (const key of Object.keys(cardStates)) {
     if (!list.some((t) => t.id === key)) delete cardStates[key]
   }
   for (const t of list) {
-    if (!cardStates[t.id]) cardStates[t.id] = { opened: false, yin: false }
+    cardStates[t.id] = { opened: Boolean(t.opened), yin: false }
   }
 }
 
@@ -410,9 +430,10 @@ const handleCardClick = (id) => {
   const state = cardStates[id]
   if (!state.opened) {
     state.opened = true
-  } else {
-    state.yin = !state.yin
+    openMyTraitCard(id).catch(() => {})
+    return
   }
+  state.yin = !state.yin
 }
 
 const onResize = () => {

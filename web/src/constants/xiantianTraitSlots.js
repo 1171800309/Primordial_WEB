@@ -80,12 +80,14 @@ export const buildFallbackTrait = (slot) => ({
   coverCenter: slot.coverCenter,
   cover: slot.cover,
   tier: '',
+  opened: false,
+  pendingPreview: null,
   yang: { title: '—', annotation: '', desc: '暂无匹配词条，请确认词库已导入。' },
   yin: { title: '', desc: '暂无阴面释义。' }
 })
 
 export const mergeTraitCards = (slots, apiCards = []) => {
-  const bySlot = new Map((apiCards || []).map((c) => [c.slotId, c]))
+  const bySlot = new Map((apiCards || []).map((c) => [c.slotId ?? c.id, c]))
   return slots.map((slot) => {
     const hit = bySlot.get(slot.id)
     if (!hit) return buildFallbackTrait(slot)
@@ -96,6 +98,8 @@ export const mergeTraitCards = (slots, apiCards = []) => {
       coverCenter: slot.coverCenter,
       cover: slot.cover,
       tier: hit.tier || '',
+      opened: Boolean(hit.opened),
+      pendingPreview: hit.pendingPreview || null,
       yang: {
         title: hit.yang?.title || '—',
         annotation: hit.yang?.annotation || '',

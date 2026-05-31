@@ -13,7 +13,7 @@
       </router-link>
     </div>
 
-    <router-link to="/hub" class="back-btn">← 返回中枢</router-link>
+    <a href="/hub" class="back-btn" @click.prevent="goHub">← 返回中枢</a>
 
     <main class="profile-main">
       <img :src="logoUrl" alt="一炁" class="profile-logo ink-blend" />
@@ -30,6 +30,7 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import logoUrl from '@/assets/logo.png'
 import { usePageTransition } from '@/composables/usePageTransition'
+import { useBackToHub } from '@/composables/useBackToHub'
 import { useDustCanvas } from '@/composables/useDustCanvas'
 import { clearSession } from '@/utils/session'
 import '@/styles/prototype-base.css'
@@ -39,6 +40,7 @@ const { loaded } = usePageTransition(500)
 useDustCanvas(canvasRef)
 
 const router = useRouter()
+const goHub = useBackToHub()
 
 const displayName = computed(() => {
   try {

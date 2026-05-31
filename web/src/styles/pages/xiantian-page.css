@@ -131,17 +131,17 @@ animation: hintPulse 2s infinite alternate var(--bezier-smooth);
 /* 卡片内里本体 */
 .xiantian-page .flip-card{ position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
 .xiantian-page .flip-card.is-yin{ transform: rotateY(180deg); }
-.xiantian-page .card-face{ position: absolute; top: 0; left: 0; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 12px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; }
+.xiantian-page .card-face{ position: absolute; top: 0; left: 0; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 12px; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; padding: 18px 16px 14px; text-align: center; overflow: hidden; box-sizing: border-box; }
 .xiantian-page .face-yang{ background: #FDFDFD; border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
 .xiantian-page .face-yin{ background: #08080A; border: 1px solid rgba(255,255,255,0.15); box-shadow: inset 0 0 30px rgba(0,0,0,1); transform: rotateY(180deg); }
-.xiantian-page .trait-title{ font-family: var(--font-serif); font-size: 26px; font-weight: 600; margin-bottom: 8px; letter-spacing: 0.1em; }
-.xiantian-page .trait-annotation{ font-family: var(--font-sans); font-size: 12px; opacity: 0.7; margin-bottom: 16px; font-weight: 300; }
-.xiantian-page .trait-desc{ font-size: 14px; line-height: 1.6; font-weight: 400; }
+.xiantian-page .trait-title{ font-family: var(--font-serif); font-size: clamp(20px, 4vw, 26px); font-weight: 600; margin-bottom: 8px; letter-spacing: 0.1em; flex-shrink: 0; }
+.xiantian-page .trait-annotation{ font-family: var(--font-sans); font-size: 12px; opacity: 0.7; margin-bottom: 10px; font-weight: 300; flex-shrink: 0; }
+.xiantian-page .trait-desc{ font-size: clamp(12px, 3vw, 14px); line-height: 1.6; font-weight: 400; flex: 1 1 auto; min-height: 0; width: 100%; overflow-y: auto; overflow-x: hidden; padding: 0 2px 4px; }
 .xiantian-page .face-yang .trait-title{ color: #000; }
 .xiantian-page .face-yang .trait-annotation, .xiantian-page .face-yang .trait-desc{ color: #333; }
 .xiantian-page .face-yin .trait-title{ color: #FFF; }
 .xiantian-page .face-yin .trait-annotation, .xiantian-page .face-yin .trait-desc{ color: #AAA; font-weight: 300; }
-.xiantian-page .toggle-dot{ position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); width: 12px; height: 12px; border-radius: 50%; transition: all 0.3s ease; }
+.xiantian-page .toggle-dot{ position: relative; bottom: auto; left: auto; transform: none; flex-shrink: 0; margin-top: auto; width: 12px; height: 12px; border-radius: 50%; transition: all 0.3s ease; }
 .xiantian-page .face-yang .toggle-dot{ background: #000; border: 2px solid #FFF; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
 .xiantian-page .face-yin .toggle-dot{ background: #FFF; border: 2px solid #000; box-shadow: 0 0 8px rgba(255,255,255,0.6); }
 .xiantian-page .trait-label{ font-family: var(--font-serif); font-size: 15px; color: var(--text-white); letter-spacing: 0.1em; }
@@ -158,6 +158,24 @@ animation: hintPulse 2s infinite alternate var(--bezier-smooth);
 .xiantian-page .tier-black .face-yang{ background: #F5F5F5; }
 .xiantian-page .tier-black .trait-title, .xiantian-page .tier-black .trait-annotation, .xiantian-page .tier-black .trait-desc{ color: #777777 !important; }
 .xiantian-page .tier-black .toggle-dot{ background: #777777 !important; border-color: #777777 !important; box-shadow: 0 0 10px rgba(119, 119, 119, 0.5) !important; }
+.xiantian-page .flip-card { position: relative; }
+.xiantian-page .tier-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 3;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 22px;
+  cursor: help;
+}
+.xiantian-page .tier-badge.tier-gold { background: rgba(212, 175, 55, 0.18); color: #B8860B; border: 1px solid rgba(212, 175, 55, 0.45); }
+.xiantian-page .tier-badge.tier-yellow { background: rgba(249, 212, 35, 0.16); color: #D4A000; border: 1px solid rgba(249, 212, 35, 0.45); }
+.xiantian-page .tier-badge.tier-black { background: rgba(136, 136, 136, 0.16); color: #777; border: 1px solid rgba(136, 136, 136, 0.45); }
 .xiantian-page .traits-footer{ margin-top: 40px; text-align: center; }
 .xiantian-page .traits-note{ font-size: 12px; color: var(--text-dark); letter-spacing: 0.1em; }
 /* ================= 模块三：八维评估 ================= */

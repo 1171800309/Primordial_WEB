@@ -28,6 +28,8 @@ export const fetchMyTraitCards = () =>
     method: 'get'
   })
 
+export { openMyTraitCard } from './qiEvents'
+
 /** 当前登录用户的先天显性/隐性八维雷达图（实时计算，不存库） */
 export const fetchMyRadarCharts = () =>
   request({

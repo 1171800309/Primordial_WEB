@@ -117,24 +117,6 @@
       </el-row>
 
       <el-row :gutter="16">
-        <el-col :xs="24" :sm="8">
-          <el-form-item label="年柱">
-            <el-input :model-value="pillarThree.yearPillar" readonly placeholder="自动计算" />
-          </el-form-item>
-        </el-col>
-        <el-col :xs="24" :sm="8">
-          <el-form-item label="月柱">
-            <el-input :model-value="pillarThree.monthPillar" readonly placeholder="自动计算" />
-          </el-form-item>
-        </el-col>
-        <el-col :xs="24" :sm="8">
-          <el-form-item label="日柱">
-            <el-input :model-value="pillarThree.dayPillar" readonly placeholder="自动计算" />
-          </el-form-item>
-        </el-col>
-      </el-row>
-
-      <el-row :gutter="16">
         <el-col :span="24">
           <el-form-item label="出生时间" prop="birthTime">
             <el-time-picker
@@ -145,14 +127,6 @@
               style="width: 100%"
               @change="onBirthTimeChange"
             />
-          </el-form-item>
-        </el-col>
-      </el-row>
-
-      <el-row :gutter="16">
-        <el-col :span="24">
-          <el-form-item label="时柱">
-            <el-input :model-value="hourPillar" readonly placeholder="根据省市与出生时间自动计算（东经基准）" />
           </el-form-item>
         </el-col>
       </el-row>

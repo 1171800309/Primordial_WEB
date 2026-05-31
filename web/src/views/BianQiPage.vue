@@ -13,7 +13,7 @@
       </router-link>
     </div>
 
-    <router-link to="/hub" class="back-btn">← 返回中枢</router-link>
+    <a href="/hub" class="back-btn" @click.prevent="goHub">← 返回中枢</a>
 
     <router-link to="/wanqi" class="right-return-dot">
       <div class="return-label">返回万炁之城 →</div>
@@ -47,7 +47,6 @@
           <div class="buff-left">
             <div :class="buffDayun.glowClass" />
             <div class="buff-label">当前大运能量场，给我的BUFF为：</div>
-            <div v-if="dayunMeta" class="buff-meta">{{ dayunMeta }}</div>
             <div class="buff-number-wrap">
               <span class="huge-number" :class="buffDayun.numberClass">{{ buffDayun.display }}</span>
               <span :class="buffDayun.percentClass">%</span>
@@ -56,18 +55,25 @@
           </div>
           <div class="buff-right">
             <div class="trait-wrapper">
-              <div class="flip-card" :class="{ 'is-yin': dayunCardYin }" @click="dayunCardYin = !dayunCardYin">
-                <div class="card-face face-yang">
-                  <div class="trait-title">{{ dayunTrait.yang.title }}</div>
-                  <div v-if="dayunTrait.yang.subtitle" class="trait-subtitle">{{ dayunTrait.yang.subtitle }}</div>
-                  <div class="trait-desc" v-html="dayunTrait.yang.desc" />
-                  <div class="toggle-dot" />
+              <div class="blind-box" :class="{ 'is-opened': dayunCardOpened }" @click="handleDayunCardClick">
+                <div class="unopened-cover" :class="{ opened: dayunCardOpened }">
+                  <div class="pending-title">待开启</div>
+                  <div class="pending-sub">{{ dayunTrait.yang.title }}</div>
+                  <div class="open-hint">点击开启词条</div>
                 </div>
-                <div class="card-face face-yin">
-                  <div class="trait-title">{{ dayunTrait.yin.title }}</div>
-                  <div v-if="dayunTrait.yin.subtitle" class="trait-subtitle">{{ dayunTrait.yin.subtitle }}</div>
-                  <div class="trait-desc" v-html="dayunTrait.yin.desc" />
-                  <div class="toggle-dot" />
+                <div class="flip-card" :class="{ 'is-yin': dayunCardYin }">
+                  <div class="card-face face-yang">
+                    <div class="trait-title">{{ dayunTrait.yang.title }}</div>
+                    <div v-if="dayunTrait.yang.subtitle" class="trait-subtitle">{{ dayunTrait.yang.subtitle }}</div>
+                    <div class="trait-desc" v-html="dayunTrait.yang.desc" />
+                    <div class="toggle-dot" />
+                  </div>
+                  <div class="card-face face-yin">
+                    <div class="trait-title">{{ dayunTrait.yin.title }}</div>
+                    <div v-if="dayunTrait.yin.subtitle" class="trait-subtitle">{{ dayunTrait.yin.subtitle }}</div>
+                    <div class="trait-desc" v-html="dayunTrait.yin.desc" />
+                    <div class="toggle-dot" />
+                  </div>
                 </div>
               </div>
               <div class="trait-label">我的当前大运词条</div>
@@ -86,7 +92,6 @@
           <div class="buff-left">
             <div :class="buffLiunian.glowClass" />
             <div class="buff-label">今年流年能量场，给我的BUFF为：</div>
-            <div v-if="liunianMeta" class="buff-meta">{{ liunianMeta }}</div>
             <div class="buff-number-wrap">
               <span class="huge-number" :class="buffLiunian.numberClass">{{ buffLiunian.display }}</span>
               <span :class="buffLiunian.percentClass">%</span>
@@ -95,18 +100,25 @@
           </div>
           <div class="buff-right">
             <div class="trait-wrapper">
-              <div class="flip-card" :class="{ 'is-yin': liunianCardYin }" @click="liunianCardYin = !liunianCardYin">
-                <div class="card-face face-yang">
-                  <div class="trait-title">{{ liunianTrait.yang.title }}</div>
-                  <div v-if="liunianTrait.yang.subtitle" class="trait-subtitle">{{ liunianTrait.yang.subtitle }}</div>
-                  <div class="trait-desc" v-html="liunianTrait.yang.desc" />
-                  <div class="toggle-dot" />
+              <div class="blind-box" :class="{ 'is-opened': liunianCardOpened }" @click="handleLiunianCardClick">
+                <div class="unopened-cover" :class="{ opened: liunianCardOpened }">
+                  <div class="pending-title">待开启</div>
+                  <div class="pending-sub">{{ liunianTrait.yang.title }}</div>
+                  <div class="open-hint">点击开启词条</div>
                 </div>
-                <div class="card-face face-yin">
-                  <div class="trait-title">{{ liunianTrait.yin.title }}</div>
-                  <div v-if="liunianTrait.yin.subtitle" class="trait-subtitle">{{ liunianTrait.yin.subtitle }}</div>
-                  <div class="trait-desc" v-html="liunianTrait.yin.desc" />
-                  <div class="toggle-dot" />
+                <div class="flip-card" :class="{ 'is-yin': liunianCardYin }">
+                  <div class="card-face face-yang">
+                    <div class="trait-title">{{ liunianTrait.yang.title }}</div>
+                    <div v-if="liunianTrait.yang.subtitle" class="trait-subtitle">{{ liunianTrait.yang.subtitle }}</div>
+                    <div class="trait-desc" v-html="liunianTrait.yang.desc" />
+                    <div class="toggle-dot" />
+                  </div>
+                  <div class="card-face face-yin">
+                    <div class="trait-title">{{ liunianTrait.yin.title }}</div>
+                    <div v-if="liunianTrait.yin.subtitle" class="trait-subtitle">{{ liunianTrait.yin.subtitle }}</div>
+                    <div class="trait-desc" v-html="liunianTrait.yin.desc" />
+                    <div class="toggle-dot" />
+                  </div>
                 </div>
               </div>
               <div class="trait-label">我的当前流年词条</div>
@@ -125,7 +137,8 @@
 import { onMounted, reactive, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import logoUrl from '@/assets/logo.png'
-import { fetchMyBianQi } from '@/api/me'
+import { fetchMyBianQi, openMyTraitCard } from '@/api/me'
+import { useBackToHub } from '@/composables/useBackToHub'
 import { usePageTransition } from '@/composables/usePageTransition'
 import { useDustCanvas } from '@/composables/useDustCanvas'
 import { useSegmentControl } from '@/composables/useSegmentControl'
@@ -146,10 +159,13 @@ const { activeTab, selectTab } = useSegmentControl(sliderRef, 'tab-dayun', '.bia
 
 const loading = ref(false)
 const loadError = ref('')
+const dayunCardOpened = ref(false)
+const liunianCardOpened = ref(false)
+const dayunOpenSlot = ref('')
+const liunianOpenSlot = ref('')
 const dayunCardYin = ref(false)
 const liunianCardYin = ref(false)
-const dayunMeta = ref('')
-const liunianMeta = ref('')
+const goHub = useBackToHub()
 
 const buffDayun = reactive(createBuffState())
 const buffLiunian = reactive(createBuffState())
@@ -237,24 +253,24 @@ const loadBianQi = async () => {
     const liunian = data?.liunian
 
     if (dayun?.available) {
-      dayunMeta.value = [dayun.pillar, dayun.period, `${dayun.stemTenGod}+${dayun.branchTenGod}`]
-        .filter(Boolean)
-        .join(' · ')
+      dayunOpenSlot.value = dayun.openSlotId || ''
+      dayunCardOpened.value = Boolean(dayun.opened)
       applyTrait(dayun, dayunTrait, dayun.traitFallback)
       animateBuffNumber(buffDayun, Number(dayun.buffPercent) || 0)
     } else {
-      dayunMeta.value = dayun?.message || ''
+      dayunOpenSlot.value = ''
+      dayunCardOpened.value = false
       applyTrait(null, dayunTrait, dayun?.message)
     }
 
     if (liunian?.available) {
-      liunianMeta.value = [liunian.pillar, liunian.period, `${liunian.stemTenGod}+${liunian.branchTenGod}`]
-        .filter(Boolean)
-        .join(' · ')
+      liunianOpenSlot.value = liunian.openSlotId || ''
+      liunianCardOpened.value = Boolean(liunian.opened)
       applyTrait(liunian, liunianTrait, liunian.traitFallback)
       animateBuffNumber(buffLiunian, Number(liunian.buffPercent) || 0)
     } else {
-      liunianMeta.value = liunian?.message || ''
+      liunianOpenSlot.value = ''
+      liunianCardOpened.value = false
       applyTrait(null, liunianTrait, liunian?.message)
     }
   } catch (error) {
@@ -263,6 +279,32 @@ const loadBianQi = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const openBianQiCard = async (slotId, openedRef) => {
+  openedRef.value = true
+  if (!slotId) return
+  try {
+    await openMyTraitCard(slotId)
+  } catch {
+    /* 本地已展示，下次进入仍会从服务端同步 */
+  }
+}
+
+const handleDayunCardClick = () => {
+  if (!dayunCardOpened.value) {
+    openBianQiCard(dayunOpenSlot.value, dayunCardOpened)
+    return
+  }
+  dayunCardYin.value = !dayunCardYin.value
+}
+
+const handleLiunianCardClick = () => {
+  if (!liunianCardOpened.value) {
+    openBianQiCard(liunianOpenSlot.value, liunianCardOpened)
+    return
+  }
+  liunianCardYin.value = !liunianCardYin.value
 }
 
 const onTabClick = (tabId, event) => {
@@ -296,11 +338,62 @@ watch(loaded, (val) => {
   text-decoration: none;
 }
 
-.buff-meta {
+.bianqi-page .blind-box {
+  position: relative;
+  width: 100%;
+  height: 320px;
+  cursor: pointer;
+}
+
+.bianqi-page .blind-box:not(.is-opened) .flip-card {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.bianqi-page .unopened-cover {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+  text-align: center;
+  border-radius: 16px;
+  background: #050507;
+  border: 1px solid rgba(234, 222, 199, 0.45);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.85), inset 0 0 0 1px rgba(234, 222, 199, 0.08);
+  transition: opacity 0.5s ease, visibility 0.5s ease, transform 0.5s ease;
+}
+
+.bianqi-page .unopened-cover.opened {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: scale(0.98);
+}
+
+.bianqi-page .pending-title {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  color: var(--gold-light);
+  letter-spacing: 0.2em;
+  margin-bottom: 12px;
+}
+
+.bianqi-page .pending-sub {
+  font-size: 14px;
+  color: rgba(234, 222, 199, 0.82);
+  line-height: 1.8;
+}
+
+.bianqi-page .open-hint {
+  margin-top: 18px;
   font-size: 12px;
-  color: var(--text-muted);
-  letter-spacing: 0.08em;
-  margin-bottom: 8px;
+  color: var(--text-dark);
+  letter-spacing: 0.15em;
 }
 
 .traits-note {
