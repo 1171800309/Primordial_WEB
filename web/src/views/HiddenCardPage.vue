@@ -3,14 +3,15 @@
     <canvas ref="canvasRef" id="bg-canvas" />
     <div class="holy-glow" />
 
-    <div id="discovery-modal" :class="{ hidden: modalHidden }">
+    <div
+      v-if="discovery.showModal"
+      id="discovery-modal"
+      :class="{ hidden: modalHidden }"
+    >
       <div class="modal-box">
         <div class="modal-ring" />
         <div class="modal-title">机缘触发</div>
-        <div class="modal-desc">
-          系统在你的深层能量场中，侦测到未知的炁场剧烈波动...<br />你已解锁极少数人具备的
-          <span>「隐藏词卡」</span>
-        </div>
+        <div class="modal-desc">{{ discovery.modalMessage }}</div>
         <button type="button" class="reveal-btn" @click="revealCards">查看隐藏词卡</button>
       </div>
     </div>
@@ -36,8 +37,8 @@
       <h1 class="page-title">隐藏词卡</h1>
       <div class="page-subtitle">HIDDEN TRAITS</div>
 
-      <div class="ur-cards-container">
-        <div v-for="card in urCards" :key="card.id" class="ur-card-wrapper">
+      <div v-if="visibleCards.length" class="ur-cards-container">
+        <div v-for="card in visibleCards" :key="card.id" class="ur-card-wrapper">
           <div class="blind-box" @click="handleCardClick(card.id)">
             <div class="unopened-cover" :class="{ opened: cardStates[card.id]?.opened }">
               <span v-html="card.cover" />
@@ -58,13 +59,18 @@
           <div class="trait-label-bottom">{{ card.label }}</div>
         </div>
       </div>
+
+      <p v-else-if="!loading" class="empty-note">你的日柱无隐藏词卡，可直接返回先天恒炁域继续探索。</p>
+      <p v-else class="empty-note">加载中…</p>
     </main>
   </div>
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import logoUrl from '@/assets/logo.png'
+import { fetchMyTraitCards } from '@/api/me'
+import { HIDDEN_TRAIT_CARD_SLOTS, resolveHiddenDiscovery } from '@/constants/hiddenTraitCards'
 import { useDustCanvas } from '@/composables/useDustCanvas'
 import '@/styles/prototype-base.css'
 import '@/styles/pages/隐藏词卡.css'
@@ -72,41 +78,55 @@ import '@/styles/pages/隐藏词卡.css'
 const canvasRef = ref(null)
 useDustCanvas(canvasRef)
 
+const loading = ref(true)
 const modalHidden = ref(false)
 const contentRevealed = ref(false)
-
-const urCards = [
-  {
-    id: 'ur1',
-    label: '深层原始冲动特性',
-    cover: '“我在极端情境下<br>才会被激活的原始本能”',
-    yang: {
-      title: '修罗',
-      annotation: '撕裂常规的毁灭与重塑之力。',
-      desc: '在绝境与极度高压下，常规道德与理性会被瞬间剥离，爆发出纯粹的生存与反击本能。'
-    },
-    yin: {
-      desc: '一旦开启，极其容易带来不可逆的破坏，甚至在狂热中反噬自身曾经最珍视的羁绊与事物。'
-    }
-  },
-  {
-    id: 'ur2',
-    label: '隐藏能力特性',
-    cover: '“我内心深处藏着<br>但自己未必知道的才能”',
-    yang: {
-      title: '虚空造物',
-      annotation: '无中生有的直觉构筑力。',
-      desc: '能够从绝对的无序和混乱中，瞬间抓取核心规律，凭直觉搭建出全新的规则或系统。'
-    },
-    yin: {
-      desc: '过于超前与跳跃的思维内核，常使得在世俗沟通中显得极其孤僻与傲慢，难以被同频理解。'
-    }
-  }
-]
+const discovery = ref({
+  dayZhi: null,
+  count: 0,
+  showModal: false,
+  modalMessage: null
+})
 
 const cardStates = reactive(
-  Object.fromEntries(urCards.map((c) => [c.id, { opened: false, yin: false }]))
+  Object.fromEntries(HIDDEN_TRAIT_CARD_SLOTS.map((c) => [c.id, { opened: false, yin: false }]))
 )
+
+const visibleCards = computed(() =>
+  HIDDEN_TRAIT_CARD_SLOTS.slice(0, Math.max(0, discovery.value.count))
+)
+
+const applyDiscovery = (payload) => {
+  discovery.value = payload
+  if (!payload.showModal) {
+    modalHidden.value = true
+    contentRevealed.value = true
+  }
+}
+
+const loadDiscovery = async () => {
+  loading.value = true
+  try {
+    const res = await fetchMyTraitCards()
+    const data = res?.data ?? res
+    const remote = data?.hiddenDiscovery
+    if (remote && typeof remote.count === 'number') {
+      applyDiscovery({
+        dayZhi: remote.dayZhi ?? null,
+        count: remote.count,
+        showModal: Boolean(remote.showModal),
+        modalMessage: remote.modalMessage ?? null
+      })
+      return
+    }
+    const dayZhi = data?.keys?.dayZhi ?? data?.keys?.dayPillar?.slice(1)
+    applyDiscovery(resolveHiddenDiscovery(dayZhi))
+  } catch {
+    applyDiscovery(resolveHiddenDiscovery(null))
+  } finally {
+    loading.value = false
+  }
+}
 
 const revealCards = () => {
   modalHidden.value = true
@@ -121,6 +141,10 @@ const handleCardClick = (id) => {
     state.yin = !state.yin
   }
 }
+
+onMounted(() => {
+  loadDiscovery()
+})
 </script>
 
 <style scoped>
@@ -130,5 +154,14 @@ const handleCardClick = (id) => {
   z-index: 0;
   opacity: 0.8;
   pointer-events: none;
+}
+
+.empty-note {
+  margin-top: 48px;
+  font-size: 14px;
+  color: var(--text-muted);
+  letter-spacing: 0.12em;
+  text-align: center;
+  line-height: 2;
 }
 </style>
