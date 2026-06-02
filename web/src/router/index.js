@@ -10,6 +10,8 @@ import QiXiangTaiPage from '../views/QiXiangTaiPage.vue'
 import WanQiPage from '../views/WanQiPage.vue'
 import HiddenCardPage from '../views/HiddenCardPage.vue'
 import ProfilePage from '../views/ProfilePage.vue'
+import TermsPage from '../views/TermsPage.vue'
+import PrivacyPage from '../views/PrivacyPage.vue'
 import { validateToken } from '@/api/auth'
 import { clearSession, touchSession } from '@/utils/session'
 import { consumeSkipTokenValidation } from '@/utils/authSession'
@@ -28,6 +30,8 @@ const router = createRouter({
     { path: '/wanqi', name: 'wanqi', component: WanQiPage },
     { path: '/hidden-card', name: 'hidden-card', component: HiddenCardPage },
     { path: '/profile', name: 'profile', component: ProfilePage },
+    { path: '/terms', name: 'terms', component: TermsPage },
+    { path: '/privacy', name: 'privacy', component: PrivacyPage },
     { path: '/index', redirect: '/hub' },
     { path: '/home', name: 'legacy-home', component: Home }
   ]
@@ -38,7 +42,7 @@ const VALIDATE_CACHE_MS = Number(import.meta.env.VITE_TOKEN_VALIDATE_CACHE_MS ||
 
 router.beforeEach(async (to) => {
   const token = localStorage.getItem('token')
-  const publicRoutes = ['/login', '/register', '/']
+  const publicRoutes = ['/login', '/register', '/', '/terms', '/privacy']
   if (!token && !publicRoutes.includes(to.path)) return '/login'
   if (token && isOversizedToken(token)) {
     clearSession()

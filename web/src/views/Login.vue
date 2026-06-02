@@ -1,7 +1,8 @@
 <template>
   <AuthPageShell
-    subtitle="登录 · 进入能量中枢"
-    :header-link="{ to: '/register', label: '开启命格' }"
+    title="登录"
+    subtitle="请输入账号信息"
+    :header-link="{ to: '/register', label: '去注册' }"
   >
     <el-form
       ref="loginFormRef"
@@ -35,9 +36,9 @@
       </el-form-item>
       <div class="auth-actions">
         <button type="button" class="auth-submit-btn" :disabled="loading" @click="handleLogin">
-          {{ loading ? '意识上传中…' : '进入炁场' }}
+          {{ loading ? '登录中…' : '登录' }}
         </button>
-        <button type="button" class="auth-ghost-btn" @click="goRegister">还没有命格？开启注册</button>
+        <button type="button" class="auth-ghost-btn" @click="goRegister">还没有账号？去注册</button>
       </div>
     </el-form>
   </AuthPageShell>

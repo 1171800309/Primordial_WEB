@@ -40,6 +40,14 @@ export type UserDetail = {
   createdAt: string
   updatedAt: string
   profile: UserProfile | null
+  baziAnalysis?: Record<string, unknown> | null
+  birthProfile?: {
+    calendarType?: string | null
+    birthDateTime?: string | null
+    province?: string | null
+    city?: string | null
+    district?: string | null
+  } | null
 }
 
 export type UpdateUserPayload = {
@@ -96,6 +104,15 @@ export function uploadUserAvatar(id: number, file: File) {
 
 export function fetchUserLogs(id: number, page = 1, pageSize = 20) {
   return apiRequest<AuditLogResult>(`/users/${id}/logs?page=${page}&pageSize=${pageSize}`)
+}
+
+export function recomputeUserBazi(id: number) {
+  return apiRequest<{ message?: string; baziAnalysis?: Record<string, unknown> | null }>(
+    `/users/${id}/recompute-bazi`,
+    {
+      method: 'POST',
+    }
+  )
 }
 
 export function avatarUrl(path: string | null | undefined) {

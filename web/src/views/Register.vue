@@ -1,11 +1,11 @@
 <template>
   <AuthPageShell
-    title="开启命格"
-    subtitle="录入时空坐标，对齐先天之炁"
+    title="注册账号"
+    subtitle="填写基础信息，完成账号注册"
     wide
     scrollable
     :show-hero-logo="false"
-    :header-link="{ to: '/login', label: '已有命格' }"
+    :header-link="{ to: '/login', label: '去登录' }"
   >
     <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="auth-form">
       <div class="auth-section-title">基础信息</div>
@@ -132,8 +132,16 @@
       </el-row>
 
       <div class="auth-actions">
+        <el-form-item prop="agreementsAccepted" class="auth-agreement-item">
+          <el-checkbox v-model="form.agreementsAccepted">
+            我已阅读并同意
+            <router-link to="/terms" target="_blank" class="auth-agreement-link">《用户协议》</router-link>
+            与
+            <router-link to="/privacy" target="_blank" class="auth-agreement-link">《隐私政策》</router-link>
+          </el-checkbox>
+        </el-form-item>
         <button type="button" class="auth-submit-btn" :disabled="loading" @click="onSubmit">
-          {{ loading ? '时空对齐中…' : '开启命格' }}
+          {{ loading ? '提交中…' : '注册' }}
         </button>
         <button type="button" class="auth-ghost-btn" @click="goLogin">返回登录</button>
       </div>
@@ -181,7 +189,8 @@ const form = reactive({
   birthDay: '',
   birthTime: '',
   province: '',
-  city: ''
+  city: '',
+  agreementsAccepted: false
 })
 
 const rules = {
@@ -195,7 +204,16 @@ const rules = {
   birthDay: [{ required: true, message: '请选择出生日', trigger: 'change' }],
   birthTime: [{ required: true, message: '请选择出生时间', trigger: 'change' }],
   province: [{ required: true, message: '请选择省', trigger: 'change' }],
-  city: [{ required: true, message: '请选择市', trigger: 'change' }]
+  city: [{ required: true, message: '请选择市', trigger: 'change' }],
+  agreementsAccepted: [
+    {
+      validator: (_, value, callback) => {
+        if (value) callback()
+        else callback(new Error('请先阅读并同意用户协议与隐私政策'))
+      },
+      trigger: 'change'
+    }
+  ]
 }
 
 const normalizeList = (data) => {
@@ -411,7 +429,7 @@ const onSubmit = async () => {
     }
 
     skipTokenValidationOnce()
-    ElMessage.success('命格已启')
+    ElMessage.success('注册成功')
     await navigateToHub(router)
   } catch (error) {
     const msg = error?.response?.data?.message || error?.response?.data?.msg || error?.response?.data?.error || error?.message || '注册失败'

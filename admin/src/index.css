@@ -1118,6 +1118,22 @@ a {
   word-break: break-all;
 }
 
+.code-block {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--admin-border);
+  background: #0f172a;
+  color: #dbeafe;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  max-height: 460px;
+  overflow: auto;
+  word-break: break-word;
+}
+
 @media (max-width: 1080px) {
   .stat-grid,
   .panel-grid,

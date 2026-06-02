@@ -21,6 +21,15 @@
 
     <main class="main-content">
       <h1 class="page-title">先天 . 恒 . 炁域</h1>
+      <button
+        v-if="activeTab === 'tab-2' && hiddenDiscovery.count > 0 && hiddenCardViewed"
+        type="button"
+        class="hidden-card-entry"
+        @click="showHiddenPrompt = true"
+      >
+        <span class="entry-pulse" />
+        <span class="entry-text">隐藏词卡 x{{ hiddenDiscovery.count }}</span>
+      </button>
 
       <div class="segment-control" id="segment-control">
         <div ref="sliderRef" class="segment-slider" id="segment-slider" />
@@ -137,11 +146,25 @@
         </div>
       </div>
     </main>
+
+    <div v-if="showHiddenPrompt" class="hidden-modal-mask" @click.self="showHiddenPrompt = false">
+      <div class="hidden-modal-box">
+        <div class="hidden-modal-title">隐藏词卡</div>
+        <div class="hidden-modal-desc">
+          {{ hiddenDiscovery.modalMessage || `你有${hiddenDiscovery.count}张隐藏词卡待开启` }}
+        </div>
+        <div class="hidden-modal-actions">
+          <button type="button" class="modal-ghost" @click="showHiddenPrompt = false">稍后再看</button>
+          <button type="button" class="modal-primary" @click="goHiddenCard">立即前往</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, reactive, ref, watch, nextTick } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref, watch, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import logoUrl from '@/assets/logo.png'
 import CoverIcon from '@/components/xiantian/CoverIcon.vue'
@@ -189,6 +212,20 @@ const traits = ref(mergeTraitCards(XIANTIAN_TRAIT_SLOTS))
 
 const cardStates = reactive({})
 const goHub = useBackToHub()
+const router = useRouter()
+const showHiddenPrompt = ref(false)
+const hiddenCardViewed = ref(false)
+const hiddenDiscovery = reactive({
+  dayZhi: null,
+  count: 0,
+  showModal: false,
+  modalMessage: ''
+})
+const hiddenViewedStorageKey = 'xq_hidden_card_viewed'
+const hasShownUnlockPrompt = ref(false)
+const allTraitCardsOpened = computed(() =>
+  traits.value.length > 0 && traits.value.every((t) => Boolean(cardStates[t.id]?.opened))
+)
 
 const showTierBadge = (trait) => TIER_SLOTS.has(trait.id) && Boolean(trait.tier && tierMetaFor(trait.tier))
 const tierLabel = (trait) => tierMetaFor(trait.tier)?.label ?? ''
@@ -213,9 +250,14 @@ const loadTraitCards = async () => {
   traitsError.value = ''
   try {
     const res = await fetchMyTraitCards()
-    const apiCards = res?.data?.cards ?? res?.cards ?? []
+    const payload = res?.data ?? res ?? {}
+    const apiCards = payload?.cards ?? []
     traits.value = mergeTraitCards(XIANTIAN_TRAIT_SLOTS, apiCards)
     syncCardStates(traits.value)
+    hiddenDiscovery.dayZhi = payload?.hiddenDiscovery?.dayZhi ?? null
+    hiddenDiscovery.count = Number(payload?.hiddenDiscovery?.count) || 0
+    hiddenDiscovery.showModal = Boolean(payload?.hiddenDiscovery?.showModal)
+    hiddenDiscovery.modalMessage = payload?.hiddenDiscovery?.modalMessage ?? ''
   } catch (error) {
     traitsError.value = error?.message || '词卡加载失败'
     ElMessage.error(traitsError.value)
@@ -431,9 +473,27 @@ const handleCardClick = (id) => {
   if (!state.opened) {
     state.opened = true
     openMyTraitCard(id).catch(() => {})
+    maybeShowHiddenPrompt()
     return
   }
   state.yin = !state.yin
+}
+
+const goHiddenCard = () => {
+  hiddenCardViewed.value = true
+  localStorage.setItem(hiddenViewedStorageKey, '1')
+  showHiddenPrompt.value = false
+  router.push('/hidden-card')
+}
+
+const maybeShowHiddenPrompt = () => {
+  if (activeTab.value !== 'tab-2') return
+  if (hiddenCardViewed.value) return
+  if (hiddenDiscovery.count <= 0) return
+  if (!allTraitCardsOpened.value) return
+  if (hasShownUnlockPrompt.value) return
+  hasShownUnlockPrompt.value = true
+  showHiddenPrompt.value = true
 }
 
 const onResize = () => {
@@ -441,6 +501,7 @@ const onResize = () => {
 }
 
 onMounted(async () => {
+  hiddenCardViewed.value = localStorage.getItem(hiddenViewedStorageKey) === '1'
   loadTraitCards()
   await nextTick()
   const buttons = document.querySelectorAll('.xiantian-page .segment-btn')
@@ -464,10 +525,111 @@ onUnmounted(() => {
 watch(loaded, (val) => {
   if (val && activeTab.value === 'tab-1') loadHenqiNumber()
 })
+
+watch(activeTab, () => {
+  maybeShowHiddenPrompt()
+})
+
+watch(allTraitCardsOpened, () => {
+  maybeShowHiddenPrompt()
+})
 </script>
 
 <style scoped>
 .top-right-store {
   text-decoration: none;
+}
+
+.hidden-card-entry {
+  position: absolute;
+  right: 5%;
+  top: 128px;
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(234, 222, 199, 0.4);
+  border-radius: 999px;
+  background: rgba(8, 8, 10, 0.7);
+  color: var(--gold-light);
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+.entry-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gold-light);
+  box-shadow: 0 0 10px rgba(234, 222, 199, 0.9);
+  animation: entryPulse 1.6s ease-in-out infinite;
+}
+
+.entry-text {
+  font-size: 12px;
+  letter-spacing: 0.1em;
+}
+
+.hidden-modal-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hidden-modal-box {
+  width: min(460px, 90vw);
+  border-radius: 14px;
+  border: 1px solid rgba(234, 222, 199, 0.35);
+  background: #0d0d10;
+  padding: 26px 24px;
+}
+
+.hidden-modal-title {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  color: var(--gold-light);
+  margin-bottom: 10px;
+}
+
+.hidden-modal-desc {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.9;
+}
+
+.hidden-modal-actions {
+  margin-top: 18px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.modal-ghost,
+.modal-primary {
+  border-radius: 999px;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+.modal-ghost {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-white);
+}
+
+.modal-primary {
+  border: 1px solid var(--gold-light);
+  background: var(--gold-light);
+  color: #111;
+}
+
+@keyframes entryPulse {
+  0%,
+  100% { transform: scale(0.9); opacity: 0.65; }
+  50% { transform: scale(1.15); opacity: 1; }
 }
 </style>

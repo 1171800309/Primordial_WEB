@@ -4,6 +4,7 @@ import {
   avatarUrl,
   fetchUserDetail,
   fetchUserLogs,
+  recomputeUserBazi,
   updateUser,
   uploadUserAvatar,
   type AuditLogItem,
@@ -58,6 +59,7 @@ export function UserEditPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [recomputing, setRecomputing] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
 
@@ -171,6 +173,21 @@ export function UserEditPage() {
     }
   }
 
+  const onRecomputeBazi = async () => {
+    setRecomputing(true)
+    setError('')
+    setMessage('')
+    try {
+      const result = await recomputeUserBazi(userId)
+      setMessage(result.message ?? '已完成重算')
+      await load()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '重算失败')
+    } finally {
+      setRecomputing(false)
+    }
+  }
+
   if (loading) {
     return (
       <section className="page">
@@ -229,6 +246,17 @@ export function UserEditPage() {
                   {uploading ? '上传中…' : '更换头像'}
                 </button>
                 <span className="muted small">jpg / png / webp，最大 2MB</span>
+              </div>
+              <div className="profile-hero-actions">
+                <button
+                  type="button"
+                  className="ghost-btn"
+                  disabled={recomputing}
+                  onClick={onRecomputeBazi}
+                >
+                  {recomputing ? '重算中…' : '重算并刷新八字结果'}
+                </button>
+                <span className="muted small">重算后可在下方查看 baziAnalysis</span>
               </div>
               <input
                 ref={fileInputRef}
@@ -323,6 +351,24 @@ export function UserEditPage() {
               </button>
             </div>
           </form>
+
+          <article className="panel-card">
+            <h3 className="panel-title">八字计算结果（baziAnalysis）</h3>
+            {detail?.birthProfile ? (
+              <p className="muted small">
+                档案：{detail.birthProfile.calendarType ?? '-'} ·{' '}
+                {detail.birthProfile.birthDateTime ?? '-'} · {detail.birthProfile.province ?? '-'}
+                {detail.birthProfile.city ?? ''} {detail.birthProfile.district ?? ''}
+              </p>
+            ) : (
+              <p className="muted small">该用户暂无出生档案信息</p>
+            )}
+            <pre className="code-block">
+              {detail?.baziAnalysis
+                ? JSON.stringify(detail.baziAnalysis, null, 2)
+                : '暂无 baziAnalysis，点击上方“重算并刷新八字结果”后重试。'}
+            </pre>
+          </article>
         </div>
 
         <aside className="panel-card audit-panel">

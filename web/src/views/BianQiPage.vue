@@ -208,12 +208,14 @@ function animateBuffNumber(state, targetValue) {
     if (!startTime) startTime = timestamp
     const progress = Math.min((timestamp - startTime) / duration, 1)
     const easeProgress = 1 - Math.pow(1 - progress, 3)
-    const currentNum = Math.floor(easeProgress * targetValue)
-    state.display = currentNum > 0 ? `+${currentNum}` : String(currentNum)
+    const currentNum = easeProgress * targetValue
+    const currentText = Number(currentNum).toFixed(1)
+    state.display = currentNum > 0 ? `+${currentText}` : currentText
     if (progress < 1) {
       requestAnimationFrame(step)
     } else {
-      state.display = targetValue > 0 ? `+${targetValue}` : String(targetValue)
+      const finalText = Number(targetValue).toFixed(1)
+      state.display = targetValue > 0 ? `+${finalText}` : finalText
       state.numberClass = state.numberClass.filter((c) => c !== 'decoding')
     }
   }
@@ -256,7 +258,7 @@ const loadBianQi = async () => {
       dayunOpenSlot.value = dayun.openSlotId || ''
       dayunCardOpened.value = Boolean(dayun.opened)
       applyTrait(dayun, dayunTrait, dayun.traitFallback)
-      animateBuffNumber(buffDayun, Number(dayun.buffPercent) || 0)
+      animateBuffNumber(buffDayun, Number(dayun.adjustedBuffExact ?? dayun.buffExact ?? dayun.buffPercent) || 0)
     } else {
       dayunOpenSlot.value = ''
       dayunCardOpened.value = false
@@ -267,7 +269,7 @@ const loadBianQi = async () => {
       liunianOpenSlot.value = liunian.openSlotId || ''
       liunianCardOpened.value = Boolean(liunian.opened)
       applyTrait(liunian, liunianTrait, liunian.traitFallback)
-      animateBuffNumber(buffLiunian, Number(liunian.buffPercent) || 0)
+      animateBuffNumber(buffLiunian, Number(liunian.adjustedBuffExact ?? liunian.buffExact ?? liunian.buffPercent) || 0)
     } else {
       liunianOpenSlot.value = ''
       liunianCardOpened.value = false
@@ -310,7 +312,7 @@ const handleLiunianCardClick = () => {
 const onTabClick = (tabId, event) => {
   selectTab(tabId, event.currentTarget)
   const section = tabId === 'tab-dayun' ? buffDayun : buffLiunian
-  const val = parseInt(String(section.display).replace('+', ''), 10)
+  const val = Number(String(section.display).replace('+', ''))
   if (!Number.isNaN(val) && section.display !== '0') {
     animateBuffNumber(section, val)
   }
