@@ -1,4 +1,5 @@
 import { apiRequest } from './client'
+import { encryptPassword } from '../utils/passwordCipher'
 
 export type UserListItem = {
   id: number
@@ -113,6 +114,14 @@ export function recomputeUserBazi(id: number) {
       method: 'POST',
     }
   )
+}
+
+export async function changeUserPassword(id: number, newPassword: string) {
+  const encryptedPassword = await encryptPassword(newPassword)
+  return apiRequest<{ message?: string }>(`/users/${id}/password`, {
+    method: 'PUT',
+    body: JSON.stringify({ newPassword: encryptedPassword }),
+  })
 }
 
 export function avatarUrl(path: string | null | undefined) {

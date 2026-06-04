@@ -1,10 +1,10 @@
+import { adminApiUrl } from './base'
+
 export type ApiEnvelope<T> = {
   code: number
   message?: string
   data?: T
 }
-
-const API_BASE = import.meta.env.VITE_ADMIN_API_URL ?? ''
 
 export async function apiRequest<T>(
   path: string,
@@ -20,7 +20,7 @@ export async function apiRequest<T>(
     headers.set('Authorization', `Bearer ${token}`)
   }
 
-  const response = await fetch(`${API_BASE}${path}`, {
+  const response = await fetch(adminApiUrl(path), {
     ...options,
     headers,
   })

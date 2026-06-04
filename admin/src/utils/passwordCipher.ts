@@ -1,3 +1,5 @@
+import { adminApiUrl } from '../api/base'
+
 const ENCRYPTED_PREFIX = 'ENC:'
 const PUBLIC_KEY_PATH = '/auth/public-key'
 
@@ -32,12 +34,22 @@ const arrayBufferToBase64 = (buffer: ArrayBuffer) => {
   return btoa(binary)
 }
 
+export function clearAuthPublicKeyCache() {
+  cachedPublicKeyPem = null
+}
+
 export async function fetchAuthPublicKey(forceRefresh = false) {
   if (cachedPublicKeyPem && !forceRefresh) {
     return cachedPublicKeyPem
   }
 
-  const response = await fetch(PUBLIC_KEY_PATH, {
+  const envKey = import.meta.env.VITE_AUTH_PUBLIC_KEY_PEM
+  if (envKey && typeof envKey === 'string' && !forceRefresh) {
+    cachedPublicKeyPem = envKey
+    return cachedPublicKeyPem
+  }
+
+  const response = await fetch(adminApiUrl(PUBLIC_KEY_PATH), {
     method: 'GET',
     headers: { Accept: 'application/json' },
   })
@@ -56,9 +68,13 @@ export async function fetchAuthPublicKey(forceRefresh = false) {
   return cachedPublicKeyPem
 }
 
+/** RSA-OAEP(SHA-256)，与前台一致，提交 ENC:Base64 */
 export async function encryptPassword(plainPassword: string) {
   if (!plainPassword) return plainPassword
-  if (!window.isSecureContext) return plainPassword
+
+  if (!window.crypto?.subtle) {
+    throw new Error('当前环境不支持密码加密，请使用 HTTPS 或 localhost 访问管理后台')
+  }
 
   const publicKeyPem = await fetchAuthPublicKey()
   const spki = pemToSpkiBuffer(publicKeyPem)

@@ -57,7 +57,9 @@ export function LoginPage() {
   const redirectTo = (location.state as { from?: string } | null)?.from ?? '/'
 
   useEffect(() => {
-    fetchAuthPublicKey().catch(() => {})
+    fetchAuthPublicKey().catch((err) => {
+      console.warn('[admin] 预加载登录公钥失败', err)
+    })
   }, [])
 
   const handleLogin = async () => {
