@@ -32,19 +32,6 @@ function LockIcon() {
   )
 }
 
-function ShieldIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M12 3 4 7v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V7l-8-4Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
 export function LoginPage() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -95,14 +82,6 @@ export function LoginPage() {
             </div>
             <p className="login-brand-kicker">PRIMORDIAL ADMIN</p>
             <h1 className="login-brand-title">一炁文化管理中枢</h1>
-            <p className="login-brand-desc">
-              用户资料、权限与操作审计的统一入口。仅授权管理员可访问。
-            </p>
-            <ul className="login-brand-list">
-              <li>用户基础信息与头像管理</li>
-              <li>资料变更全程留痕</li>
-              <li>RSA 加密传输登录凭证</li>
-            </ul>
           </div>
         </aside>
 
@@ -110,7 +89,6 @@ export function LoginPage() {
           <div className="login-panel-inner">
             <header className="login-header">
               <h2>欢迎回来</h2>
-              <p>请使用管理员账号登录后台</p>
             </header>
 
             <form className="login-form" onSubmit={onSubmit} autoComplete="on">
@@ -169,11 +147,6 @@ export function LoginPage() {
                 )}
               </button>
             </form>
-
-            <footer className="login-footer">
-              <ShieldIcon />
-              <span>密码经 RSA 加密后传输，页面不会保存明文密码</span>
-            </footer>
           </div>
         </main>
       </div>
