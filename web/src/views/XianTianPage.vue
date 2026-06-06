@@ -22,13 +22,13 @@
     <main class="main-content">
       <h1 class="page-title">先天 . 恒 . 炁域</h1>
       <button
-        v-if="activeTab === 'tab-2' && hiddenDiscovery.count > 0 && hiddenCardViewed"
+        v-if="activeTab === 'tab-2' && hiddenDiscovery.count > 0 && hiddenCardDiscovered"
         type="button"
         class="hidden-card-entry"
         @click="showHiddenPrompt = true"
       >
         <span class="entry-pulse" />
-        <span class="entry-text">隐藏词卡 x{{ hiddenDiscovery.count }}</span>
+        <span class="entry-text">你有隐藏词卡待查看</span>
       </button>
 
       <div class="segment-control" id="segment-control">
@@ -77,11 +77,9 @@
                 :class="{ 'center-text': trait.coverCenter, opened: cardStates[trait.id]?.opened }"
               >
                 <CoverIcon :name="trait.iconName" />
-                <span
-                  v-if="trait.id === 't9' && trait.pendingPreview && !cardStates[trait.id]?.opened"
-                  v-html="trait.pendingPreview"
-                />
-                <span v-else v-html="trait.cover" />
+                <AutoFitCoverText>
+                  <span v-html="trait.cover" />
+                </AutoFitCoverText>
                 <div class="open-hint">开启词卡</div>
               </div>
               <div class="flip-card" :class="[trait.tier, { 'is-yin': cardStates[trait.id]?.yin }]">
@@ -92,13 +90,17 @@
                   :title="tierTooltip(trait)"
                 >{{ tierLabel(trait) }}</span>
                 <div class="card-face face-yang">
-                  <div class="trait-title">{{ trait.yang.title }}</div>
+                  <AutoFitTraitTitle :key="`${trait.id}-yang-${trait.yang.title}`">
+                    {{ trait.yang.title }}
+                  </AutoFitTraitTitle>
                   <div v-if="trait.yang.annotation" class="trait-annotation">{{ trait.yang.annotation }}</div>
                   <div v-if="trait.yang.desc" class="trait-desc">{{ trait.yang.desc }}</div>
                   <div class="toggle-dot" />
                 </div>
                 <div class="card-face face-yin">
-                  <div v-if="trait.yin.title" class="trait-title">{{ trait.yin.title }}</div>
+                  <AutoFitTraitTitle v-if="trait.yin.title" :key="`${trait.id}-yin-${trait.yin.title}`">
+                    {{ trait.yin.title }}
+                  </AutoFitTraitTitle>
                   <div class="trait-desc">{{ trait.yin.desc }}</div>
                   <div class="toggle-dot" />
                 </div>
@@ -154,7 +156,7 @@
           {{ hiddenDiscovery.modalMessage || `你有${hiddenDiscovery.count}张隐藏词卡待开启` }}
         </div>
         <div class="hidden-modal-actions">
-          <button type="button" class="modal-ghost" @click="showHiddenPrompt = false">稍后再看</button>
+          <button type="button" class="modal-ghost" @click="dismissHiddenPrompt">稍后再看</button>
           <button type="button" class="modal-primary" @click="goHiddenCard">立即前往</button>
         </div>
       </div>
@@ -168,6 +170,8 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import logoUrl from '@/assets/logo.png'
 import CoverIcon from '@/components/xiantian/CoverIcon.vue'
+import AutoFitTraitTitle from '@/components/trait/AutoFitTraitTitle.vue'
+import AutoFitCoverText from '@/components/trait/AutoFitCoverText.vue'
 import { usePageTransition } from '@/composables/usePageTransition'
 import { useDustCanvas } from '@/composables/useDustCanvas'
 import { useSegmentControl } from '@/composables/useSegmentControl'
@@ -214,14 +218,14 @@ const cardStates = reactive({})
 const goHub = useBackToHub()
 const router = useRouter()
 const showHiddenPrompt = ref(false)
-const hiddenCardViewed = ref(false)
+const hiddenCardDiscovered = ref(false)
 const hiddenDiscovery = reactive({
   dayZhi: null,
   count: 0,
   showModal: false,
   modalMessage: ''
 })
-const hiddenViewedStorageKey = 'xq_hidden_card_viewed'
+const hiddenDiscoveredStorageKey = 'xq_hidden_card_discovered'
 const hasShownUnlockPrompt = ref(false)
 const allTraitCardsOpened = computed(() =>
   traits.value.length > 0 && traits.value.every((t) => Boolean(cardStates[t.id]?.opened))
@@ -479,20 +483,30 @@ const handleCardClick = (id) => {
   state.yin = !state.yin
 }
 
+const markHiddenCardDiscovered = () => {
+  hiddenCardDiscovered.value = true
+  localStorage.setItem(hiddenDiscoveredStorageKey, '1')
+}
+
 const goHiddenCard = () => {
-  hiddenCardViewed.value = true
-  localStorage.setItem(hiddenViewedStorageKey, '1')
+  markHiddenCardDiscovered()
   showHiddenPrompt.value = false
   router.push('/hidden-card')
 }
 
+const dismissHiddenPrompt = () => {
+  markHiddenCardDiscovered()
+  showHiddenPrompt.value = false
+}
+
 const maybeShowHiddenPrompt = () => {
   if (activeTab.value !== 'tab-2') return
-  if (hiddenCardViewed.value) return
+  if (hiddenCardDiscovered.value) return
   if (hiddenDiscovery.count <= 0) return
   if (!allTraitCardsOpened.value) return
   if (hasShownUnlockPrompt.value) return
   hasShownUnlockPrompt.value = true
+  markHiddenCardDiscovered()
   showHiddenPrompt.value = true
 }
 
@@ -501,7 +515,7 @@ const onResize = () => {
 }
 
 onMounted(async () => {
-  hiddenCardViewed.value = localStorage.getItem(hiddenViewedStorageKey) === '1'
+  hiddenCardDiscovered.value = localStorage.getItem(hiddenDiscoveredStorageKey) === '1'
   loadTraitCards()
   await nextTick()
   const buttons = document.querySelectorAll('.xiantian-page .segment-btn')

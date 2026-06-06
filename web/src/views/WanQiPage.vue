@@ -11,39 +11,26 @@
         <img :src="logoUrl" alt="一炁" class="real-logo ink-blend" />
         <div class="brand-text">一炁文化<span class="en">YIQI</span></div>
       </router-link>
+      <div v-if="storeOpen" class="top-right-user">
+        <router-link to="/profile" class="icon-btn">我的订单</router-link>
+      </div>
     </div>
 
-    <router-link
-      to="/hub"
-      class="left-return-dot"
-      :style="hubReturnStyle"
-    >
+    <router-link to="/hub" class="left-return-dot" :style="hubReturnStyle">
       <div class="dot-core" />
       <div class="return-label">← 返回能量中枢</div>
     </router-link>
 
-    <a
-      href="#"
-      class="left-return-dot"
-      :style="storeReturnStyle"
-      @click.prevent="closeStore"
-    >
+    <a href="#" class="left-return-dot" :style="storeReturnStyle" @click.prevent="closeStore">
       <div class="dot-core" />
       <div class="return-label">← 返回万炁之门</div>
     </a>
 
     <div id="portal-view" class="view-container" :class="{ 'view-active': !storeOpen, 'bg-mode': storeOpen }">
       <div class="locked-section">
-        <div class="lock-overlay">
-          <svg class="lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <rect x="5" y="11" width="14" height="10" rx="2" ry="2" />
-            <path d="M8 11V7a4 4 0 0 1 8 0v4" />
-          </svg>
-          <div class="lock-text">炁机未至，暂未开放</div>
-        </div>
+        <div class="lock-overlay" aria-hidden="true" />
 
         <div class="locked-content">
-          <img :src="logoUrl" alt="一炁" class="center-logo ink-blend" />
           <div class="portal-title">万炁之城</div>
 
           <div class="portals-grid">
@@ -52,76 +39,72 @@
               <div class="portal-name">{{ portal.name }}</div>
             </div>
           </div>
+
+          <svg class="lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="5" y="11" width="14" height="10" rx="2" ry="2" />
+            <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+          </svg>
+          <div class="lock-text">暂未开放</div>
         </div>
       </div>
 
       <div class="unlocked-section">
-        <div class="mystery-box-wrapper" @click="openStore">
+        <div
+          v-for="box in blindBoxes"
+          :key="box.key"
+          class="mystery-box-wrapper"
+          :class="`mystery-box-${box.key}`"
+          @click="openStore(box.key)"
+        >
           <div class="mystery-box-icon">
             <div class="mystery-box-glow" />
             <svg viewBox="0 0 100 100" fill="none" stroke="currentColor">
               <polygon points="50,55 85,35 85,75 50,95" fill="rgba(20,20,25,0.9)" stroke="rgba(234,222,199,0.4)" stroke-width="1.5" />
               <polygon points="15,35 50,55 50,95 15,75" fill="rgba(15,15,18,0.9)" stroke="rgba(234,222,199,0.3)" stroke-width="1.5" />
               <polygon points="50,15 85,35 50,55 15,35" fill="rgba(25,25,30,0.9)" stroke="rgba(234,222,199,0.5)" stroke-width="1.5" />
-              <ellipse cx="50" cy="35" rx="10" ry="5" stroke="#b464ff" stroke-width="1" fill="rgba(180,100,255,0.2)" />
-              <circle cx="50" cy="35" r="2" fill="#ff4e50">
-                <animate attributeName="opacity" values="1;0.2;1" dur="1.5s" repeatCount="indefinite" />
-                <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite" />
-              </circle>
             </svg>
           </div>
-          <div class="box-name">怪炁盲盒</div>
+          <div class="box-name">{{ box.title }}</div>
+          <div class="box-price">¥ {{ box.priceYuan }}.00</div>
         </div>
       </div>
     </div>
 
     <div id="store-view" class="view-container" :class="{ 'view-active': storeOpen, 'view-hidden': !storeOpen }">
-      <div class="top-right-user">
-        <a href="#" class="icon-btn" @click.prevent>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-            <line x1="3" y1="6" x2="21" y2="6" />
-            <path d="M16 10a4 4 0 0 1-8 0" />
-          </svg>
-          炁匣
-        </a>
-        <router-link to="/profile" class="icon-btn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
-          归处
-        </router-link>
-      </div>
+      <div class="store-content" v-if="activeBox">
+        <div class="store-header">
+          <h2>{{ activeBox.title }}</h2>
+          <p class="store-shipping">{{ shippingNote }}</p>
+        </div>
 
-      <div class="store-content">
-        <div class="product-grid">
-          <div v-for="product in products" :key="product.id" class="product-wrapper">
-            <div
-              class="product-card"
-              :class="{ 'is-yin': flippedProducts[product.id] }"
-              @click="onProductClick(product.id, $event)"
-            >
-              <div :class="['card-face', 'face-yang', product.boxClass]">
-                <div class="product-img"><div class="abstract-qi" /></div>
-                <div class="product-info">
-                  <div class="product-title">{{ product.title }}</div>
-                  <div class="product-price">{{ product.price }}</div>
-                  <div class="product-desc">{{ product.desc }}</div>
-                  <div class="toggle-btn"><div class="toggle-dot" /></div>
-                </div>
-              </div>
-              <div :class="['card-face', 'face-yin', product.boxClass]">
-                <div class="product-img"><div class="abstract-qi" /></div>
-                <div class="product-info">
-                  <div class="product-title">{{ product.title }}</div>
-                  <div class="product-price">{{ product.price }}</div>
-                  <div class="product-desc">{{ product.desc }}</div>
-                  <div class="toggle-btn"><div class="toggle-dot" /></div>
-                </div>
-              </div>
-            </div>
+        <div class="single-product-card">
+          <div class="product-visual">
+            <div class="abstract-qi" />
           </div>
+          <div class="product-body">
+            <div class="product-title">{{ activeBox.productName }}</div>
+            <div class="product-price">¥ {{ activeBox.priceYuan }}.00</div>
+            <div class="product-desc">{{ activeBox.description }}</div>
+            <div class="product-ship-tag">{{ shippingNote }}</div>
+          </div>
+        </div>
+
+        <div class="checkout-panel">
+          <h3>收货信息</h3>
+          <el-form label-position="top" class="checkout-form">
+            <el-form-item label="收件人">
+              <el-input v-model="checkout.recipientName" placeholder="请输入收件人姓名" />
+            </el-form-item>
+            <el-form-item label="手机号">
+              <el-input v-model="checkout.recipientPhone" placeholder="请输入手机号" />
+            </el-form-item>
+            <el-form-item label="收货地址">
+              <el-input v-model="checkout.shippingAddress" type="textarea" :rows="3" placeholder="省市区 + 详细地址" />
+            </el-form-item>
+          </el-form>
+          <button type="button" class="checkout-btn" :disabled="paying" @click="submitOrder">
+            {{ paying ? '处理中…' : `确认支付 ¥${activeBox.priceYuan}.00` }}
+          </button>
         </div>
       </div>
     </div>
@@ -130,9 +113,12 @@
 
 <script setup>
 import { computed, reactive, ref } from 'vue'
+import { ElMessage } from 'element-plus'
 import logoUrl from '@/assets/logo.png'
 import { usePageTransition } from '@/composables/usePageTransition'
 import { useDustCanvas } from '@/composables/useDustCanvas'
+import { BLIND_BOXES, SHIPPING_NOTE } from '@/constants/blindBoxes'
+import { createShopOrder, payShopOrder } from '@/api/shop'
 import '@/styles/prototype-base.css'
 import '@/styles/pages/万炁之城1.css'
 
@@ -141,7 +127,18 @@ const { loaded } = usePageTransition(500)
 useDustCanvas(canvasRef)
 
 const storeOpen = ref(false)
-const flippedProducts = reactive({})
+const activeBoxKey = ref('')
+const paying = ref(false)
+const shippingNote = SHIPPING_NOTE
+const blindBoxes = Object.values(BLIND_BOXES)
+
+const checkout = reactive({
+  recipientName: '',
+  recipientPhone: '',
+  shippingAddress: ''
+})
+
+const activeBox = computed(() => BLIND_BOXES[activeBoxKey.value] || null)
 
 const hubReturnStyle = computed(() =>
   storeOpen.value
@@ -163,23 +160,44 @@ const portals = [
   { name: '触', icon: '<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2"><circle cx="50" cy="50" r="10" fill="currentColor"/><circle cx="50" cy="50" r="16" stroke-dasharray="4 4"/><path d="M38,38 Q10,20 15,5 T5,15" stroke-width="2"/><path d="M62,62 Q90,80 85,95 T95,85" stroke-width="2"/></svg>' }
 ]
 
-const products = [
-  { id: 'p1', boxClass: 'box-1', title: '名称待定', price: '¥ 50.00', desc: '介绍待定...' },
-  { id: 'p2', boxClass: 'box-2', title: '名称待定', price: '¥ 200.00', desc: '介绍待定...' },
-  { id: 'p3', boxClass: 'box-3', title: '名称待定', price: '¥ 500.00', desc: '介绍待定...' }
-]
-
-const openStore = () => {
+const openStore = (key) => {
+  activeBoxKey.value = key
   storeOpen.value = true
 }
 
 const closeStore = () => {
   storeOpen.value = false
+  activeBoxKey.value = ''
 }
 
-const onProductClick = (id, event) => {
-  if (event.target.closest('.toggle-btn') || event.target.classList.contains('toggle-dot')) {
-    flippedProducts[id] = !flippedProducts[id]
+const submitOrder = async () => {
+  if (!activeBox.value) return
+  if (!checkout.recipientName.trim() || !checkout.recipientPhone.trim() || !checkout.shippingAddress.trim()) {
+    ElMessage.warning('请填写完整收货信息')
+    return
+  }
+
+  paying.value = true
+  try {
+    const created = await createShopOrder({
+      productSku: activeBox.value.sku,
+      recipientName: checkout.recipientName.trim(),
+      recipientPhone: checkout.recipientPhone.trim(),
+      shippingAddress: checkout.shippingAddress.trim()
+    })
+    const orderId = created?.data?.id
+    if (!orderId) {
+      ElMessage.error('下单失败，请稍后重试')
+      return
+    }
+    await payShopOrder(orderId)
+    ElMessage.success('支付成功，可在个人中心查看订单与物流')
+    closeStore()
+  } catch (error) {
+    const msg = error?.response?.data?.message || error?.message || '下单失败'
+    ElMessage.error(msg)
+  } finally {
+    paying.value = false
   }
 }
 </script>

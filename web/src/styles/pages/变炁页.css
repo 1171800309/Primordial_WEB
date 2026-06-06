@@ -220,7 +220,8 @@
             transform: rotateY(180deg); box-shadow: inset 0 0 40px rgba(0,0,0,1);
         }
 
-        .bianqi-page .trait-title { font-family: var(--font-serif); font-size: clamp(22px, 4vw, 28px); margin-bottom: 10px; font-weight: 400; letter-spacing: 0.15em; flex-shrink: 0; }
+        .bianqi-page .trait-title { font-family: var(--font-serif); margin-bottom: 10px; font-weight: 400; letter-spacing: 0.15em; flex-shrink: 0; white-space: nowrap; width: 100%; max-width: 100%; overflow: hidden; min-width: 0; align-self: stretch; box-sizing: border-box; }
+        .bianqi-page .trait-title.auto-fit-trait-title { font-size: 28px; line-height: 1.25; }
         .bianqi-page .face-yang .trait-title { color: var(--gold-light); text-shadow: 0 0 15px rgba(234, 222, 199, 0.4); }
         .bianqi-page .face-yin .trait-title { color: var(--text-muted); }
 

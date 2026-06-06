@@ -63,13 +63,17 @@
                 </div>
                 <div class="flip-card" :class="{ 'is-yin': dayunCardYin }">
                   <div class="card-face face-yang">
-                    <div class="trait-title">{{ dayunTrait.yang.title }}</div>
+                    <AutoFitTraitTitle :max-size="28" :key="`dayun-yang-${dayunTrait.yang.title}`">
+                      {{ dayunTrait.yang.title }}
+                    </AutoFitTraitTitle>
                     <div v-if="dayunTrait.yang.subtitle" class="trait-subtitle">{{ dayunTrait.yang.subtitle }}</div>
                     <div class="trait-desc" v-html="dayunTrait.yang.desc" />
                     <div class="toggle-dot" />
                   </div>
                   <div class="card-face face-yin">
-                    <div class="trait-title">{{ dayunTrait.yin.title }}</div>
+                    <AutoFitTraitTitle :max-size="28" :key="`dayun-yin-${dayunTrait.yin.title}`">
+                      {{ dayunTrait.yin.title }}
+                    </AutoFitTraitTitle>
                     <div v-if="dayunTrait.yin.subtitle" class="trait-subtitle">{{ dayunTrait.yin.subtitle }}</div>
                     <div class="trait-desc" v-html="dayunTrait.yin.desc" />
                     <div class="toggle-dot" />
@@ -108,13 +112,17 @@
                 </div>
                 <div class="flip-card" :class="{ 'is-yin': liunianCardYin }">
                   <div class="card-face face-yang">
-                    <div class="trait-title">{{ liunianTrait.yang.title }}</div>
+                    <AutoFitTraitTitle :max-size="28" :key="`liunian-yang-${liunianTrait.yang.title}`">
+                      {{ liunianTrait.yang.title }}
+                    </AutoFitTraitTitle>
                     <div v-if="liunianTrait.yang.subtitle" class="trait-subtitle">{{ liunianTrait.yang.subtitle }}</div>
                     <div class="trait-desc" v-html="liunianTrait.yang.desc" />
                     <div class="toggle-dot" />
                   </div>
                   <div class="card-face face-yin">
-                    <div class="trait-title">{{ liunianTrait.yin.title }}</div>
+                    <AutoFitTraitTitle :max-size="28" :key="`liunian-yin-${liunianTrait.yin.title}`">
+                      {{ liunianTrait.yin.title }}
+                    </AutoFitTraitTitle>
                     <div v-if="liunianTrait.yin.subtitle" class="trait-subtitle">{{ liunianTrait.yin.subtitle }}</div>
                     <div class="trait-desc" v-html="liunianTrait.yin.desc" />
                     <div class="toggle-dot" />
@@ -142,6 +150,7 @@ import { useBackToHub } from '@/composables/useBackToHub'
 import { usePageTransition } from '@/composables/usePageTransition'
 import { useDustCanvas } from '@/composables/useDustCanvas'
 import { useSegmentControl } from '@/composables/useSegmentControl'
+import AutoFitTraitTitle from '@/components/trait/AutoFitTraitTitle.vue'
 import '@/styles/prototype-base.css'
 import '@/styles/pages/变炁页.css'
 

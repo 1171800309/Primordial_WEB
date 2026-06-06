@@ -44,14 +44,6 @@
             </el-radio-group>
           </el-form-item>
         </el-col>
-        <el-col :xs="24" :sm="12">
-          <el-form-item label="历法类型" prop="calendarType">
-            <el-radio-group v-model="form.calendarType" @change="onCalendarTypeChange">
-              <el-radio label="solar">阳历</el-radio>
-              <el-radio label="lunar">农历</el-radio>
-            </el-radio-group>
-          </el-form-item>
-        </el-col>
       </el-row>
 
       <div class="auth-section-title">出生坐标</div>
@@ -80,16 +72,41 @@
       <p class="auth-coords-hint">经纬已固定为<strong>东经</strong>基准（北京时间参考），与所选省市无关。</p>
 
       <div class="auth-section-title">出生时辰</div>
-      <el-row :gutter="16">
-        <el-col :xs="24" :sm="8">
+      <el-row :gutter="16" class="birth-datetime-row">
+        <el-col :xs="12" :sm="6">
           <el-form-item label="出生年" prop="birthYear">
             <el-select v-model="form.birthYear" placeholder="请选择年" style="width: 100%" @change="onBirthYearChange">
               <el-option v-for="item in calendarYearOptions" :key="item" :label="item" :value="item" />
             </el-select>
           </el-form-item>
         </el-col>
-        <el-col :xs="24" :sm="8">
-          <el-form-item label="出生月" prop="birthMonth">
+        <el-col :xs="12" :sm="6">
+          <el-form-item prop="birthMonth" class="birth-month-field">
+            <template #label>
+              <span class="birth-month-label-inline">
+                <span class="birth-month-label-text">出生月</span>
+                <span class="calendar-type-segment" role="radiogroup" aria-label="历法类型">
+                  <button
+                    type="button"
+                    role="radio"
+                    :aria-checked="form.calendarType === 'solar'"
+                    :class="{ active: form.calendarType === 'solar' }"
+                    @click="setCalendarType('solar')"
+                  >
+                    阳历
+                  </button>
+                  <button
+                    type="button"
+                    role="radio"
+                    :aria-checked="form.calendarType === 'lunar'"
+                    :class="{ active: form.calendarType === 'lunar' }"
+                    @click="setCalendarType('lunar')"
+                  >
+                    农历
+                  </button>
+                </span>
+              </span>
+            </template>
             <el-select
               v-model="form.birthMonth"
               placeholder="请选择月"
@@ -101,7 +118,7 @@
             </el-select>
           </el-form-item>
         </el-col>
-        <el-col :xs="24" :sm="8">
+        <el-col :xs="12" :sm="6">
           <el-form-item label="出生日" prop="birthDay">
             <el-select
               v-model="form.birthDay"
@@ -114,16 +131,13 @@
             </el-select>
           </el-form-item>
         </el-col>
-      </el-row>
-
-      <el-row :gutter="16">
-        <el-col :span="24">
+        <el-col :xs="12" :sm="6">
           <el-form-item label="出生时间" prop="birthTime">
             <el-time-picker
               v-model="form.birthTime"
-              placeholder="请选择出生时间"
+              placeholder="请选择时间"
               value-format="HH:mm:ss"
-              format="HH时mm分ss秒"
+              format="HH时mm分"
               style="width: 100%"
               @change="onBirthTimeChange"
             />
@@ -156,8 +170,9 @@ import { ElMessage } from 'element-plus'
 import { register, login } from '@/api/auth'
 import { getCities, getHourPillar, getProvinces } from '@/api/region'
 import { getCalendarDays, getCalendarMonths, getCalendarYears, getPillarThree } from '@/api/calendar'
-import { extractAuthPayload, saveAuthSession, navigateToHub, skipTokenValidationOnce } from '@/utils/authSession'
+import { extractAuthPayload, saveAuthSession, skipTokenValidationOnce } from '@/utils/authSession'
 import { persistBaziAnalysis } from '@/utils/baziAnalysis'
+import { REGISTER_LOADING_SESSION_KEY } from '@/constants/registerLoadingClassics'
 import { ensureBaziAnalysis } from '@/utils/userData'
 import AuthPageShell from '@/components/layout/AuthPageShell.vue'
 import { fetchAuthPublicKey } from '@/utils/passwordCipher'
@@ -273,6 +288,12 @@ const onCalendarTypeChange = async () => {
   pillarThree.value = { yearPillar: '', monthPillar: '', dayPillar: '' }
   hourPillar.value = ''
   await loadCalendarYears()
+}
+
+const setCalendarType = async (type) => {
+  if (form.calendarType === type) return
+  form.calendarType = type
+  await onCalendarTypeChange()
 }
 
 const onBirthYearChange = async () => {
@@ -429,8 +450,8 @@ const onSubmit = async () => {
     }
 
     skipTokenValidationOnce()
-    ElMessage.success('注册成功')
-    await navigateToHub(router)
+    sessionStorage.setItem(REGISTER_LOADING_SESSION_KEY, '1')
+    await router.replace({ name: 'registerLoading' })
   } catch (error) {
     const msg = error?.response?.data?.message || error?.response?.data?.msg || error?.response?.data?.error || error?.message || '注册失败'
     ElMessage.error(msg)

@@ -41,12 +41,16 @@
         <div v-for="card in visibleCards" :key="card.id" class="ur-card-wrapper">
           <div class="blind-box" @click="handleCardClick(card.id)">
             <div class="unopened-cover" :class="{ opened: cardStates[card.id]?.opened }">
-              <span v-html="card.cover" />
+              <AutoFitCoverText :max-size="15" :min-size="10">
+                <span v-html="card.cover" />
+              </AutoFitCoverText>
             </div>
             <div class="flip-card" :class="{ 'is-yin': cardStates[card.id]?.yin }">
               <div class="card-face face-yang">
-                <div class="trait-title">{{ card.yang.title }}</div>
-                <div class="trait-annotation">{{ card.yang.annotation }}</div>
+                <AutoFitTraitTitle :max-size="36" :min-size="14" :key="`${card.id}-${card.yang.title}`">
+                  {{ card.yang.title }}
+                </AutoFitTraitTitle>
+                <div v-if="card.yang.annotation" class="trait-annotation">{{ card.yang.annotation }}</div>
                 <div class="trait-desc">{{ card.yang.desc }}</div>
                 <div class="toggle-dot" />
               </div>
@@ -67,11 +71,17 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import logoUrl from '@/assets/logo.png'
-import { fetchMyTraitCards } from '@/api/me'
-import { HIDDEN_TRAIT_CARD_SLOTS, resolveHiddenDiscovery } from '@/constants/hiddenTraitCards'
+import { fetchMyTraitCards, openMyTraitCard } from '@/api/me'
+import {
+  HIDDEN_TRAIT_CARD_SLOTS,
+  mergeHiddenTraitCards,
+  resolveHiddenDiscovery
+} from '@/constants/hiddenTraitCards'
 import { useDustCanvas } from '@/composables/useDustCanvas'
+import AutoFitTraitTitle from '@/components/trait/AutoFitTraitTitle.vue'
+import AutoFitCoverText from '@/components/trait/AutoFitCoverText.vue'
 import '@/styles/prototype-base.css'
 import '@/styles/pages/隐藏词卡.css'
 
@@ -81,6 +91,7 @@ useDustCanvas(canvasRef)
 const loading = ref(true)
 const modalHidden = ref(false)
 const contentRevealed = ref(false)
+const visibleCards = ref([])
 const discovery = ref({
   dayZhi: null,
   count: 0,
@@ -88,13 +99,16 @@ const discovery = ref({
   modalMessage: null
 })
 
-const cardStates = reactive(
-  Object.fromEntries(HIDDEN_TRAIT_CARD_SLOTS.map((c) => [c.id, { opened: false, yin: false }]))
-)
+const cardStates = reactive({})
 
-const visibleCards = computed(() =>
-  HIDDEN_TRAIT_CARD_SLOTS.slice(0, Math.max(0, discovery.value.count))
-)
+const syncCardStates = (cards) => {
+  for (const key of Object.keys(cardStates)) {
+    if (!cards.some((c) => c.id === key)) delete cardStates[key]
+  }
+  for (const card of cards) {
+    cardStates[card.id] = { opened: Boolean(card.opened), yin: false }
+  }
+}
 
 const applyDiscovery = (payload) => {
   discovery.value = payload
@@ -110,6 +124,17 @@ const loadDiscovery = async () => {
     const res = await fetchMyTraitCards()
     const data = res?.data ?? res
     const remote = data?.hiddenDiscovery
+    const count = remote && typeof remote.count === 'number'
+      ? remote.count
+      : resolveHiddenDiscovery(data?.keys?.dayZhi ?? data?.keys?.dayPillar?.slice(1)).count
+
+    visibleCards.value = mergeHiddenTraitCards(
+      HIDDEN_TRAIT_CARD_SLOTS,
+      data?.hiddenCards ?? [],
+      count
+    )
+    syncCardStates(visibleCards.value)
+
     if (remote && typeof remote.count === 'number') {
       applyDiscovery({
         dayZhi: remote.dayZhi ?? null,
@@ -122,7 +147,10 @@ const loadDiscovery = async () => {
     const dayZhi = data?.keys?.dayZhi ?? data?.keys?.dayPillar?.slice(1)
     applyDiscovery(resolveHiddenDiscovery(dayZhi))
   } catch {
-    applyDiscovery(resolveHiddenDiscovery(null))
+    const fallback = resolveHiddenDiscovery(null)
+    visibleCards.value = mergeHiddenTraitCards(HIDDEN_TRAIT_CARD_SLOTS, [], fallback.count)
+    syncCardStates(visibleCards.value)
+    applyDiscovery(fallback)
   } finally {
     loading.value = false
   }
@@ -137,6 +165,7 @@ const handleCardClick = (id) => {
   const state = cardStates[id]
   if (!state.opened) {
     state.opened = true
+    openMyTraitCard(id).catch(() => {})
   } else {
     state.yin = !state.yin
   }

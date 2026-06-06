@@ -60,6 +60,10 @@ export function AdminLayout() {
             <UsersIcon />
             <span>用户管理</span>
           </NavLink>
+          <NavLink to="/orders" className="sidebar-link">
+            <UsersIcon />
+            <span>盲盒订单</span>
+          </NavLink>
         </nav>
         <div className="sidebar-foot">
           <p>一炁文化 · 管理中枢</p>

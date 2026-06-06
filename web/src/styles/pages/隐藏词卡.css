@@ -183,7 +183,9 @@
             box-shadow: inset 0 0 50px rgba(0,0,0,1), 0 0 30px rgba(212, 175, 55, 0.1); transform: rotateY(180deg); 
         }
         
-        .hidden-card-page .trait-title { font-family: var(--font-serif); font-size: 36px; font-weight: 600; margin-bottom: 12px; letter-spacing: 0.15em; color: #B8860B; }
+        .hidden-card-page .trait-title { font-family: var(--font-serif); font-weight: 600; margin-bottom: 12px; letter-spacing: 0.15em; color: #B8860B; white-space: nowrap; width: 100%; max-width: 100%; overflow: hidden; min-width: 0; align-self: stretch; box-sizing: border-box; }
+        .hidden-card-page .trait-title.auto-fit-trait-title { font-size: 36px; line-height: 1.25; }
+        .hidden-card-page .auto-fit-cover-text { flex: 1 1 auto; min-height: 0; width: 100%; overflow: hidden; display: flex; align-items: center; justify-content: center; text-align: center; }
         .hidden-card-page .trait-annotation { font-family: var(--font-sans); font-size: 14px; opacity: 0.8; margin-bottom: 24px; font-weight: 300; color: #B8860B; }
         .hidden-card-page .trait-desc { font-size: 16px; line-height: 1.8; font-weight: 400; }
         

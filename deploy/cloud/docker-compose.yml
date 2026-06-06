@@ -1,0 +1,136 @@
+# 一炁文化 · 云服务器生产编排
+# 在 deploy/cloud 目录执行：docker compose --env-file .env up -d
+
+name: primordial-cloud
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: primordial_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
+  api-web:
+    container_name: primordial_api_web
+    build:
+      context: ${PRIMORDIAL_API_ROOT}/web
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: >-
+        Server=mysql;Port=3306;Database=${MYSQL_DATABASE};User=${MYSQL_USER};Password=${MYSQL_PASSWORD};
+        Charset=utf8mb4;SslMode=Preferred;AllowPublicKeyRetrieval=True;
+      Jwt__SecretKey: ${JWT_SECRET_WEB}
+      Jwt__Issuer: primordial_api
+      Jwt__Audience: primordial_web
+      AuthPasswordCipher__PrivateKeyPath: /app/Keys/auth-rsa-private.pem
+      AuthPasswordCipher__PublicKeyPath: /app/Keys/auth-rsa-public.pem
+      AuthPasswordCipher__RequireEncryptedTransport: "true"
+    volumes:
+      - ./secrets/keys:/app/Keys:ro
+    networks:
+      - internal
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  admin-api:
+    container_name: primordial_api_admin
+    build:
+      context: ${PRIMORDIAL_API_ROOT}
+      dockerfile: admin/Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: >-
+        Server=mysql;Port=3306;Database=${MYSQL_DATABASE};User=${MYSQL_USER};Password=${MYSQL_PASSWORD};
+        Charset=utf8mb4;SslMode=Preferred;AllowPublicKeyRetrieval=True;
+      Jwt__SecretKey: ${JWT_SECRET_ADMIN}
+      Jwt__Issuer: primordial_admin_api
+      Jwt__Audience: primordial_admin
+      AuthPasswordCipher__PrivateKeyPath: /app/Keys/auth-rsa-private.pem
+      AuthPasswordCipher__PublicKeyPath: /app/Keys/auth-rsa-public.pem
+      AuthPasswordCipher__RequireEncryptedTransport: "true"
+    volumes:
+      - ./secrets/keys:/app/Keys:ro
+      - admin_uploads:/app/uploads
+    networks:
+      - internal
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  web-web:
+    container_name: primordial_web
+    build:
+      context: ${PRIMORDIAL_WEB_ROOT}/web
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: /api
+    restart: unless-stopped
+    networks:
+      - internal
+    depends_on:
+      - api-web
+
+  web-admin:
+    container_name: primordial_admin_web
+    build:
+      context: ${PRIMORDIAL_WEB_ROOT}/admin
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    networks:
+      - internal
+    depends_on:
+      - admin-api
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: primordial_caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN}
+      ADMIN_DOMAIN: ${ADMIN_DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - internal
+    depends_on:
+      - web-web
+      - web-admin
+
+volumes:
+  mysql_data:
+  admin_uploads:
+  caddy_data:
+  caddy_config:
+
+networks:
+  internal:
+    driver: bridge

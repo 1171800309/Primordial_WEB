@@ -29,17 +29,23 @@
 
 ## 首次联调前
 
-```bash
-# 用户 API 数据库配置（F5 会读 appsettings.Development.json，本机无 MySQL 时 Server 填局域网 IP）
-cp Primordial_API/web/src/Primordial.Api/appsettings.Development.json.example \
-   Primordial_API/web/src/Primordial.Api/appsettings.Development.json
-cp Primordial_API/admin/src/Primordial.Admin.Api/appsettings.Development.json.example \
-   Primordial_API/admin/src/Primordial.Admin.Api/appsettings.Development.json
-# 编辑 Server、Password
+数据库已迁到**云端 Docker**（MySQL 不暴露公网）。本地调试需 **SSH 隧道** + 同步连接配置：
 
-# 可选：前台 .env（默认已与 58725 对齐，可不建）
-cp Primordial_WEB/web/.env.example Primordial_WEB/web/.env
+```bash
+# 1. 从云端 /opt/yiqi/.env 写入 appsettings.Development.json（已在 .gitignore）
+cd Primordial_API
+./scripts/setup-dev-db-from-cloud.sh
+
+# 2. 建立 SSH 隧道（保持此终端运行）
+./scripts/cloud-db-tunnel.sh
+# 等价：ssh -N -L 127.0.0.1:3306:127.0.0.1:3306 ubuntu@43.139.172.61
+
+# 3. 另开终端启动 API / 前台
 ```
+
+连接串为 `127.0.0.1:3306`、账号 `primordial`（与云端一致）。若本地 3306 被占用，可 `YIQI_LOCAL_MYSQL_PORT=13306 ./scripts/cloud-db-tunnel.sh` 并重新跑 setup 脚本。
+
+旧 NAS 局域网库（192.168.2.224）已不再用于本地默认配置。
 
 管理端 init-admin 密码（在用户 API 上调用）：
 

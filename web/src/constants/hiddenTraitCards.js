@@ -1,32 +1,25 @@
-/** 隐藏词卡槽位 UI（词条内容待词库接入） */
+/** 隐藏词卡槽位 UI（词条内容由 /api/me/trait-cards hiddenCards 填充） */
 export const HIDDEN_TRAIT_CARD_SLOTS = [
   {
     id: 'ur1',
     label: '深层原始冲动特性',
     cover: '“我在极端情境下<br>才会被激活的原始本能”',
-    yang: {
-      title: '修罗',
-      annotation: '撕裂常规的毁灭与重塑之力。',
-      desc: '在绝境与极度高压下，常规道德与理性会被瞬间剥离，爆发出纯粹的生存与反击本能。'
-    },
-    yin: {
-      desc: '一旦开启，极其容易带来不可逆的破坏，甚至在狂热中反噬自身曾经最珍视的羁绊与事物。'
-    }
   },
   {
     id: 'ur2',
     label: '隐藏能力特性',
     cover: '“我内心深处藏着<br>但自己未必知道的才能”',
-    yang: {
-      title: '虚空造物',
-      annotation: '无中生有的直觉构筑力。',
-      desc: '能够从绝对的无序和混乱中，瞬间抓取核心规律，凭直觉搭建出全新的规则或系统。'
-    },
-    yin: {
-      desc: '过于超前与跳跃的思维内核，常使得在世俗沟通中显得极其孤僻与傲慢，难以被同频理解。'
-    }
   }
 ]
+
+export const buildFallbackHiddenCard = (slot) => ({
+  id: slot.id,
+  label: slot.label,
+  cover: slot.cover,
+  opened: false,
+  yang: { title: '—', annotation: '', desc: '暂无匹配词条，请确认隐藏词库已导入。' },
+  yin: { title: '', desc: '暂无阴面释义。' }
+})
 
 /** 与后端 DayBranchHiddenCardPolicy 一致的前端兜底 */
 export const resolveHiddenDiscovery = (dayZhi) => {
@@ -41,4 +34,44 @@ export const resolveHiddenDiscovery = (dayZhi) => {
     return { dayZhi: zhi, count: 1, showModal: true, modalMessage: '你有一张隐藏词卡待开启' }
   }
   return { dayZhi: zhi, count: 2, showModal: true, modalMessage: '你有2张隐藏词卡待开启' }
+}
+
+/** 1 张时仅 ur2（中气）；2 张时 ur1+ur2 */
+export const resolveVisibleHiddenSlotIds = (count) => {
+  const n = Math.max(0, Number(count) || 0)
+  if (n >= 2) return ['ur1', 'ur2']
+  if (n === 1) return ['ur2']
+  return []
+}
+
+export const mergeHiddenTraitCards = (slots, apiCards = [], count = 0) => {
+  const bySlot = new Map((apiCards || []).map((c) => [c.slotId ?? c.id, c]))
+  const slotById = new Map(slots.map((s) => [s.id, s]))
+  const ids = apiCards?.length
+    ? apiCards.map((c) => c.slotId ?? c.id)
+    : resolveVisibleHiddenSlotIds(count)
+
+  return ids
+    .map((id) => {
+      const slot = slotById.get(id)
+      if (!slot) return null
+      const hit = bySlot.get(id)
+      if (!hit) return buildFallbackHiddenCard(slot)
+      return {
+        id: slot.id,
+        label: hit.label || slot.label,
+        cover: slot.cover,
+        opened: Boolean(hit.opened),
+        yang: {
+          title: hit.yang?.title || '—',
+          annotation: hit.yang?.annotation || '',
+          desc: hit.yang?.desc || ''
+        },
+        yin: {
+          title: hit.yin?.title || '',
+          desc: hit.yin?.desc || ''
+        }
+      }
+    })
+    .filter(Boolean)
 }

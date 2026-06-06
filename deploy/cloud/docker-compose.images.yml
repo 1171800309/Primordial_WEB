@@ -1,0 +1,144 @@
+# 使用 NAS 构建并 docker load 的镜像（云端不拉 Git、不 build）
+# 镜像包需包含：primordial-api-web primordial-api-admin primordial-web-web primordial-web-admin
+
+name: primordial-cloud
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: primordial_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+    ports:
+      # 仅本机回环，供 SSH 隧道 + Navicat；勿改为 0.0.0.0，勿在安全组放行 3306
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # 数据来自 NAS 全量 dump（import-mysql.sh），不用 initdb 增量脚本
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
+  api-web:
+    image: primordial-api-web:latest
+    container_name: primordial_api_web
+    restart: unless-stopped
+    networks:
+      internal:
+        aliases:
+          - api_web_service
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: >-
+        Server=mysql;Port=3306;Database=${MYSQL_DATABASE};User=${MYSQL_USER};Password=${MYSQL_PASSWORD};
+        Charset=utf8mb4;SslMode=Preferred;AllowPublicKeyRetrieval=True;
+      Jwt__SecretKey: ${JWT_SECRET_WEB}
+      Jwt__Issuer: primordial_api
+      Jwt__Audience: primordial_web
+      AuthPasswordCipher__PrivateKeyPath: /app/Keys/auth-rsa-private.pem
+      AuthPasswordCipher__PublicKeyPath: /app/Keys/auth-rsa-public.pem
+      AuthPasswordCipher__RequireEncryptedTransport: "true"
+    volumes:
+      - ./secrets/keys:/app/Keys:ro
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  admin-api:
+    image: primordial-api-admin:latest
+    container_name: primordial_api_admin
+    restart: unless-stopped
+    networks:
+      internal:
+        aliases:
+          - api_admin_service
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: >-
+        Server=mysql;Port=3306;Database=${MYSQL_DATABASE};User=${MYSQL_USER};Password=${MYSQL_PASSWORD};
+        Charset=utf8mb4;SslMode=Preferred;AllowPublicKeyRetrieval=True;
+      Jwt__SecretKey: ${JWT_SECRET_ADMIN}
+      Jwt__Issuer: primordial_admin_api
+      Jwt__Audience: primordial_admin
+      AuthPasswordCipher__PrivateKeyPath: /app/Keys/auth-rsa-private.pem
+      AuthPasswordCipher__PublicKeyPath: /app/Keys/auth-rsa-public.pem
+      AuthPasswordCipher__RequireEncryptedTransport: "true"
+    volumes:
+      - ./secrets/keys:/app/Keys:ro
+      - admin_uploads:/app/uploads
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  web-web:
+    image: primordial-web-web:latest
+    container_name: primordial_web
+    restart: unless-stopped
+    ports:
+      # 无域名时用 IP 访问前台（与 NAS 8001 一致）
+      - "8001:80"
+    volumes:
+      - ./nginx/web.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - internal
+    depends_on:
+      - api-web
+
+  web-admin:
+    image: primordial-web-admin:latest
+    container_name: primordial_admin_web
+    restart: unless-stopped
+    ports:
+      - "8004:80"
+    volumes:
+      - ./nginx/admin.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - internal
+    depends_on:
+      - admin-api
+
+  caddy:
+    profiles:
+      - domain
+    image: caddy:2-alpine
+    container_name: primordial_caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN}
+      ADMIN_DOMAIN: ${ADMIN_DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - internal
+    depends_on:
+      - web-web
+      - web-admin
+
+volumes:
+  mysql_data:
+  admin_uploads:
+  caddy_data:
+  caddy_config:
+
+networks:
+  internal:
+    driver: bridge

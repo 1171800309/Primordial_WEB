@@ -1,0 +1,23 @@
+{
+  email {$ACME_EMAIL}
+}
+
+(common_headers) {
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    X-Content-Type-Options "nosniff"
+    X-Frame-Options "SAMEORIGIN"
+    Referrer-Policy "strict-origin-when-cross-origin"
+    -Server
+  }
+}
+
+{$SITE_DOMAIN} {
+  import common_headers
+  reverse_proxy web-web:80
+}
+
+{$ADMIN_DOMAIN} {
+  import common_headers
+  reverse_proxy web-admin:80
+}

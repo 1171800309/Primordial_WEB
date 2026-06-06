@@ -1,0 +1,16 @@
+# 合并到 /home/Bely/docker-compose/docker-compose.yml 的 environment 段（勿把密码写进 yml）
+services:
+  api-web:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: ${DB_CONNECTION}
+      Jwt__SecretKey: ${JWT_SECRET_WEB}
+      Jwt__Issuer: primordial_api
+      Jwt__Audience: primordial_web
+  api-admin:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: ${DB_CONNECTION}
+      Jwt__SecretKey: ${JWT_SECRET_ADMIN}
+      Jwt__Issuer: primordial_admin_api
+      Jwt__Audience: primordial_admin

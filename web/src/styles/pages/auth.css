@@ -288,6 +288,92 @@
   font-weight: 400;
 }
 
+.auth-form .birth-datetime-row :deep(.el-form-item__label) {
+  display: flex !important;
+  align-items: center;
+  width: 100% !important;
+  height: 20px;
+  min-height: 20px;
+  padding-bottom: 8px !important;
+  line-height: 20px !important;
+  box-sizing: content-box;
+}
+
+.auth-form .birth-datetime-row :deep(.el-form-item__label::before) {
+  line-height: 20px;
+  margin-right: 4px;
+}
+
+.birth-month-label-inline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  min-width: 0;
+  gap: 8px;
+}
+
+.birth-month-label-text {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.calendar-type-segment {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  padding: 1px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.calendar-type-segment button {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  padding: 0 7px;
+  height: 18px;
+  line-height: 18px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.calendar-type-segment button:hover {
+  color: var(--gold-light);
+}
+
+.calendar-type-segment button.active {
+  background: rgba(234, 222, 199, 0.14);
+  color: var(--gold-light);
+}
+
+.auth-form .birth-datetime-row :deep(.el-date-editor) {
+  width: 100% !important;
+}
+
+.auth-form .birth-datetime-row :deep(.el-date-editor .el-input__wrapper) {
+  width: 100%;
+}
+
+.auth-form .birth-datetime-row :deep(.el-date-editor .el-input__inner) {
+  font-size: 13px;
+}
+
+@media (max-width: 768px) {
+  .birth-month-label-inline {
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+
+  .calendar-type-segment {
+    margin-left: auto;
+  }
+}
+
 .auth-actions {
   display: flex;
   flex-direction: column;

@@ -12,6 +12,7 @@ import HiddenCardPage from '../views/HiddenCardPage.vue'
 import ProfilePage from '../views/ProfilePage.vue'
 import TermsPage from '../views/TermsPage.vue'
 import PrivacyPage from '../views/PrivacyPage.vue'
+import RegisterLoadingPage from '../views/RegisterLoadingPage.vue'
 import { validateToken } from '@/api/auth'
 import { clearSession, touchSession } from '@/utils/session'
 import { consumeSkipTokenValidation } from '@/utils/authSession'
@@ -31,6 +32,7 @@ const router = createRouter({
     { path: '/hidden-card', name: 'hidden-card', component: HiddenCardPage },
     { path: '/profile', name: 'profile', component: ProfilePage },
     { path: '/terms', name: 'terms', component: TermsPage },
+    { path: '/register-loading', name: 'registerLoading', component: RegisterLoadingPage },
     { path: '/privacy', name: 'privacy', component: PrivacyPage },
     { path: '/index', redirect: '/hub' },
     { path: '/home', name: 'legacy-home', component: Home }

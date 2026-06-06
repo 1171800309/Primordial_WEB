@@ -53,6 +53,7 @@ body {
 
 .yiqi-root {
   min-height: 100vh;
+  padding-bottom: 44px;
   background: radial-gradient(ellipse 120% 80% at 50% -20%, rgba(11, 28, 44, 0.95), var(--yiqi-black));
 }
 
