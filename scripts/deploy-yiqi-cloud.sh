@@ -30,9 +30,9 @@ if [[ "${YIQI_NO_CACHE:-}" == "1" ]]; then
   EXTRA="YIQI_NO_CACHE=1"
 fi
 
-REMOTE_CMD="cd ${REMOTE} && ${EXTRA} ./scripts/load-images.sh"
-if [[ "${YIQI_CLOUD_MODE:-}" != "images" ]]; then
-  REMOTE_CMD="cd ${REMOTE} && ${EXTRA} ./scripts/deploy.sh"
+REMOTE_CMD="cd /opt/yiqi && ${EXTRA} ./scripts/load-images.sh /opt/yiqi/images/primordial-images.tar.gz"
+if [[ "${YIQI_CLOUD_MODE:-images}" == "git" ]]; then
+  REMOTE_CMD="cd /opt/yiqi && ${EXTRA} ./scripts/deploy.sh"
 fi
 
 echo ">>> ${USER}@${HOST} 执行云发版 …"
