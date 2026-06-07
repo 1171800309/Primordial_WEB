@@ -129,7 +129,7 @@
               <canvas ref="radarExplicitRef" id="radar-explicit" />
             </div>
             <div class="radar-desc">
-              代表你已向外界展现、且被世俗法则激活的维面特质。由年/月/时干十神、四柱正五行与地支本气藏干综合计算，并经月令旺衰与身旺身弱修正。
+              代表你已向外界展现、且被世俗法则激活的维面特质。
             </div>
           </div>
           <div class="radar-box">
@@ -138,7 +138,7 @@
               <canvas ref="radarImplicitRef" id="radar-implicit" />
             </div>
             <div class="radar-desc">
-              代表灵魂深处尚未完全开发、或被理性刻意压抑的潜能维度。由地支中气/余气藏干十神与四柱纳音五行叠加而成。
+              代表灵魂深处尚未完全开发、或被理性刻意压抑的潜能维度。
             </div>
           </div>
         </div>

@@ -32,8 +32,6 @@
           </a>
         </div>
       </div>
-
-      <div class="footer-note fade-up delay-3">仅供娱乐</div>
     </div>
   </div>
 </template>
@@ -103,5 +101,23 @@ const goOrb = async (orb) => {
 .hub-page a.nav-orb {
   text-decoration: none;
   color: inherit;
+}
+
+.hub-page .main-container {
+  min-height: 100vh;
+  justify-content: center;
+  align-items: center;
+  padding: 140px 5% 80px;
+}
+
+.hub-page .welcome-header {
+  margin-top: 0;
+  margin-bottom: 52px;
+}
+
+.hub-page .orbs-grid {
+  width: 100%;
+  justify-content: center;
+  align-items: center;
 }
 </style>

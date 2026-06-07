@@ -57,12 +57,7 @@
           @click="openStore(box.key)"
         >
           <div class="mystery-box-icon">
-            <div class="mystery-box-glow" />
-            <svg viewBox="0 0 100 100" fill="none" stroke="currentColor">
-              <polygon points="50,55 85,35 85,75 50,95" fill="rgba(20,20,25,0.9)" stroke="rgba(234,222,199,0.4)" stroke-width="1.5" />
-              <polygon points="15,35 50,55 50,95 15,75" fill="rgba(15,15,18,0.9)" stroke="rgba(234,222,199,0.3)" stroke-width="1.5" />
-              <polygon points="50,15 85,35 50,55 15,35" fill="rgba(25,25,30,0.9)" stroke="rgba(234,222,199,0.5)" stroke-width="1.5" />
-            </svg>
+            <BlindBoxVisual :variant="box.key" size="sm" />
           </div>
           <div class="box-name">{{ box.title }}</div>
           <div class="box-price">¥ {{ box.priceYuan }}.00</div>
@@ -79,12 +74,14 @@
 
         <div class="single-product-card">
           <div class="product-visual">
-            <div class="abstract-qi" />
+            <BlindBoxVisual :variant="activeBox.key" size="md" />
           </div>
           <div class="product-body">
             <div class="product-title">{{ activeBox.productName }}</div>
             <div class="product-price">¥ {{ activeBox.priceYuan }}.00</div>
-            <div class="product-desc">{{ activeBox.description }}</div>
+            <AutoFitCoverText class="product-desc-fit" :max-size="13" :min-size="10">
+              <p class="product-desc">{{ activeBox.description }}</p>
+            </AutoFitCoverText>
             <div class="product-ship-tag">{{ shippingNote }}</div>
           </div>
         </div>
@@ -119,6 +116,8 @@ import { usePageTransition } from '@/composables/usePageTransition'
 import { useDustCanvas } from '@/composables/useDustCanvas'
 import { BLIND_BOXES, SHIPPING_NOTE } from '@/constants/blindBoxes'
 import { createShopOrder, payShopOrder } from '@/api/shop'
+import BlindBoxVisual from '@/components/wanqi/BlindBoxVisual.vue'
+import AutoFitCoverText from '@/components/trait/AutoFitCoverText.vue'
 import '@/styles/prototype-base.css'
 import '@/styles/pages/万炁之城1.css'
 
@@ -213,5 +212,30 @@ const submitOrder = async () => {
 
 .left-return-dot {
   text-decoration: none;
+}
+
+.wanqi-page .mystery-box-icon {
+  width: auto;
+  height: auto;
+  animation: none;
+}
+
+.wanqi-page .product-visual {
+  flex: 0 0 180px;
+  min-height: 180px;
+  background: transparent;
+  border: none;
+}
+
+.wanqi-page .product-desc-fit {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.wanqi-page .product-desc {
+  margin: 0;
+  line-height: 1.85;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
 }
 </style>

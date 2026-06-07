@@ -152,21 +152,8 @@
         .mystery-box-wrapper:hover { transform: translateY(-10px); }
 
         .mystery-box-icon {
-            width: 110px; height: 110px; position: relative;
-            animation: boxFloat 4s ease-in-out infinite;
+            width: auto; height: auto; position: relative;
         }
-        @keyframes boxFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-        
-        .mystery-box-glow {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 140px; height: 140px; border-radius: 50%;
-            background: radial-gradient(circle, rgba(180, 100, 255, 0.2) 0%, rgba(255, 78, 80, 0.1) 40%, transparent 70%);
-            z-index: -1; animation: glowPulse 3s ease-in-out infinite alternate;
-        }
-        @keyframes glowPulse { 0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.6; } 100% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; } }
-
-        .mystery-box-icon svg { width: 100%; height: 100%; filter: drop-shadow(0 0 10px rgba(180, 100, 255, 0.4)); transition: filter 0.3s; }
-        .mystery-box-wrapper:hover .mystery-box-icon svg { filter: drop-shadow(0 0 20px rgba(255, 78, 80, 0.6)); }
 
         .box-name {
             font-family: var(--font-serif); font-size: 18px; color: var(--text-white);
@@ -174,12 +161,6 @@
         }
         .box-price {
             font-size: 14px; color: var(--gold-light); letter-spacing: 0.15em;
-        }
-        .mystery-box-guaiqi .mystery-box-glow {
-            background: radial-gradient(circle, rgba(180, 100, 255, 0.2) 0%, rgba(255, 78, 80, 0.1) 40%, transparent 70%);
-        }
-        .mystery-box-wanqi .mystery-box-glow {
-            background: radial-gradient(circle, rgba(234, 222, 199, 0.25) 0%, rgba(180, 140, 80, 0.12) 40%, transparent 70%);
         }
 
         .store-header { text-align: center; margin-bottom: 28px; }
@@ -208,7 +189,7 @@
         .product-body { flex: 1; min-width: 0; }
         .product-title { font-family: var(--font-serif); font-size: 22px; color: var(--gold-light); letter-spacing: 0.15em; margin-bottom: 8px; }
         .product-price { font-size: 20px; color: #fff; margin-bottom: 14px; }
-        .product-desc { font-size: 13px; line-height: 1.85; color: var(--text-muted); letter-spacing: 0.06em; margin-bottom: 12px; }
+        .product-desc { font-size: 13px; line-height: 1.85; color: var(--text-muted); letter-spacing: 0.06em; margin-bottom: 12px; overflow: visible; }
         .product-ship-tag { display: inline-block; font-size: 12px; color: var(--gold-light); border: 1px solid rgba(234,222,199,0.25); border-radius: 999px; padding: 4px 12px; }
 
         .checkout-panel {
@@ -304,7 +285,7 @@
         .face-yang .product-price { color: var(--gold-light); }
         .face-yin .product-price { color: #555; }
 
-        .product-desc { font-size: 13px; line-height: 1.8; color: var(--text-muted); font-weight: 300; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .product-desc { font-size: 13px; line-height: 1.8; color: var(--text-muted); font-weight: 300; overflow: visible; }
 
         .toggle-btn { position: absolute; right: 0; bottom: 0; width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 10; }
         .toggle-dot { width: 12px; height: 12px; border-radius: 50%; transition: all 0.3s ease; }
