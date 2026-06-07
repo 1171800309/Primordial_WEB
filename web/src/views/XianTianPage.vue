@@ -22,7 +22,7 @@
     <main class="main-content">
       <h1 class="page-title">先天 . 恒 . 炁域</h1>
       <button
-        v-if="activeTab === 'tab-2' && hiddenDiscovery.count > 0 && hiddenCardDiscovered"
+        v-if="activeTab === 'tab-2' && hasHiddenCards && hiddenCardDiscovered"
         type="button"
         class="hidden-card-entry"
         @click="showHiddenPrompt = true"
@@ -149,7 +149,7 @@
       </div>
     </main>
 
-    <div v-if="showHiddenPrompt" class="hidden-modal-mask" @click.self="showHiddenPrompt = false">
+    <div v-if="showHiddenPrompt && hasHiddenCards" class="hidden-modal-mask" @click.self="showHiddenPrompt = false">
       <div class="hidden-modal-box">
         <div class="hidden-modal-title">隐藏词卡</div>
         <div class="hidden-modal-desc">
@@ -219,6 +219,7 @@ const goHub = useBackToHub()
 const router = useRouter()
 const showHiddenPrompt = ref(false)
 const hiddenCardDiscovered = ref(false)
+const hasHiddenCards = ref(false)
 const hiddenDiscovery = reactive({
   dayZhi: null,
   count: 0,
@@ -258,10 +259,15 @@ const loadTraitCards = async () => {
     const apiCards = payload?.cards ?? []
     traits.value = mergeTraitCards(XIANTIAN_TRAIT_SLOTS, apiCards)
     syncCardStates(traits.value)
+    hasHiddenCards.value = (payload?.hiddenCards ?? []).length > 0
     hiddenDiscovery.dayZhi = payload?.hiddenDiscovery?.dayZhi ?? null
-    hiddenDiscovery.count = Number(payload?.hiddenDiscovery?.count) || 0
-    hiddenDiscovery.showModal = Boolean(payload?.hiddenDiscovery?.showModal)
-    hiddenDiscovery.modalMessage = payload?.hiddenDiscovery?.modalMessage ?? ''
+    hiddenDiscovery.count = hasHiddenCards.value
+      ? Number(payload?.hiddenDiscovery?.count) || (payload?.hiddenCards ?? []).length
+      : 0
+    hiddenDiscovery.showModal = hasHiddenCards.value && Boolean(payload?.hiddenDiscovery?.showModal)
+    hiddenDiscovery.modalMessage = hasHiddenCards.value
+      ? (payload?.hiddenDiscovery?.modalMessage ?? '')
+      : ''
   } catch (error) {
     traitsError.value = error?.message || '词卡加载失败'
     ElMessage.error(traitsError.value)
@@ -502,7 +508,7 @@ const dismissHiddenPrompt = () => {
 const maybeShowHiddenPrompt = () => {
   if (activeTab.value !== 'tab-2') return
   if (hiddenCardDiscovered.value) return
-  if (hiddenDiscovery.count <= 0) return
+  if (!hasHiddenCards.value) return
   if (!allTraitCardsOpened.value) return
   if (hasShownUnlockPrompt.value) return
   hasShownUnlockPrompt.value = true

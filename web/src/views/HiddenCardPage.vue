@@ -1,5 +1,5 @@
 <template>
-  <div class="prototype-page hidden-card-page">
+  <div v-if="visibleCards.length" class="prototype-page hidden-card-page">
     <canvas ref="canvasRef" id="bg-canvas" />
     <div class="holy-glow" />
 
@@ -37,7 +37,7 @@
       <h1 class="page-title">隐藏词卡</h1>
       <div class="page-subtitle">HIDDEN TRAITS</div>
 
-      <div v-if="visibleCards.length" class="ur-cards-container">
+      <div class="ur-cards-container">
         <div v-for="card in visibleCards" :key="card.id" class="ur-card-wrapper">
           <div class="blind-box" @click="handleCardClick(card.id)">
             <div class="unopened-cover" :class="{ opened: cardStates[card.id]?.opened }">
@@ -63,22 +63,16 @@
           <div class="trait-label-bottom">{{ card.label }}</div>
         </div>
       </div>
-
-      <p v-else-if="!loading" class="empty-note">你的日柱无隐藏词卡，可直接返回先天恒炁域继续探索。</p>
-      <p v-else class="empty-note">加载中…</p>
     </main>
   </div>
 </template>
 
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import logoUrl from '@/assets/logo.png'
 import { fetchMyTraitCards, openMyTraitCard } from '@/api/me'
-import {
-  HIDDEN_TRAIT_CARD_SLOTS,
-  mergeHiddenTraitCards,
-  resolveHiddenDiscovery
-} from '@/constants/hiddenTraitCards'
+import { HIDDEN_TRAIT_CARD_SLOTS, mergeHiddenTraitCards } from '@/constants/hiddenTraitCards'
 import { useDustCanvas } from '@/composables/useDustCanvas'
 import AutoFitTraitTitle from '@/components/trait/AutoFitTraitTitle.vue'
 import AutoFitCoverText from '@/components/trait/AutoFitCoverText.vue'
@@ -88,7 +82,7 @@ import '@/styles/pages/隐藏词卡.css'
 const canvasRef = ref(null)
 useDustCanvas(canvasRef)
 
-const loading = ref(true)
+const router = useRouter()
 const modalHidden = ref(false)
 const contentRevealed = ref(false)
 const visibleCards = ref([])
@@ -119,40 +113,28 @@ const applyDiscovery = (payload) => {
 }
 
 const loadDiscovery = async () => {
-  loading.value = true
   try {
     const res = await fetchMyTraitCards()
     const data = res?.data ?? res
-    const remote = data?.hiddenDiscovery
-    const count = remote && typeof remote.count === 'number'
-      ? remote.count
-      : resolveHiddenDiscovery(data?.keys?.dayZhi ?? data?.keys?.dayPillar?.slice(1)).count
+    const cards = mergeHiddenTraitCards(HIDDEN_TRAIT_CARD_SLOTS, data?.hiddenCards ?? [])
 
-    visibleCards.value = mergeHiddenTraitCards(
-      HIDDEN_TRAIT_CARD_SLOTS,
-      data?.hiddenCards ?? [],
-      count
-    )
-    syncCardStates(visibleCards.value)
-
-    if (remote && typeof remote.count === 'number') {
-      applyDiscovery({
-        dayZhi: remote.dayZhi ?? null,
-        count: remote.count,
-        showModal: Boolean(remote.showModal),
-        modalMessage: remote.modalMessage ?? null
-      })
+    if (!cards.length) {
+      router.replace('/xiantian')
       return
     }
-    const dayZhi = data?.keys?.dayZhi ?? data?.keys?.dayPillar?.slice(1)
-    applyDiscovery(resolveHiddenDiscovery(dayZhi))
-  } catch {
-    const fallback = resolveHiddenDiscovery(null)
-    visibleCards.value = mergeHiddenTraitCards(HIDDEN_TRAIT_CARD_SLOTS, [], fallback.count)
+
+    visibleCards.value = cards
     syncCardStates(visibleCards.value)
-    applyDiscovery(fallback)
-  } finally {
-    loading.value = false
+
+    const remote = data?.hiddenDiscovery
+    applyDiscovery({
+      dayZhi: remote?.dayZhi ?? null,
+      count: cards.length,
+      showModal: Boolean(remote?.showModal),
+      modalMessage: remote?.modalMessage ?? null
+    })
+  } catch {
+    router.replace('/xiantian')
   }
 }
 
@@ -183,14 +165,5 @@ onMounted(() => {
   z-index: 0;
   opacity: 0.8;
   pointer-events: none;
-}
-
-.empty-note {
-  margin-top: 48px;
-  font-size: 14px;
-  color: var(--text-muted);
-  letter-spacing: 0.12em;
-  text-align: center;
-  line-height: 2;
 }
 </style>
