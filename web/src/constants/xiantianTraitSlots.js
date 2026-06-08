@@ -9,13 +9,6 @@ export const XIANTIAN_TRAIT_SLOTS = [
       '它是你生命最底层的“源代码”，不因环境而改变，不因际遇而转移。你一生会经历无数事，扮演无数角色，但那个最核心的“性”，从你投胎而来的那一刻，就已经写定了。'
   },
   {
-    id: 't2',
-    label: '先天禀性',
-    iconName: 'triangle',
-    coverCenter: true,
-    cover: '我携带什么样的能量，来到一个什么样的世界？'
-  },
-  {
     id: 't3',
     label: '先天行为特性',
     iconName: 'arrow',

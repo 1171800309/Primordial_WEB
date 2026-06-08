@@ -37,9 +37,19 @@
       <h1 class="page-title">隐藏词卡</h1>
       <div class="page-subtitle">HIDDEN TRAITS</div>
 
-      <div class="ur-cards-container">
-        <div v-for="card in visibleCards" :key="card.id" class="ur-card-wrapper">
-          <div class="blind-box" @click="handleCardClick(card.id)">
+      <TraitCardCarousel :items="carouselItems">
+        <template #default="{ item: card }">
+          <div
+            class="blind-box"
+            @click.stop="handleCardClick(card.id)"
+            @pointerdown.stop
+          >
+            <div
+              class="trait-card-meta"
+              :class="{ 'is-on-yin': cardStates[card.id]?.opened && cardStates[card.id]?.yin }"
+            >
+              <span class="trait-card-label">{{ card.label }}</span>
+            </div>
             <div class="unopened-cover" :class="{ opened: cardStates[card.id]?.opened }">
               <AutoFitCoverText :max-size="15" :min-size="10">
                 <span v-html="card.cover" />
@@ -47,35 +57,49 @@
             </div>
             <div class="flip-card" :class="{ 'is-yin': cardStates[card.id]?.yin }">
               <div class="card-face face-yang">
-                <AutoFitTraitTitle :max-size="36" :min-size="14" :key="`${card.id}-${card.yang.title}`">
-                  {{ card.yang.title }}
-                </AutoFitTraitTitle>
-                <div v-if="card.yang.annotation" class="trait-annotation">{{ card.yang.annotation }}</div>
-                <div class="trait-desc">{{ card.yang.desc }}</div>
+                <AutoFitTraitCardBody :fit-key="`${card.id}-yang-${cardStates[card.id]?.yin}`">
+                  <AutoFitTraitTitle :max-size="34" :min-size="18" :fit-key="`${card.id}-yang-title`">
+                    {{ card.yang.title }}
+                  </AutoFitTraitTitle>
+                  <div v-if="card.yang.annotation" class="trait-annotation">{{ card.yang.annotation }}</div>
+                  <div v-if="card.yang.desc" class="trait-desc">{{ card.yang.desc }}</div>
+                </AutoFitTraitCardBody>
                 <div class="toggle-dot" />
               </div>
               <div class="card-face face-yin">
-                <div class="trait-desc">{{ card.yin.desc }}</div>
+                <AutoFitTraitCardBody :fit-key="`${card.id}-yin-${cardStates[card.id]?.yin}`">
+                  <AutoFitTraitTitle
+                    v-if="card.yin.title"
+                    :max-size="34"
+                    :min-size="18"
+                    :fit-key="`${card.id}-yin-title-${cardStates[card.id]?.yin}`"
+                  >
+                    {{ card.yin.title }}
+                  </AutoFitTraitTitle>
+                  <div v-if="card.yin.annotation" class="trait-annotation">{{ card.yin.annotation }}</div>
+                  <div v-if="card.yin.desc" class="trait-desc">{{ card.yin.desc }}</div>
+                </AutoFitTraitCardBody>
                 <div class="toggle-dot" />
               </div>
             </div>
           </div>
-          <div class="trait-label-bottom">{{ card.label }}</div>
-        </div>
-      </div>
+        </template>
+      </TraitCardCarousel>
     </main>
   </div>
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import logoUrl from '@/assets/logo.png'
 import { fetchMyTraitCards, openMyTraitCard } from '@/api/me'
 import { HIDDEN_TRAIT_CARD_SLOTS, mergeHiddenTraitCards } from '@/constants/hiddenTraitCards'
 import { useDustCanvas } from '@/composables/useDustCanvas'
-import AutoFitTraitTitle from '@/components/trait/AutoFitTraitTitle.vue'
 import AutoFitCoverText from '@/components/trait/AutoFitCoverText.vue'
+import AutoFitTraitCardBody from '@/components/trait/AutoFitTraitCardBody.vue'
+import AutoFitTraitTitle from '@/components/trait/AutoFitTraitTitle.vue'
+import TraitCardCarousel from '@/components/trait/TraitCardCarousel.vue'
 import '@/styles/prototype-base.css'
 import '@/styles/pages/隐藏词卡.css'
 
@@ -86,6 +110,11 @@ const router = useRouter()
 const modalHidden = ref(false)
 const contentRevealed = ref(false)
 const visibleCards = ref([])
+const hiddenCardsCacheKey = 'xq_hidden_cards_cache'
+const carouselItems = computed(() =>
+  visibleCards.value.map((c) => ({ key: c.id, label: c.label, ...c }))
+)
+
 const discovery = ref({
   dayZhi: null,
   count: 0,
@@ -116,7 +145,16 @@ const loadDiscovery = async () => {
   try {
     const res = await fetchMyTraitCards()
     const data = res?.data ?? res
-    const cards = mergeHiddenTraitCards(HIDDEN_TRAIT_CARD_SLOTS, data?.hiddenCards ?? [])
+    let apiCards = data?.hiddenCards ?? []
+    if (!apiCards.length) {
+      try {
+        const cached = sessionStorage.getItem(hiddenCardsCacheKey)
+        if (cached) apiCards = JSON.parse(cached)
+      } catch {
+        apiCards = []
+      }
+    }
+    const cards = mergeHiddenTraitCards(HIDDEN_TRAIT_CARD_SLOTS, apiCards)
 
     if (!cards.length) {
       router.replace('/xiantian')

@@ -260,10 +260,10 @@ export const mapBaziAnalysisToForm = (bz) => {
   const usefulTenGods = usefulGods['喜用十神'] || usefulGods.usefulTenGods
   const unfavorableTenGods = usefulGods['忌用十神'] || usefulGods.unfavorableTenGods
 
-  const naYinYear = pickStr(naYinRoot, ['年柱', 'year', 'Year'])
-  const naYinMonth = pickStr(naYinRoot, ['月柱', 'month', 'Month'])
-  const naYinDay = pickStr(naYinRoot, ['日柱', 'day', 'Day'])
-  const naYinHour = pickStr(naYinRoot, ['时柱', 'hour', 'Hour'])
+  const naYinYear = pickStr(naYinRoot, ['年柱纳音', '年柱', 'year', 'Year'])
+  const naYinMonth = pickStr(naYinRoot, ['月柱纳音', '月柱', 'month', 'Month'])
+  const naYinDay = pickStr(naYinRoot, ['日柱纳音', '日柱', 'day', 'Day'])
+  const naYinHour = pickStr(naYinRoot, ['时柱纳音', '时柱', 'hour', 'Hour'])
 
   const xiYongPort = parseXiYongWuXing(bz) || usefulElement
   const jiShenPort = parseJiShenWuXing(bz) || unfavorableElement

@@ -58,24 +58,22 @@
               <div class="blind-box" :class="{ 'is-opened': dayunCardOpened }" @click="handleDayunCardClick">
                 <div class="unopened-cover" :class="{ opened: dayunCardOpened }">
                   <div class="pending-title">待开启</div>
-                  <div class="pending-sub">{{ dayunTrait.yang.title }}</div>
-                  <div class="open-hint">点击开启词条</div>
                 </div>
                 <div class="flip-card" :class="{ 'is-yin': dayunCardYin }">
                   <div class="card-face face-yang">
-                    <AutoFitTraitTitle :max-size="28" :key="`dayun-yang-${dayunTrait.yang.title}`">
-                      {{ dayunTrait.yang.title }}
-                    </AutoFitTraitTitle>
-                    <div v-if="dayunTrait.yang.subtitle" class="trait-subtitle">{{ dayunTrait.yang.subtitle }}</div>
-                    <div class="trait-desc" v-html="dayunTrait.yang.desc" />
+                    <AutoFitTraitCardBody :fit-key="`dayun-yang-${dayunCardYin}`">
+                      <div class="trait-topic">{{ dayunTrait.yang.title }}</div>
+                      <div v-if="dayunTrait.yang.subtitle" class="trait-subtitle">{{ dayunTrait.yang.subtitle }}</div>
+                      <div v-if="dayunTrait.yang.desc" class="trait-desc" v-html="dayunTrait.yang.desc" />
+                    </AutoFitTraitCardBody>
                     <div class="toggle-dot" />
                   </div>
                   <div class="card-face face-yin">
-                    <AutoFitTraitTitle :max-size="28" :key="`dayun-yin-${dayunTrait.yin.title}`">
-                      {{ dayunTrait.yin.title }}
-                    </AutoFitTraitTitle>
-                    <div v-if="dayunTrait.yin.subtitle" class="trait-subtitle">{{ dayunTrait.yin.subtitle }}</div>
-                    <div class="trait-desc" v-html="dayunTrait.yin.desc" />
+                    <AutoFitTraitCardBody :fit-key="`dayun-yin-${dayunCardYin}`">
+                      <div class="trait-topic">{{ dayunTrait.yin.title }}</div>
+                      <div v-if="dayunTrait.yin.subtitle" class="trait-subtitle">{{ dayunTrait.yin.subtitle }}</div>
+                      <div v-if="dayunTrait.yin.desc" class="trait-desc" v-html="dayunTrait.yin.desc" />
+                    </AutoFitTraitCardBody>
                     <div class="toggle-dot" />
                   </div>
                 </div>
@@ -107,24 +105,22 @@
               <div class="blind-box" :class="{ 'is-opened': liunianCardOpened }" @click="handleLiunianCardClick">
                 <div class="unopened-cover" :class="{ opened: liunianCardOpened }">
                   <div class="pending-title">待开启</div>
-                  <div class="pending-sub">{{ liunianTrait.yang.title }}</div>
-                  <div class="open-hint">点击开启词条</div>
                 </div>
                 <div class="flip-card" :class="{ 'is-yin': liunianCardYin }">
                   <div class="card-face face-yang">
-                    <AutoFitTraitTitle :max-size="28" :key="`liunian-yang-${liunianTrait.yang.title}`">
-                      {{ liunianTrait.yang.title }}
-                    </AutoFitTraitTitle>
-                    <div v-if="liunianTrait.yang.subtitle" class="trait-subtitle">{{ liunianTrait.yang.subtitle }}</div>
-                    <div class="trait-desc" v-html="liunianTrait.yang.desc" />
+                    <AutoFitTraitCardBody :fit-key="`liunian-yang-${liunianCardYin}`">
+                      <div class="trait-topic">{{ liunianTrait.yang.title }}</div>
+                      <div v-if="liunianTrait.yang.subtitle" class="trait-subtitle">{{ liunianTrait.yang.subtitle }}</div>
+                      <div v-if="liunianTrait.yang.desc" class="trait-desc" v-html="liunianTrait.yang.desc" />
+                    </AutoFitTraitCardBody>
                     <div class="toggle-dot" />
                   </div>
                   <div class="card-face face-yin">
-                    <AutoFitTraitTitle :max-size="28" :key="`liunian-yin-${liunianTrait.yin.title}`">
-                      {{ liunianTrait.yin.title }}
-                    </AutoFitTraitTitle>
-                    <div v-if="liunianTrait.yin.subtitle" class="trait-subtitle">{{ liunianTrait.yin.subtitle }}</div>
-                    <div class="trait-desc" v-html="liunianTrait.yin.desc" />
+                    <AutoFitTraitCardBody :fit-key="`liunian-yin-${liunianCardYin}`">
+                      <div class="trait-topic">{{ liunianTrait.yin.title }}</div>
+                      <div v-if="liunianTrait.yin.subtitle" class="trait-subtitle">{{ liunianTrait.yin.subtitle }}</div>
+                      <div v-if="liunianTrait.yin.desc" class="trait-desc" v-html="liunianTrait.yin.desc" />
+                    </AutoFitTraitCardBody>
                     <div class="toggle-dot" />
                   </div>
                 </div>
@@ -150,8 +146,9 @@ import { useBackToHub } from '@/composables/useBackToHub'
 import { usePageTransition } from '@/composables/usePageTransition'
 import { useDustCanvas } from '@/composables/useDustCanvas'
 import { useSegmentControl } from '@/composables/useSegmentControl'
-import AutoFitTraitTitle from '@/components/trait/AutoFitTraitTitle.vue'
+import AutoFitTraitCardBody from '@/components/trait/AutoFitTraitCardBody.vue'
 import '@/styles/prototype-base.css'
+import '@/styles/components/trait-carousel.css'
 import '@/styles/pages/变炁页.css'
 
 const canvasRef = ref(null)
@@ -174,6 +171,7 @@ const dayunOpenSlot = ref('')
 const liunianOpenSlot = ref('')
 const dayunCardYin = ref(false)
 const liunianCardYin = ref(false)
+
 const goHub = useBackToHub()
 
 const buffDayun = reactive(createBuffState())
@@ -352,7 +350,8 @@ watch(loaded, (val) => {
 .bianqi-page .blind-box {
   position: relative;
   width: 100%;
-  height: 320px;
+  aspect-ratio: 4 / 3;
+  max-height: min(36vh, 300px);
   cursor: pointer;
 }
 
@@ -391,20 +390,6 @@ watch(loaded, (val) => {
   font-size: 22px;
   color: var(--gold-light);
   letter-spacing: 0.2em;
-  margin-bottom: 12px;
-}
-
-.bianqi-page .pending-sub {
-  font-size: 14px;
-  color: rgba(234, 222, 199, 0.82);
-  line-height: 1.8;
-}
-
-.bianqi-page .open-hint {
-  margin-top: 18px;
-  font-size: 12px;
-  color: var(--text-dark);
-  letter-spacing: 0.15em;
 }
 
 .traits-note {

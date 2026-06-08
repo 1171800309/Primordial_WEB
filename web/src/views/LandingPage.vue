@@ -144,7 +144,6 @@ let glH = 0
 
 const traitCards = [
   { icon: 'book', title: '先天特性', desc: '生命底层的"源代码"，不因环境改变。你扮演无数角色，但核心的"性"早已写定。' },
-  { icon: 'triangle', title: '先天禀性', desc: '"我携带什么样的能量，来到一个什么样的世界？"' },
   { icon: 'arrow', title: '先天行为特性', desc: '与生俱来的"行动方式"——不是你要做什么，而是无论做什么都改不掉的"做法"。' },
   { icon: 'sun', title: '先天天赋特性', desc: '"我的能量在先天环境中被激发出了什么天赋？"' },
   { icon: 'cross', title: '先天气质特性', desc: '"我带着怎样的气质？"' },

@@ -1,5 +1,5 @@
 /** 禀性 / 天赋 / 性格底色 词卡等级说明（左上角徽章 hover 提示） */
-export const TIER_SLOTS = new Set(['t2', 't4', 't6'])
+export const TIER_SLOTS = new Set(['t4', 't6'])
 
 export const TIER_META = {
   'tier-gold': {

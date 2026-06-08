@@ -13,9 +13,10 @@
 .xiantian-page *{ margin: 0; padding: 0; box-sizing: border-box; }
 .xiantian-page{
 background-color: var(--bg-color); color: var(--text-white);
-font-family: var(--font-sans); overflow-x: hidden;
--webkit-font-smoothing: antialiased; min-height: 100vh;
-display: flex; flex-direction: column; width: 100%;
+font-family: var(--font-sans); overflow: hidden;
+-webkit-font-smoothing: antialiased; width: 100%;
+height: 100dvh; max-height: 100dvh;
+display: flex; flex-direction: column;
 }
 .xiantian-page .ink-blend{ mix-blend-mode: screen; background-color: transparent; border-radius: 0; object-fit: contain; }
 /* ================= 页面转场遮罩 ================= */
@@ -56,36 +57,165 @@ width: 14px; height: 14px; border-radius: 50%; background: #000; border: 1px sol
 .xiantian-page .top-right-store:hover .store-label{ opacity: 1; transform: translateX(0); color: var(--gold-light); }
 .xiantian-page .top-right-store:hover .store-dot{ transform: scale(1.1); box-shadow: 0 0 20px rgba(234, 222, 199, 0.5); }
 /* ================= 主体容器与导航胶囊 ================= */
-.xiantian-page .main-content{ position: relative; z-index: 10; flex-grow: 1; display: flex; flex-direction: column; align-items: center; padding-top: 120px; padding-bottom: 80px; width: 100%; opacity: 1; filter: none; transform: none; }
-.xiantian-page .page-title{ font-family: var(--font-serif); font-size: clamp(28px, 4vw, 40px); color: var(--text-white); font-weight: 300; letter-spacing: 0.15em; margin-bottom: 40px; text-align: center; }
-.xiantian-page .segment-control{ display: flex; align-items: center; background: rgba(15, 15, 17, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 40px; padding: 6px; margin-bottom: 60px; position: relative; }
-.xiantian-page .segment-btn{ padding: 12px 36px; border-radius: 30px; border: none; background: transparent; font-family: var(--font-serif); font-size: 16px; color: var(--text-muted); letter-spacing: 0.1em; cursor: pointer; transition: all 0.4s ease; position: relative; z-index: 2; outline: none; }
+.xiantian-page .main-content{
+position: relative; z-index: 10; flex: 1 1 auto; min-height: 0;
+display: flex; flex-direction: column; align-items: center;
+padding-top: clamp(88px, 11vh, 104px);
+padding-bottom: clamp(40px, 5.5vh, 52px);
+width: 100%; opacity: 1; filter: none; transform: none; overflow: hidden;
+}
+.xiantian-page .page-title{
+font-family: var(--font-serif); font-size: clamp(22px, 3.2vw, 34px); color: var(--text-white);
+font-weight: 300; letter-spacing: 0.15em; margin-bottom: clamp(10px, 1.8vh, 18px);
+text-align: center; flex-shrink: 0;
+}
+.xiantian-page .segment-control{
+display: flex; align-items: center; background: rgba(15, 15, 17, 0.92);
+border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 40px; padding: 5px;
+margin-bottom: clamp(12px, 2vh, 22px); position: relative; flex-shrink: 0;
+}
+.xiantian-page .segment-btn{ padding: 10px 28px; border-radius: 30px; border: none; background: transparent; font-family: var(--font-serif); font-size: 15px; color: var(--text-muted); letter-spacing: 0.1em; cursor: pointer; transition: all 0.4s ease; position: relative; z-index: 2; outline: none; }
 .xiantian-page .segment-btn.active{ color: var(--bg-color); font-weight: 600; }
 .xiantian-page .segment-slider{ position: absolute; top: 6px; left: 6px; height: calc(100% - 12px); background: var(--gold-light); border-radius: 30px; transition: transform 0.5s var(--bezier-smooth), width 0.5s var(--bezier-smooth); z-index: 1; box-shadow: 0 4px 15px rgba(234, 222, 199, 0.3); }
-.xiantian-page .tab-content{ display: none; flex-direction: column; align-items: center; width: 100%; max-width: 1400px; opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.xiantian-page .tab-content{
+display: none; flex-direction: column; align-items: center; width: 100%; max-width: 1400px;
+opacity: 0; transform: translateY(12px); transition: opacity 0.6s ease, transform 0.6s ease;
+flex: 1 1 auto; min-height: 0; overflow: hidden;
+}
 .xiantian-page .tab-content.active{ display: flex; opacity: 1; transform: translateY(0); }
+.xiantian-page .hidden-card-entry{ flex-shrink: 0; margin-bottom: 8px; }
 /* ================= 模块一：炁数 ================= */
-.xiantian-page .qi-value-container{ position: relative; display: flex; flex-direction: column; align-items: center; width: 100%; margin-top: 60px; }
+.xiantian-page .qi-value-container{
+position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+width: 100%; margin-top: 0; flex: 1 1 auto; min-height: 0;
+}
 .xiantian-page .resonance-ring{
 position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-width: 500px; height: 500px; border-radius: 50%; z-index: -1; pointer-events: none;
+width: min(420px, 48vh); height: min(420px, 48vh); border-radius: 50%; z-index: -1; pointer-events: none;
 background: radial-gradient(circle, rgba(234, 222, 199, 0.08) 0%, transparent 60%);
 box-shadow: 0 0 50px rgba(234, 222, 199, 0.05);
 border: 1px solid rgba(234, 222, 199, 0.05); animation: spinCenter 40s linear infinite;
 }
 .xiantian-page .resonance-ring::before{ content: ''; position: absolute; top: 15%; left: 15%; width: 70%; height: 70%; border-radius: 50%; border: 2px dashed rgba(234, 222, 199, 0.15); animation: spinCenter 20s linear infinite reverse; }
 .xiantian-page .resonance-ring::after{ content: ''; position: absolute; top: 30%; left: 30%; width: 40%; height: 40%; border-radius: 50%; border-top: 2px solid rgba(234, 222, 199, 0.4); border-bottom: 2px solid rgba(234, 222, 199, 0.4); animation: spinCenter 10s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite; }
-.xiantian-page .pre-text{ font-size: 15px; color: var(--text-muted); letter-spacing: 0.3em; margin-bottom: 20px; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
+.xiantian-page .pre-text{
+font-size: clamp(12px, 1.6vh, 15px); color: var(--text-muted); letter-spacing: 0.28em;
+margin-bottom: clamp(8px, 1.2vh, 14px); text-shadow: 0 0 10px rgba(255,255,255,0.2);
+}
 .xiantian-page .huge-number{
-font-family: var(--font-serif); font-size: clamp(80px, 15vw, 180px); font-weight: 300; letter-spacing: 0.15em; line-height: 1;
+font-family: var(--font-serif); font-size: clamp(64px, 14vh, 156px); font-weight: 300; letter-spacing: 0.15em; line-height: 1;
 background: linear-gradient(180deg, #FFFFFF 0%, rgba(234, 222, 199, 0.6) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-filter: drop-shadow(0 0 30px rgba(234, 222, 199, 0.3)); margin-bottom: 40px; transition: filter 0.3s ease; animation: numberPulse 4s infinite alternate;
+filter: drop-shadow(0 0 30px rgba(234, 222, 199, 0.3)); margin-bottom: clamp(8px, 1.5vh, 18px); transition: filter 0.3s ease; animation: numberPulse 4s infinite alternate;
 }
 @keyframes numberPulse { 0% { filter: drop-shadow(0 0 20px rgba(234, 222, 199, 0.2)); transform: scale(0.98); } 100% { filter: drop-shadow(0 0 50px rgba(234, 222, 199, 0.6)); transform: scale(1.02); } }
 .xiantian-page .huge-number.decoding { filter: blur(8px); opacity: 0.6; transform: scale(0.9); }
-.xiantian-page .post-text { text-align: center; max-width: 600px; line-height: 2.2; font-size: 14px; color: var(--text-dark); letter-spacing: 0.1em; padding: 40px 20px; border-top: 1px solid rgba(255, 255, 255, 0.05); }
+.xiantian-page .post-text {
+text-align: center; max-width: 600px; line-height: 1.85; font-size: clamp(12px, 1.5vh, 14px);
+color: var(--text-dark); letter-spacing: 0.1em; padding: clamp(10px, 1.8vh, 18px) 20px 0;
+border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
 /* ================= 模块二：炁性 (盲盒网格) ================= */
-.xiantian-page .tab-title-sub { font-family: var(--font-serif); font-size: 24px; color: var(--text-muted); letter-spacing: 0.15em; margin-bottom: 40px; }
+.xiantian-page .tab-title-sub {
+font-family: var(--font-serif); font-size: clamp(16px, 2vh, 20px); color: var(--text-muted);
+letter-spacing: 0.15em; margin-bottom: clamp(4px, 0.8vh, 10px); text-align: center; width: 100%; flex-shrink: 0;
+}
+.xiantian-page .traits-status { text-align: center; margin: 0 auto 8px; color: var(--text-muted); font-size: 13px; letter-spacing: 0.08em; width: 100%; flex-shrink: 0; }
+.xiantian-page #tab-2.tab-content { padding-bottom: 0; justify-content: flex-start; }
+.xiantian-page .trait-showcase {
+margin: 0 auto; flex: 1 1 auto; min-height: 0; width: 100%;
+display: flex; flex-direction: column; justify-content: center;
+}
+.xiantian-page .trait-showcase-counter { margin-bottom: clamp(4px, 0.8vh, 8px); flex-shrink: 0; }
+.xiantian-page .trait-showcase-stage { flex-shrink: 1; min-height: 0; }
+.xiantian-page .pagination-dots {
+margin: clamp(40px, 5vh, 56px) auto 0; flex-shrink: 0;
+}
+.xiantian-page .trait-showcase .blind-box {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: unset;
+  margin: 0 auto;
+  border-radius: 12px;
+  overflow: hidden;
+  perspective: 1400px;
+  transform-style: preserve-3d;
+  cursor: pointer;
+}
+.xiantian-page .trait-card-meta {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 18;
+  height: 34px;
+  padding: 10px 52px 0 16px;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+.xiantian-page .trait-card-label {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: rgba(0, 0, 0, 0.42);
+  line-height: 1.3;
+  text-align: left;
+  max-width: 56%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.xiantian-page .trait-card-meta.is-on-yin .trait-card-label { color: rgba(255, 255, 255, 0.52); }
+.xiantian-page .trait-showcase .card-face {
+  padding: 36px 12px 56px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  text-align: center;
+  overflow: hidden;
+}
+.xiantian-page .trait-showcase .trait-card-body-host {
+  padding: 0 4px;
+}
+.xiantian-page .trait-showcase .trait-card-body {
+  padding: 0;
+  width: 100%;
+}
+.xiantian-page .trait-showcase .toggle-dot {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  margin: 0;
+  flex-shrink: 0;
+}
+.xiantian-page .trait-showcase .unopened-cover {
+  border-radius: 12px;
+  padding: 44px 26px 48px;
+  font-family: var(--font-trait-body, var(--font-sans));
+  font-size: clamp(13px, 2.8vw, 14px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+.xiantian-page .trait-showcase .tier-badge { left: auto; right: 12px; top: 10px; z-index: 19; }
+.xiantian-page .trait-showcase .open-hint { bottom: 18px; left: 50%; transform: translateX(-50%); font-size: 11px; }
+.xiantian-page .trait-showcase .flip-card {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.xiantian-page .trait-showcase .flip-card.is-yin {
+  transform: rotateY(180deg);
+}
 .xiantian-page .traits-grid-all { display: grid; grid-template-columns: repeat(5, 1fr); gap: 30px 20px; width: 100%; padding: 0 3%; margin-bottom: 60px; }
 .xiantian-page .trait-wrapper { display: flex; flex-direction: column; align-items: center; gap: 16px; perspective: 1200px; width: 100%; }
 .xiantian-page .blind-box { width: 100%; aspect-ratio: 1 / 1.15; position: relative; cursor: pointer; }
@@ -142,9 +272,10 @@ animation: hintPulse 2s infinite alternate var(--bezier-smooth);
 .xiantian-page .trait-annotation{ font-family: var(--font-sans); font-size: 12px; opacity: 0.7; margin-bottom: 10px; font-weight: 300; flex-shrink: 0; }
 .xiantian-page .trait-desc{ font-size: clamp(12px, 3vw, 14px); line-height: 1.6; font-weight: 400; flex: 1 1 auto; min-height: 0; width: 100%; overflow-y: auto; overflow-x: hidden; padding: 0 2px 4px; }
 .xiantian-page .face-yang .trait-title{ color: #000; }
-.xiantian-page .face-yang .trait-annotation, .xiantian-page .face-yang .trait-desc{ color: #333; }
+.xiantian-page .face-yang .trait-title, .xiantian-page .face-yang .trait-topic, .xiantian-page .face-yang .trait-annotation, .xiantian-page .face-yang .trait-desc{ color: #333; }
+.xiantian-page .face-yang .trait-title, .xiantian-page .face-yang .trait-topic { color: #000; }
 .xiantian-page .face-yin .trait-title{ color: #FFF; }
-.xiantian-page .face-yin .trait-annotation, .xiantian-page .face-yin .trait-desc{ color: #AAA; font-weight: 300; }
+.xiantian-page .face-yin .trait-title, .xiantian-page .face-yin .trait-topic, .xiantian-page .face-yin .trait-annotation, .xiantian-page .face-yin .trait-desc{ color: #AAA; font-weight: 300; }
 .xiantian-page .toggle-dot{ position: relative; bottom: auto; left: auto; transform: none; flex-shrink: 0; margin-top: auto; width: 12px; height: 12px; border-radius: 50%; transition: all 0.3s ease; }
 .xiantian-page .face-yang .toggle-dot{ background: #000; border: 2px solid #FFF; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
 .xiantian-page .face-yin .toggle-dot{ background: #FFF; border: 2px solid #000; box-shadow: 0 0 8px rgba(255,255,255,0.6); }
@@ -152,17 +283,17 @@ animation: hintPulse 2s infinite alternate var(--bezier-smooth);
 /* ==================== 词卡级别体系 (Tier System) ==================== */
 .xiantian-page .tier-gold .face-yang, .xiantian-page .tier-gold .face-yin{ border-color: rgba(212, 175, 55, 0.6); box-shadow: 0 0 20px rgba(212, 175, 55, 0.15), inset 0 0 10px rgba(212, 175, 55, 0.05); }
 .xiantian-page .tier-gold .face-yang{ background: #FFFCF2; }
-.xiantian-page .tier-gold .trait-title, .xiantian-page .tier-gold .trait-annotation, .xiantian-page .tier-gold .trait-desc{ color: #B8860B !important; }
+.xiantian-page .tier-gold .trait-title, .xiantian-page .tier-gold .trait-topic, .xiantian-page .tier-gold .trait-annotation, .xiantian-page .tier-gold .trait-desc{ color: #B8860B !important; }
 .xiantian-page .tier-gold .toggle-dot{ background: #B8860B !important; border-color: #B8860B !important; box-shadow: 0 0 10px rgba(184, 134, 11, 0.5) !important; }
 .xiantian-page .tier-yellow .face-yang, .xiantian-page .tier-yellow .face-yin{ border-color: rgba(249, 212, 35, 0.6); box-shadow: 0 0 20px rgba(249, 212, 35, 0.15), inset 0 0 10px rgba(249, 212, 35, 0.05); }
 .xiantian-page .tier-yellow .face-yang{ background: #FFFDF5; }
-.xiantian-page .tier-yellow .trait-title, .xiantian-page .tier-yellow .trait-annotation, .xiantian-page .tier-yellow .trait-desc{ color: #D4A000 !important; }
+.xiantian-page .tier-yellow .trait-title, .xiantian-page .tier-yellow .trait-topic, .xiantian-page .tier-yellow .trait-annotation, .xiantian-page .tier-yellow .trait-desc{ color: #D4A000 !important; }
 .xiantian-page .tier-yellow .toggle-dot{ background: #D4A000 !important; border-color: #D4A000 !important; box-shadow: 0 0 10px rgba(212, 160, 0, 0.5) !important; }
 .xiantian-page .tier-black .face-yang, .xiantian-page .tier-black .face-yin{ border-color: rgba(136, 136, 136, 0.6); box-shadow: 0 0 20px rgba(136, 136, 136, 0.15), inset 0 0 10px rgba(136, 136, 136, 0.05); }
 .xiantian-page .tier-black .face-yang{ background: #F5F5F5; }
-.xiantian-page .tier-black .trait-title, .xiantian-page .tier-black .trait-annotation, .xiantian-page .tier-black .trait-desc{ color: #777777 !important; }
+.xiantian-page .tier-black .trait-title, .xiantian-page .tier-black .trait-topic, .xiantian-page .tier-black .trait-annotation, .xiantian-page .tier-black .trait-desc{ color: #777777 !important; }
 .xiantian-page .tier-black .toggle-dot{ background: #777777 !important; border-color: #777777 !important; box-shadow: 0 0 10px rgba(119, 119, 119, 0.5) !important; }
-.xiantian-page .flip-card { position: relative; }
+.xiantian-page .traits-grid-all .flip-card { position: relative; }
 .xiantian-page .tier-badge {
   position: absolute;
   top: 10px;
@@ -180,22 +311,49 @@ animation: hintPulse 2s infinite alternate var(--bezier-smooth);
 .xiantian-page .tier-badge.tier-gold { background: rgba(212, 175, 55, 0.18); color: #B8860B; border: 1px solid rgba(212, 175, 55, 0.45); }
 .xiantian-page .tier-badge.tier-yellow { background: rgba(249, 212, 35, 0.16); color: #D4A000; border: 1px solid rgba(249, 212, 35, 0.45); }
 .xiantian-page .tier-badge.tier-black { background: rgba(136, 136, 136, 0.16); color: #777; border: 1px solid rgba(136, 136, 136, 0.45); }
-.xiantian-page .traits-footer{ margin-top: 40px; text-align: center; }
+.xiantian-page .traits-footer{ margin-top: 0; text-align: center; flex-shrink: 0; }
+.xiantian-page #tab-3 .traits-footer:empty{ display: none; }
 .xiantian-page .traits-note{ font-size: 12px; color: var(--text-dark); letter-spacing: 0.1em; }
 /* ================= 模块三：八维评估 ================= */
-.xiantian-page .radar-container{ display: flex; gap: 100px; width: 100%; justify-content: center; align-items: center; flex-wrap: wrap; margin-top: 20px; }
+.xiantian-page #tab-3.tab-content {
+justify-content: safe center; align-items: center;
+--radar-chart-size: min(240px, 30vh, 36vw);
+}
+.xiantian-page .radar-container{
+display: flex; gap: clamp(16px, 3vw, 40px); width: 100%; max-width: 920px;
+justify-content: center; align-items: center; flex-wrap: wrap;
+margin: auto; flex: 1 1 auto; min-height: 0; overflow: visible;
+}
 .xiantian-page .radar-box{
-display: flex; flex-direction: column; align-items: center; gap: 30px; width: 440px;
-background: rgba(10, 10, 12, 0.4); border: 1px solid rgba(255, 255, 255, 0.03); border-radius: 20px; padding: 40px;
+display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+gap: clamp(8px, 1.2vh, 12px); flex: 1 1 280px;
+width: min(340px, 46vw); min-height: 0;
+background: rgba(10, 10, 12, 0.4); border: 1px solid rgba(255, 255, 255, 0.03); border-radius: 20px;
+padding: clamp(14px, 2vh, 22px);
 position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+box-sizing: border-box; text-align: center;
 }
 .xiantian-page .radar-box::before, .xiantian-page .radar-box::after{ content: ''; position: absolute; width: 30px; height: 30px; border: 1px solid var(--gold-dim); pointer-events: none; }
 .xiantian-page .radar-box::before{ top: -1px; left: -1px; border-right: none; border-bottom: none; border-top-left-radius: 20px; }
 .xiantian-page .radar-box::after{ bottom: -1px; right: -1px; border-left: none; border-top: none; border-bottom-right-radius: 20px; }
-.xiantian-page .radar-canvas-wrap{ width: 320px; height: 320px; position: relative; }
-.xiantian-page .radar-canvas-wrap canvas{ width: 100%; height: 100%; display: block; }
-.xiantian-page .radar-title{ font-family: var(--font-serif); font-size: 22px; color: var(--gold-light); letter-spacing: 0.15em; }
-.xiantian-page .radar-desc{ font-size: 13px; color: var(--text-muted); line-height: 2; text-align: justify; letter-spacing: 0.05em; padding-top: 20px; border-top: 1px dashed rgba(255,255,255,0.1); }
+.xiantian-page .radar-title{
+font-family: var(--font-serif); font-size: clamp(16px, 2vh, 20px); color: var(--gold-light);
+letter-spacing: 0.15em; width: 100%; text-align: center; flex-shrink: 0;
+}
+.xiantian-page .radar-canvas-wrap{
+flex: 0 0 auto; width: var(--radar-chart-size); height: var(--radar-chart-size);
+max-width: 100%; position: relative; margin: 0 auto;
+display: flex; align-items: center; justify-content: center;
+}
+.xiantian-page .radar-canvas-wrap canvas{
+display: block; max-width: 100%; max-height: 100%;
+}
+.xiantian-page .radar-desc{
+font-size: clamp(11px, 1.4vh, 12px); color: var(--text-muted); line-height: 1.65;
+text-align: center; letter-spacing: 0.05em; width: 100%;
+padding-top: clamp(6px, 1vh, 10px); border-top: 1px dashed rgba(255,255,255,0.1);
+flex-shrink: 0; box-sizing: border-box;
+}
 @keyframes spin { 100% { transform: rotate(360deg); } }
 @keyframes spinCenter { 100% { transform: translate(-50%, -50%) rotate(360deg); } }
 /* 响应式 */
@@ -203,7 +361,27 @@ position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
 @media (max-width: 1100px) {.xiantian-page .traits-grid-all{ grid-template-columns: repeat(3, 1fr) } }
 @media (max-width: 800px) {
 .xiantian-page .traits-grid-all { grid-template-columns: repeat(2, 1fr); }
-.xiantian-page .radar-container { gap: 40px; }
-.xiantian-page .huge-number { font-size: 100px; }
+.xiantian-page #tab-3.tab-content {
+  justify-content: safe center;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 20px;
+  --radar-chart-size: min(280px, 88vw);
+}
+.xiantian-page .radar-container {
+  flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+  overflow: visible; flex: 0 0 auto; margin: auto;
+}
+.xiantian-page .radar-box {
+  width: min(100%, 360px); flex: 0 0 auto;
+}
+}
+@media (max-height: 720px) {
+.xiantian-page .main-content { padding-top: 80px; }
+.xiantian-page .page-title { margin-bottom: 8px; }
+.xiantian-page .segment-control { margin-bottom: 8px; }
+.xiantian-page .huge-number { font-size: clamp(52px, 12vh, 96px); }
+.xiantian-page #tab-3.tab-content { --radar-chart-size: min(200px, 26vh, 34vw); }
 }
 @media (max-width: 500px) {.xiantian-page .traits-grid-all{ grid-template-columns: 1fr; padding: 0 10% } }

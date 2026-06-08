@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@400;500;600;700&display=swap');
 
 :root {
   --bg-color: #050507;
@@ -9,8 +9,10 @@
   --gold-light: #eadec7;
   --gold-dim: rgba(234, 222, 199, 0.15);
   --gold-legendary: #d4af37;
-  --font-serif: 'Noto Serif SC', STSong, serif;
-  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'PingFang SC', sans-serif;
+  --font-serif: 'Noto Serif SC', 'Songti SC', STSong, serif;
+  --font-sans: 'Noto Sans SC', 'PingFang SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-trait-entry: 'Noto Serif SC', 'Songti SC', STSong, serif;
+  --font-trait-body: 'Noto Sans SC', 'PingFang SC', sans-serif;
   --bezier-smooth: cubic-bezier(0.16, 1, 0.3, 1);
 }
 

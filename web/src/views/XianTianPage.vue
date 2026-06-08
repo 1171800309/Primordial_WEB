@@ -69,52 +69,67 @@
       >
         <div class="tab-title-sub">先天特性词卡</div>
 
-        <div class="traits-grid-all">
-          <div v-for="trait in traits" :key="trait.id" class="trait-wrapper">
-            <div class="blind-box" @click="handleCardClick(trait.id)">
+        <div v-if="traitsLoading" class="traits-note traits-status">词卡加载中…</div>
+        <div v-else-if="traitsError" class="traits-note traits-status">{{ traitsError }}</div>
+
+        <TraitCardCarousel v-else :items="traitCarouselItems" :max-slide-height="carouselMaxHeight">
+          <template #default="{ item: trait }">
+            <div
+              class="blind-box"
+              @click.stop="handleCardClick(trait.id)"
+              @pointerdown.stop
+            >
+              <div
+                class="trait-card-meta"
+                :class="{ 'is-on-yin': cardStates[trait.id]?.opened && cardStates[trait.id]?.yin }"
+              >
+                <span class="trait-card-label">{{ trait.label }}</span>
+              </div>
               <div
                 class="unopened-cover"
                 :class="{ 'center-text': trait.coverCenter, opened: cardStates[trait.id]?.opened }"
               >
-                <CoverIcon :name="trait.iconName" />
                 <AutoFitCoverText>
                   <span v-html="trait.cover" />
                 </AutoFitCoverText>
                 <div class="open-hint">开启词卡</div>
               </div>
               <div class="flip-card" :class="[trait.tier, { 'is-yin': cardStates[trait.id]?.yin }]">
-                <span
-                  v-if="showTierBadge(trait)"
-                  class="tier-badge"
-                  :class="trait.tier"
-                  :title="tierTooltip(trait)"
-                >{{ tierLabel(trait) }}</span>
                 <div class="card-face face-yang">
-                  <AutoFitTraitTitle :key="`${trait.id}-yang-${trait.yang.title}`">
-                    {{ trait.yang.title }}
-                  </AutoFitTraitTitle>
-                  <div v-if="trait.yang.annotation" class="trait-annotation">{{ trait.yang.annotation }}</div>
-                  <div v-if="trait.yang.desc" class="trait-desc">{{ trait.yang.desc }}</div>
+                  <span
+                    v-if="showTierBadge(trait)"
+                    class="tier-badge"
+                    :class="trait.tier"
+                    :title="tierTooltip(trait)"
+                  >{{ tierLabel(trait) }}</span>
+                  <AutoFitTraitCardBody :fit-key="`${trait.id}-yang-${cardStates[trait.id]?.yin}`">
+                    <AutoFitTraitTitle :max-size="34" :min-size="18" :fit-key="`${trait.id}-yang-title`">
+                      {{ trait.yang.title }}
+                    </AutoFitTraitTitle>
+                    <div v-if="trait.yang.annotation" class="trait-annotation">{{ trait.yang.annotation }}</div>
+                    <div v-if="trait.yang.desc" class="trait-desc">{{ trait.yang.desc }}</div>
+                  </AutoFitTraitCardBody>
                   <div class="toggle-dot" />
                 </div>
                 <div class="card-face face-yin">
-                  <AutoFitTraitTitle v-if="trait.yin.title" :key="`${trait.id}-yin-${trait.yin.title}`">
-                    {{ trait.yin.title }}
-                  </AutoFitTraitTitle>
-                  <div class="trait-desc">{{ trait.yin.desc }}</div>
+                  <AutoFitTraitCardBody :fit-key="`${trait.id}-yin-${cardStates[trait.id]?.yin}`">
+                    <AutoFitTraitTitle
+                      v-if="trait.yin.title"
+                      :max-size="34"
+                      :min-size="18"
+                      :fit-key="`${trait.id}-yin-title-${cardStates[trait.id]?.yin}`"
+                    >
+                      {{ trait.yin.title }}
+                    </AutoFitTraitTitle>
+                    <div v-if="trait.yin.annotation" class="trait-annotation">{{ trait.yin.annotation }}</div>
+                    <div v-if="trait.yin.desc" class="trait-desc">{{ trait.yin.desc }}</div>
+                  </AutoFitTraitCardBody>
                   <div class="toggle-dot" />
                 </div>
               </div>
             </div>
-            <div class="trait-label">{{ trait.label }}</div>
-          </div>
-        </div>
-
-        <div class="traits-footer">
-          <div v-if="traitsLoading" class="traits-note">词卡加载中…</div>
-          <div v-else-if="traitsError" class="traits-note">{{ traitsError }}</div>
-          <div class="traits-note">说明：释义参考滴天髓等东方古籍哲学，凝视自我，不为迷信。</div>
-        </div>
+          </template>
+        </TraitCardCarousel>
       </div>
 
       <div
@@ -169,9 +184,10 @@ import { computed, onMounted, onUnmounted, reactive, ref, watch, nextTick } from
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import logoUrl from '@/assets/logo.png'
-import CoverIcon from '@/components/xiantian/CoverIcon.vue'
-import AutoFitTraitTitle from '@/components/trait/AutoFitTraitTitle.vue'
 import AutoFitCoverText from '@/components/trait/AutoFitCoverText.vue'
+import AutoFitTraitCardBody from '@/components/trait/AutoFitTraitCardBody.vue'
+import AutoFitTraitTitle from '@/components/trait/AutoFitTraitTitle.vue'
+import TraitCardCarousel from '@/components/trait/TraitCardCarousel.vue'
 import { usePageTransition } from '@/composables/usePageTransition'
 import { useDustCanvas } from '@/composables/useDustCanvas'
 import { useSegmentControl } from '@/composables/useSegmentControl'
@@ -185,6 +201,14 @@ import '@/styles/pages/xiantian-page.css'
 
 const canvasRef = ref(null)
 const sliderRef = ref(null)
+const carouselMaxHeight = ref(380)
+let carouselResizeTimer = 0
+
+const syncCarouselMaxHeight = () => {
+  carouselMaxHeight.value = Math.round(
+    Math.max(240, Math.min(400, window.innerHeight * 0.4))
+  )
+}
 const radarExplicitRef = ref(null)
 const radarImplicitRef = ref(null)
 
@@ -227,9 +251,14 @@ const hiddenDiscovery = reactive({
   modalMessage: ''
 })
 const hiddenDiscoveredStorageKey = 'xq_hidden_card_discovered'
+const hiddenCardsCacheKey = 'xq_hidden_cards_cache'
 const hasShownUnlockPrompt = ref(false)
 const allTraitCardsOpened = computed(() =>
   traits.value.length > 0 && traits.value.every((t) => Boolean(cardStates[t.id]?.opened))
+)
+
+const traitCarouselItems = computed(() =>
+  traits.value.map((t) => ({ key: t.id, label: t.label, ...t }))
 )
 
 const showTierBadge = (trait) => TIER_SLOTS.has(trait.id) && Boolean(trait.tier && tierMetaFor(trait.tier))
@@ -259,7 +288,13 @@ const loadTraitCards = async () => {
     const apiCards = payload?.cards ?? []
     traits.value = mergeTraitCards(XIANTIAN_TRAIT_SLOTS, apiCards)
     syncCardStates(traits.value)
-    hasHiddenCards.value = (payload?.hiddenCards ?? []).length > 0
+    const hiddenList = payload?.hiddenCards ?? []
+    hasHiddenCards.value = hiddenList.length > 0
+    if (hiddenList.length > 0) {
+      sessionStorage.setItem(hiddenCardsCacheKey, JSON.stringify(hiddenList))
+    } else {
+      sessionStorage.removeItem(hiddenCardsCacheKey)
+    }
     hiddenDiscovery.dayZhi = payload?.hiddenDiscovery?.dayZhi ?? null
     hiddenDiscovery.count = hasHiddenCards.value
       ? Number(payload?.hiddenDiscovery?.count) || (payload?.hiddenCards ?? []).length
@@ -273,6 +308,8 @@ const loadTraitCards = async () => {
     ElMessage.error(traitsError.value)
   } finally {
     traitsLoading.value = false
+    await nextTick()
+    maybeShowHiddenPrompt()
   }
 }
 
@@ -325,8 +362,13 @@ const startNumberDecoding = () => {
 
 const drawRadarChart = (canvasEl, dataValues, labels, isExplicit) => {
   if (!canvasEl) return
+  const wrap = canvasEl.parentElement
+  const wrapW = wrap?.clientWidth || 240
+  const wrapH = wrap?.clientHeight || 240
+  const size = Math.max(160, Math.floor(Math.min(wrapW, wrapH)))
+  const scale = size / 320
+
   const ctx = canvasEl.getContext('2d')
-  const size = 320
   const dpr = window.devicePixelRatio || 1
   canvasEl.width = size * dpr
   canvasEl.height = size * dpr
@@ -334,9 +376,10 @@ const drawRadarChart = (canvasEl, dataValues, labels, isExplicit) => {
   canvasEl.style.height = `${size}px`
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 
+  const pad = Math.max(24, Math.round(size * 0.14))
   const centerX = size / 2
   const centerY = size / 2
-  const radius = 95
+  const radius = (size / 2 - pad) * 0.9
   const sides = 8
   const angleStep = (Math.PI * 2) / sides
   const axisLabels = labels?.length === sides
@@ -371,15 +414,23 @@ const drawRadarChart = (canvasEl, dataValues, labels, isExplicit) => {
   ctx.strokeStyle = 'rgba(234, 222, 199, 0.1)'
   ctx.stroke()
 
-  ctx.font = '300 12px "PingFang SC", "Microsoft YaHei", sans-serif'
+  const labelOffset = Math.max(8, pad * 0.38)
+  const labelFontSize = Math.max(8, Math.round(11 * scale))
+  ctx.font = `300 ${labelFontSize}px "PingFang SC", "Microsoft YaHei", sans-serif`
   ctx.fillStyle = 'rgba(255, 255, 255, 0.6)'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   for (let i = 0; i < sides; i++) {
     const angle = i * angleStep - Math.PI / 2
-    const x = centerX + Math.cos(angle) * (radius + 30)
-    const y = centerY + Math.sin(angle) * (radius + 30)
-    ctx.fillText(axisLabels[i], x, y)
+    const x = centerX + Math.cos(angle) * (radius + labelOffset)
+    const y = centerY + Math.sin(angle) * (radius + labelOffset)
+    const label = axisLabels[i]
+    const maxLabelWidth = pad * 1.55
+    if (ctx.measureText(label).width > maxLabelWidth && label.length > 4) {
+      ctx.fillText(`${label.slice(0, 4)}…`, x, y)
+    } else {
+      ctx.fillText(label, x, y)
+    }
   }
 
   ctx.beginPath()
@@ -475,7 +526,10 @@ const initRadars = () => {
 const onTabClick = (tabId, event) => {
   selectTab(tabId, event.currentTarget)
   if (tabId === 'tab-1') startNumberDecoding()
-  if (tabId === 'tab-3' && !radarInitialized) initRadars()
+  if (tabId === 'tab-3') {
+    if (!radarInitialized) initRadars()
+    else nextTick(() => renderRadars())
+  }
 }
 
 const handleCardClick = (id) => {
@@ -508,7 +562,7 @@ const dismissHiddenPrompt = () => {
 const maybeShowHiddenPrompt = () => {
   if (activeTab.value !== 'tab-2') return
   if (hiddenCardDiscovered.value) return
-  if (!hasHiddenCards.value) return
+  if (!hasHiddenCards.value || !hiddenDiscovery.showModal) return
   if (!allTraitCardsOpened.value) return
   if (hasShownUnlockPrompt.value) return
   hasShownUnlockPrompt.value = true
@@ -520,7 +574,14 @@ const onResize = () => {
   if (radarInitialized && radarExplicit.value.values.length === 8) renderRadars()
 }
 
+const onCarouselResize = () => {
+  window.clearTimeout(carouselResizeTimer)
+  carouselResizeTimer = window.setTimeout(syncCarouselMaxHeight, 120)
+}
+
 onMounted(async () => {
+  syncCarouselMaxHeight()
+  window.addEventListener('resize', onCarouselResize, { passive: true })
   hiddenCardDiscovered.value = localStorage.getItem(hiddenDiscoveredStorageKey) === '1'
   loadTraitCards()
   await nextTick()
@@ -540,6 +601,8 @@ onMounted(async () => {
 
 onUnmounted(() => {
   window.removeEventListener('resize', onResize)
+  window.removeEventListener('resize', onCarouselResize)
+  window.clearTimeout(carouselResizeTimer)
 })
 
 watch(loaded, (val) => {

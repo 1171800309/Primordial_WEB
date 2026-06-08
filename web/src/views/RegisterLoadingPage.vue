@@ -1,6 +1,6 @@
 <template>
-  <div class="register-loading-page">
-    <MysticCanvasBackground />
+  <div class="register-loading-page prototype-page">
+    <canvas ref="canvasRef" class="register-loading-canvas" />
 
     <div class="register-loading-body">
       <div class="register-loading-center">
@@ -33,7 +33,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import logoUrl from '@/assets/logo.png'
-import MysticCanvasBackground from '@/components/MysticCanvasBackground.vue'
+import { useDustCanvas } from '@/composables/useDustCanvas'
 import {
   REGISTER_LOADING_CLASSICS,
   REGISTER_LOADING_DISCLAIMER,
@@ -45,7 +45,11 @@ import {
   getLogoSpinDurationSec,
   REGISTER_LOADING_DURATIONS_MS
 } from '@/utils/registerLoadingSequence'
+import '@/styles/prototype-base.css'
 import '@/styles/pages/register-loading.css'
+
+const canvasRef = ref(null)
+useDustCanvas(canvasRef)
 
 const router = useRouter()
 const classicsText = REGISTER_LOADING_CLASSICS
@@ -121,6 +125,14 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+.register-loading-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
 .ink-blend {
   mix-blend-mode: screen;
 }

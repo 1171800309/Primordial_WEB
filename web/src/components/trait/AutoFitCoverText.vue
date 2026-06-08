@@ -5,19 +5,27 @@
 </template>
 
 <script setup>
-import { nextTick, onMounted, onUnmounted, onUpdated, ref } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 
 const props = defineProps({
   maxSize: { type: Number, default: 13 },
-  minSize: { type: Number, default: 9 }
+  minSize: { type: Number, default: 9 },
+  fitKey: { type: [String, Number, Boolean], default: undefined }
 })
 
 const rootRef = ref(null)
 let ro = null
+let rafId = 0
+let fitting = false
+let lastSize = 0
 
 const fit = () => {
+  if (fitting) return
+
   const node = rootRef.value
   if (!node) return
+
+  fitting = true
 
   let size = props.maxSize
   node.style.width = '100%'
@@ -31,12 +39,19 @@ const fit = () => {
     size -= 1
     node.style.fontSize = `${size}px`
   }
+
+  if (size !== lastSize) {
+    lastSize = size
+  }
+
+  fitting = false
 }
 
 const scheduleFit = () => {
-  nextTick(() => {
-    fit()
-    requestAnimationFrame(fit)
+  if (rafId) cancelAnimationFrame(rafId)
+  rafId = requestAnimationFrame(() => {
+    rafId = 0
+    nextTick(fit)
   })
 }
 
@@ -45,15 +60,13 @@ onMounted(() => {
   if (typeof ResizeObserver !== 'undefined' && rootRef.value) {
     ro = new ResizeObserver(scheduleFit)
     ro.observe(rootRef.value)
-    if (rootRef.value.parentElement) {
-      ro.observe(rootRef.value.parentElement)
-    }
   }
 })
 
-onUpdated(scheduleFit)
+watch(() => props.fitKey, scheduleFit)
 
 onUnmounted(() => {
+  if (rafId) cancelAnimationFrame(rafId)
   ro?.disconnect()
 })
 </script>
