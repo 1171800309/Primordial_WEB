@@ -19,7 +19,7 @@ docker images | grep -E 'primordial|REPOSITORY' || true
 
 if [[ -f "${ROOT}/.env" ]]; then
   cd "$ROOT"
-  docker compose -f docker-compose.images.yml --env-file .env up -d
+  docker compose -f docker-compose.images.yml --env-file .env up -d --force-recreate api-web admin-api web-web web-admin
   docker compose -f docker-compose.images.yml ps
   echo ">>> 已启动。请确认 .env 中域名与 DNS 已配置。"
 else

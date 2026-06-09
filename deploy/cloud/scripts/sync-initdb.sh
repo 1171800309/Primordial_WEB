@@ -3,8 +3,12 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+ENV_FILE="${ROOT}/.env"
+if [[ ! -f "$ENV_FILE" ]] && [[ -f "${YIQI_ROOT:-/opt/yiqi}/.env" ]]; then
+  ENV_FILE="${YIQI_ROOT:-/opt/yiqi}/.env"
+fi
 # shellcheck disable=SC1091
-source "${ROOT}/.env"
+source "$ENV_FILE"
 
 SQL_SRC="${PRIMORDIAL_API_ROOT}/web/database/mysql"
 INIT="${ROOT}/initdb"

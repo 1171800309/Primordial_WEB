@@ -14,20 +14,22 @@ echo ">>> NAS 构建镜像"
 cd "$COMPOSE_DIR"
 docker compose build api-web api-admin web-web web-admin
 
-echo ">>> 打标签（与云端 compose 一致）"
-docker tag primordial-api-web:latest primordial-api-web:latest 2>/dev/null || docker tag "$(docker compose images -q api-web)" primordial-api-web:latest
-docker tag primordial-api-admin:latest primordial-api-admin:latest 2>/dev/null || docker tag "$(docker compose images -q api-admin)" primordial-api-admin:latest
-docker tag primordial-web-web:latest primordial-web-web:latest 2>/dev/null || docker tag "$(docker compose images -q web-web)" primordial-web-web:latest
-docker tag primordial-web-admin:latest primordial-web-admin:latest 2>/dev/null || docker tag "$(docker compose images -q web-admin)" primordial-web-admin:latest
-
-# 以 compose 项目名 primordial 为准
-for pair in "api-web:primordial-api-web" "api-admin:primordial-api-admin" "web-web:primordial-web-web" "web-admin:primordial-web-admin"; do
-  svc="${pair%%:*}"
-  tag="${pair##*:}"
+echo ">>> 打标签（与云端 docker-compose.images.yml 一致）"
+# compose 项目名可能是 primordial 或 primordial-cloud，统一导出为 primordial-*:latest
+declare -A TAGS=(
+  [api-web]=primordial-api-web
+  [api-admin]=primordial-api-admin
+  [web-web]=primordial-web-web
+  [web-admin]=primordial-web-admin
+)
+for svc in api-web api-admin web-web web-admin; do
   img=$(docker compose images -q "$svc" 2>/dev/null | head -1)
-  if [[ -n "$img" ]]; then
-    docker tag "$img" "${tag}:latest"
+  if [[ -z "$img" ]]; then
+    echo "未找到服务 ${svc} 的构建镜像" >&2
+    exit 1
   fi
+  docker tag "$img" "${TAGS[$svc]}:latest"
+  echo "tagged ${TAGS[$svc]}:latest <- ${img:0:12}"
 done
 
 echo ">>> 导出到 ${TAR}"
