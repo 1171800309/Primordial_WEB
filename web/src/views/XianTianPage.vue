@@ -22,10 +22,10 @@
     <main class="main-content">
       <h1 class="page-title">先天 . 恒 . 炁域</h1>
       <button
-        v-if="activeTab === 'tab-2' && hasHiddenCards && hiddenCardDiscovered"
+        v-if="activeTab === 'tab-2' && hasHiddenCards && hiddenUnlockAcknowledged && !showHiddenPrompt"
         type="button"
         class="hidden-card-entry"
-        @click="showHiddenPrompt = true"
+        @click="openHiddenEntry"
       >
         <span class="entry-pulse" />
         <span class="entry-text">你有隐藏词卡待查看</span>
@@ -164,15 +164,20 @@
       </div>
     </main>
 
-    <div v-if="showHiddenPrompt && hasHiddenCards" class="hidden-modal-mask" @click.self="dismissHiddenPrompt">
-      <div class="hidden-modal-box">
-        <div class="hidden-modal-title">隐藏词卡</div>
-        <div class="hidden-modal-desc">
+    <div
+      v-if="showHiddenPrompt && hasHiddenCards"
+      class="hidden-discovery-modal"
+      @click.self="dismissHiddenPrompt"
+    >
+      <div class="hidden-discovery-box">
+        <div class="hidden-discovery-ring" />
+        <div class="hidden-discovery-title">机缘触发</div>
+        <p class="hidden-discovery-desc">
           {{ hiddenDiscovery.modalMessage || `你有${hiddenDiscovery.count}张隐藏词卡待开启` }}
-        </div>
-        <div class="hidden-modal-actions">
-          <button type="button" class="modal-ghost" @click="dismissHiddenPrompt">稍后再看</button>
-          <button type="button" class="modal-primary" @click="goHiddenCard">立即前往</button>
+        </p>
+        <div class="hidden-discovery-actions">
+          <button type="button" class="discovery-ghost" @click="dismissHiddenPrompt">稍后再看</button>
+          <button type="button" class="discovery-primary" @click="goHiddenCard">查看隐藏词卡</button>
         </div>
       </div>
     </div>
@@ -196,6 +201,11 @@ import { resolveXianTianHenqiNumber } from '@/utils/henqi'
 import { XIANTIAN_TRAIT_SLOTS, mergeTraitCards } from '@/constants/xiantianTraitSlots'
 import { TIER_SLOTS, tierMetaFor } from '@/constants/traitTierMeta'
 import { useBackToHub } from '@/composables/useBackToHub'
+import {
+  getCurrentUserId,
+  loadHiddenUnlockAck,
+  saveHiddenUnlockAck
+} from '@/utils/hiddenCardUnlock'
 import '@/styles/prototype-base.css'
 import '@/styles/pages/xiantian-page.css'
 
@@ -242,7 +252,8 @@ const cardStates = reactive({})
 const goHub = useBackToHub()
 const router = useRouter()
 const showHiddenPrompt = ref(false)
-const hiddenCardDiscovered = ref(false)
+const hiddenUnlockAcknowledged = ref(false)
+const currentUserId = ref(getCurrentUserId())
 const hasHiddenCards = ref(false)
 const hiddenDiscovery = reactive({
   dayZhi: null,
@@ -250,7 +261,6 @@ const hiddenDiscovery = reactive({
   showModal: false,
   modalMessage: ''
 })
-const hiddenDiscoveredStorageKey = 'xq_hidden_card_discovered'
 const hiddenCardsCacheKey = 'xq_hidden_cards_cache'
 const hasShownUnlockPrompt = ref(false)
 const allTraitCardsOpened = computed(() =>
@@ -532,36 +542,46 @@ const onTabClick = (tabId, event) => {
   }
 }
 
-const handleCardClick = (id) => {
+const syncHiddenUnlockState = () => {
+  currentUserId.value = getCurrentUserId()
+  hiddenUnlockAcknowledged.value = loadHiddenUnlockAck(currentUserId.value)
+}
+
+const handleCardClick = async (id) => {
   const state = cardStates[id]
   if (!state.opened) {
     state.opened = true
     openMyTraitCard(id).catch(() => {})
+    await nextTick()
     maybeShowHiddenPrompt()
     return
   }
   state.yin = !state.yin
 }
 
-const markHiddenCardDiscovered = () => {
-  hiddenCardDiscovered.value = true
-  localStorage.setItem(hiddenDiscoveredStorageKey, '1')
+const acknowledgeHiddenUnlock = () => {
+  saveHiddenUnlockAck(currentUserId.value)
+  hiddenUnlockAcknowledged.value = true
 }
 
 const goHiddenCard = () => {
-  markHiddenCardDiscovered()
+  acknowledgeHiddenUnlock()
   showHiddenPrompt.value = false
   router.push('/hidden-card')
 }
 
 const dismissHiddenPrompt = () => {
-  markHiddenCardDiscovered()
+  acknowledgeHiddenUnlock()
   showHiddenPrompt.value = false
+}
+
+const openHiddenEntry = () => {
+  showHiddenPrompt.value = true
 }
 
 const maybeShowHiddenPrompt = () => {
   if (activeTab.value !== 'tab-2') return
-  if (hiddenCardDiscovered.value) return
+  if (hiddenUnlockAcknowledged.value) return
   if (!hasHiddenCards.value || !hiddenDiscovery.showModal) return
   if (!allTraitCardsOpened.value) return
   if (hasShownUnlockPrompt.value) return
@@ -581,7 +601,7 @@ const onCarouselResize = () => {
 onMounted(async () => {
   syncCarouselMaxHeight()
   window.addEventListener('resize', onCarouselResize, { passive: true })
-  hiddenCardDiscovered.value = localStorage.getItem(hiddenDiscoveredStorageKey) === '1'
+  syncHiddenUnlockState()
   loadTraitCards()
   await nextTick()
   const buttons = document.querySelectorAll('.xiantian-page .segment-btn')
@@ -652,61 +672,105 @@ watch(allTraitCardsOpened, () => {
   letter-spacing: 0.1em;
 }
 
-.hidden-modal-mask {
+.hidden-discovery-modal {
   position: fixed;
   inset: 0;
-  z-index: 120;
-  background: rgba(0, 0, 0, 0.55);
+  z-index: 200;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: rgba(5, 5, 7, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
-.hidden-modal-box {
-  width: min(460px, 90vw);
-  border-radius: 14px;
-  border: 1px solid rgba(234, 222, 199, 0.35);
-  background: #0d0d10;
-  padding: 26px 24px;
+.hidden-discovery-box {
+  position: relative;
+  width: min(500px, 90vw);
+  padding: 48px 36px 40px;
+  text-align: center;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 4px;
+  background: linear-gradient(180deg, rgba(10, 10, 12, 0.92) 0%, rgba(5, 5, 7, 0.92) 100%);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(212, 175, 55, 0.12);
+  animation: hiddenDiscoveryEnter 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.hidden-modal-title {
+.hidden-discovery-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150%;
+  height: 150%;
+  border: 1px dashed rgba(212, 175, 55, 0.15);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: spin 30s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hidden-discovery-title {
+  position: relative;
+  z-index: 1;
   font-family: var(--font-serif);
-  font-size: 20px;
-  color: var(--gold-light);
-  margin-bottom: 10px;
+  font-size: clamp(26px, 4vw, 32px);
+  color: #d4af37;
+  letter-spacing: 0.3em;
+  margin-bottom: 20px;
+  text-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
 }
 
-.hidden-modal-desc {
+.hidden-discovery-desc {
+  position: relative;
+  z-index: 1;
   font-size: 14px;
   color: var(--text-muted);
-  line-height: 1.9;
+  line-height: 2;
+  letter-spacing: 0.1em;
+  margin: 0 0 28px;
 }
 
-.hidden-modal-actions {
-  margin-top: 18px;
+.hidden-discovery-actions {
+  position: relative;
+  z-index: 1;
   display: flex;
-  gap: 10px;
-  justify-content: flex-end;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
-.modal-ghost,
-.modal-primary {
-  border-radius: 999px;
-  padding: 8px 14px;
+.discovery-ghost,
+.discovery-primary {
+  border-radius: 0;
+  padding: 14px 28px;
+  font-family: var(--font-serif);
+  font-size: 14px;
+  letter-spacing: 0.2em;
   cursor: pointer;
+  transition: all 0.4s ease;
 }
 
-.modal-ghost {
+.discovery-ghost {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   color: var(--text-white);
 }
 
-.modal-primary {
-  border: 1px solid var(--gold-light);
-  background: var(--gold-light);
-  color: #111;
+.discovery-primary {
+  border: 1px solid #d4af37;
+  background: transparent;
+  color: #d4af37;
+}
+
+.discovery-primary:hover {
+  background: rgba(212, 175, 55, 0.1);
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+}
+
+@keyframes hiddenDiscoveryEnter {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 @keyframes entryPulse {
