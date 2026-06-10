@@ -263,6 +263,8 @@ const hiddenDiscovery = reactive({
 })
 const hiddenCardsCacheKey = 'xq_hidden_cards_cache'
 const hasShownUnlockPrompt = ref(false)
+const HIDDEN_UNLOCK_LAST_CARD_DELAY_MS = 3000
+let hiddenPromptDelayTimer = 0
 const allTraitCardsOpened = computed(() =>
   traits.value.length > 0 && traits.value.every((t) => Boolean(cardStates[t.id]?.opened))
 )
@@ -550,10 +552,12 @@ const syncHiddenUnlockState = () => {
 const handleCardClick = async (id) => {
   const state = cardStates[id]
   if (!state.opened) {
+    const isLastCard =
+      traits.value.filter((t) => !cardStates[t.id]?.opened).length === 1
     state.opened = true
     openMyTraitCard(id).catch(() => {})
     await nextTick()
-    maybeShowHiddenPrompt()
+    if (isLastCard) scheduleHiddenPromptAfterLastCard()
     return
   }
   state.yin = !state.yin
@@ -589,6 +593,22 @@ const maybeShowHiddenPrompt = () => {
   showHiddenPrompt.value = true
 }
 
+const clearHiddenPromptDelay = () => {
+  if (hiddenPromptDelayTimer) {
+    window.clearTimeout(hiddenPromptDelayTimer)
+    hiddenPromptDelayTimer = 0
+  }
+}
+
+/** 仅当用户点击翻开最后一张词卡时延迟，留出阅读缓冲 */
+const scheduleHiddenPromptAfterLastCard = () => {
+  clearHiddenPromptDelay()
+  hiddenPromptDelayTimer = window.setTimeout(() => {
+    hiddenPromptDelayTimer = 0
+    maybeShowHiddenPrompt()
+  }, HIDDEN_UNLOCK_LAST_CARD_DELAY_MS)
+}
+
 const onResize = () => {
   if (radarInitialized && radarExplicit.value.values.length === 8) renderRadars()
 }
@@ -622,6 +642,7 @@ onUnmounted(() => {
   window.removeEventListener('resize', onResize)
   window.removeEventListener('resize', onCarouselResize)
   window.clearTimeout(carouselResizeTimer)
+  clearHiddenPromptDelay()
 })
 
 watch(loaded, (val) => {
@@ -629,10 +650,6 @@ watch(loaded, (val) => {
 })
 
 watch(activeTab, () => {
-  maybeShowHiddenPrompt()
-})
-
-watch(allTraitCardsOpened, () => {
   maybeShowHiddenPrompt()
 })
 </script>
