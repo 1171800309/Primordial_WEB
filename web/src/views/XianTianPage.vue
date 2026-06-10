@@ -164,7 +164,7 @@
       </div>
     </main>
 
-    <div v-if="showHiddenPrompt && hasHiddenCards" class="hidden-modal-mask" @click.self="showHiddenPrompt = false">
+    <div v-if="showHiddenPrompt && hasHiddenCards" class="hidden-modal-mask" @click.self="dismissHiddenPrompt">
       <div class="hidden-modal-box">
         <div class="hidden-modal-title">隐藏词卡</div>
         <div class="hidden-modal-desc">
@@ -566,7 +566,6 @@ const maybeShowHiddenPrompt = () => {
   if (!allTraitCardsOpened.value) return
   if (hasShownUnlockPrompt.value) return
   hasShownUnlockPrompt.value = true
-  markHiddenCardDiscovered()
   showHiddenPrompt.value = true
 }
 

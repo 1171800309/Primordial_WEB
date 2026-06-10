@@ -42,11 +42,13 @@ SSH_OPTS=(-o StrictHostKeyChecking=no -o BatchMode=yes)
 if [[ -f "$SSH_KEY" ]]; then
   SCP_OPTS+=(-i "$SSH_KEY")
   SSH_OPTS+=(-i "$SSH_KEY")
+fi
+if [[ -f "$SSH_KEY" ]] && ssh "${SSH_OPTS[@]}" "${CLOUD_USER}@${CLOUD_HOST}" 'echo cloud_ok' 2>/dev/null; then
   echo ">>> 上传到云 ${CLOUD_USER}@${CLOUD_HOST}（SSH 密钥）"
   scp "${SCP_OPTS[@]}" "$TAR" "${CLOUD_USER}@${CLOUD_HOST}:/opt/yiqi/images/"
   ssh "${SSH_OPTS[@]}" "${CLOUD_USER}@${CLOUD_HOST}" "/opt/yiqi/scripts/load-images.sh /opt/yiqi/images/primordial-images.tar.gz"
 else
-  echo ">>> 请配置 YIQI_CLOUD_SSH_KEY 后重试，或手动上传:"
-  echo "scp -i ~/.ssh/id_ed25519 ${TAR} ${CLOUD_USER}@${CLOUD_HOST}:/opt/yiqi/images/"
-  echo "ssh -i ~/.ssh/id_ed25519 ${CLOUD_USER}@${CLOUD_HOST} /opt/yiqi/scripts/load-images.sh"
+  echo ">>> NAS 无法直连云（正常）。请在本机执行:"
+  echo "    ./scripts/release-nas-to-cloud.sh"
+  echo "或手动: ssh cat ${TAR} | scp … /opt/yiqi/images/ && load-images.sh"
 fi
