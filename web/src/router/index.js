@@ -13,6 +13,8 @@ import ProfilePage from '../views/ProfilePage.vue'
 import TermsPage from '../views/TermsPage.vue'
 import PrivacyPage from '../views/PrivacyPage.vue'
 import RegisterLoadingPage from '../views/RegisterLoadingPage.vue'
+import ChaosExplorePage from '../views/ChaosExplorePage.vue'
+import ChaosQuizPage from '../views/ChaosQuizPage.vue'
 import { validateToken } from '@/api/auth'
 import { clearSession, touchSession } from '@/utils/session'
 import { consumeSkipTokenValidation } from '@/utils/authSession'
@@ -28,6 +30,8 @@ const router = createRouter({
     { path: '/xiantian', name: 'xiantian', component: XianTianPage },
     { path: '/bianqi', name: 'bianqi', component: BianQiPage },
     { path: '/qixiangtai', name: 'qixiangtai', component: QiXiangTaiPage },
+    { path: '/chaos-explore', name: 'chaos-explore', component: ChaosExplorePage },
+    { path: '/chaos-explore/:slug', name: 'chaos-quiz', component: ChaosQuizPage },
     { path: '/wanqi', name: 'wanqi', component: WanQiPage },
     { path: '/hidden-card', name: 'hidden-card', component: HiddenCardPage },
     { path: '/profile', name: 'profile', component: ProfilePage },

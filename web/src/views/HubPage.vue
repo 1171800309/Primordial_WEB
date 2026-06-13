@@ -27,7 +27,7 @@
             <div class="orb-content">
               <div class="card-title">{{ orb.title }}</div>
               <div class="card-desc" v-html="orb.desc" />
-              <div class="card-btn">进入 <span>→</span></div>
+              <div class="card-btn">{{ orb.cta || '进入' }} <span>→</span></div>
             </div>
           </a>
         </div>
@@ -68,6 +68,13 @@ const orbs = [
     to: { name: 'qixiangtai' },
     title: '炁象台',
     desc: '记录你人生的起伏<br />了解你人性的状态<br />具象化你的炁场<br />...'
+  },
+  {
+    name: 'chaos-explore',
+    to: { name: 'chaos-explore' },
+    title: '混沌·探索',
+    desc: '混沌暂未上线<br />探索板块为娱乐测试<br />用娱乐测试做自我定位<br />...',
+    cta: '开始测试'
   }
 ]
 
