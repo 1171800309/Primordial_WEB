@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "NODE_OPTIONS='--max-http-header-size=65536' vite",
+    "dev:design": "NODE_OPTIONS='--max-http-header-size=65536' vite --mode design",
     "build": "vite build",
+    "build:design": "vite build --mode design",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -19,4 +21,3 @@
     "vite": "^7.1.3"
   }
 }
-

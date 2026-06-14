@@ -19,6 +19,7 @@ import { validateToken } from '@/api/auth'
 import { clearSession, touchSession } from '@/utils/session'
 import { consumeSkipTokenValidation } from '@/utils/authSession'
 import { isOversizedToken } from '@/utils/tokenGuard'
+import { bootstrapDesignPreviewSession, isDesignPreviewMode } from '@/api/designPreview'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -47,6 +48,9 @@ let lastValidateAt = 0
 const VALIDATE_CACHE_MS = Number(import.meta.env.VITE_TOKEN_VALIDATE_CACHE_MS || 5 * 60 * 1000)
 
 router.beforeEach(async (to) => {
+  if (isDesignPreviewMode() && !localStorage.getItem('token')) {
+    bootstrapDesignPreviewSession()
+  }
   const token = localStorage.getItem('token')
   const publicRoutes = ['/login', '/register', '/', '/terms', '/privacy']
   if (!token && !publicRoutes.includes(to.path)) return '/login'

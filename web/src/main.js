@@ -7,7 +7,9 @@ import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import App from './App.vue'
 import router from './router'
 import { touchSession } from './utils/session'
+import { bootstrapDesignPreviewSession } from './api/designPreview'
 
+bootstrapDesignPreviewSession()
 const activityEvents = ['click', 'keydown', 'mousemove', 'scroll', 'touchstart']
 activityEvents.forEach((eventName) => {
   window.addEventListener(eventName, touchSession, { passive: true })

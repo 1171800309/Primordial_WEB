@@ -30,6 +30,17 @@ API 代理见 `.env`（复制自 `.env.example`），默认转发到 `https://12
 
 后端项目路径：`Primordial_API/web/src/Primordial.Api`。
 
+### 纯前端设计预览
+
+无需启动后端，所有接口请求会在浏览器内使用演示数据响应：
+
+```bash
+npm install
+npm run dev:design
+```
+
+设计调整记录见 [`docs/adjustments/`](./docs/adjustments/)。
+
 ## 构建与 Docker
 
 ```bash

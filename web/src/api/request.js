@@ -2,6 +2,7 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import { isSessionIdleExpired, touchSession, clearSession, getIdleTimeoutMs } from '@/utils/session'
 import { isOversizedToken } from '@/utils/tokenGuard'
+import { isDesignPreviewMode, resolveDesignPreviewRequest } from '@/api/designPreview'
 
 const baseURL =
   import.meta.env.VITE_API_BASE_URL !== undefined
@@ -12,6 +13,20 @@ const request = axios.create({
   baseURL,
   timeout: 15000
 })
+
+if (isDesignPreviewMode()) {
+  request.defaults.adapter = async (config) => {
+    await new Promise((resolve) => window.setTimeout(resolve, 120))
+    return {
+      data: resolveDesignPreviewRequest(config),
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+      request: null
+    }
+  }
+}
 
 // 请求拦截器
 request.interceptors.request.use(
