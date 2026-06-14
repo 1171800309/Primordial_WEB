@@ -18,6 +18,16 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => `/api/admin${path}`,
       },
+      '/shop': {
+        target: 'http://localhost:5101',
+        changeOrigin: true,
+        rewrite: (path) => `/api/admin${path}`,
+      },
+      '/operation-logs': {
+        target: 'http://localhost:5101',
+        changeOrigin: true,
+        rewrite: (path) => `/api/admin${path}`,
+      },
       '/uploads': {
         target: 'http://localhost:5101',
         changeOrigin: true,

@@ -38,6 +38,17 @@ function UsersIcon() {
   )
 }
 
+function LogIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M7 7h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M7 12h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M7 17h6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" strokeWidth="1.8" />
+    </svg>
+  )
+}
+
 export function AdminLayout() {
   const { user, logout } = useAuth()
 
@@ -63,6 +74,10 @@ export function AdminLayout() {
           <NavLink to="/orders" className="sidebar-link">
             <UsersIcon />
             <span>盲盒订单</span>
+          </NavLink>
+          <NavLink to="/audit-logs" className="sidebar-link">
+            <LogIcon />
+            <span>操作日志</span>
           </NavLink>
         </nav>
         <div className="sidebar-foot">

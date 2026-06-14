@@ -1076,6 +1076,34 @@ a {
   padding-top: 4px;
 }
 
+.log-filter-panel {
+  display: grid;
+  gap: 16px;
+}
+
+.log-filter-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 14px;
+}
+
+.log-operator {
+  display: grid;
+  gap: 4px;
+}
+
+.log-content {
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.pager {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+}
+
 .audit-panel {
   position: sticky;
   top: 20px;
@@ -1137,7 +1165,8 @@ a {
 @media (max-width: 1080px) {
   .stat-grid,
   .panel-grid,
-  .edit-grid {
+  .edit-grid,
+  .log-filter-grid {
     grid-template-columns: 1fr;
   }
 
