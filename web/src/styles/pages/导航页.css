@@ -1,256 +1,349 @@
-        :root {
-            --bg-color: #050507;
-            --text-white: #FFFFFF;
-            --text-muted: rgba(255, 255, 255, 0.6);
-            --text-dark: rgba(255, 255, 255, 0.3);
-            --gold-light: #EADEC7;
-            
-            --font-serif: 'Noto Serif SC', STSong, serif;
-            --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", sans-serif;
-            --bezier-smooth: cubic-bezier(0.16, 1, 0.3, 1);
-        }
+.hub-page {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: #020203;
+  isolation: isolate;
+}
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+.hub-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, rgba(234, 222, 199, 0.05) 0%, transparent 65%);
+  animation: hubUniverseBreathe 7s infinite alternate ease-in-out;
+}
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-white);
-            font-family: var(--font-sans);
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+@keyframes hubUniverseBreathe {
+  0% {
+    opacity: 0.6;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
 
-        .ink-blend {
-            mix-blend-mode: screen;
-            background-color: transparent;
-            border-radius: 0;
-            object-fit: contain;
-        }
+.hub-page .top-nav {
+  position: fixed;
+  top: 40px;
+  left: 0;
+  width: 100%;
+  height: auto;
+  padding: 0 5%;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+}
 
-        /* ================= 页面转场 & 加载遮罩 ================= */
-        #page-transition {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background-color: var(--bg-color);
-            z-index: 9999;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            transition: opacity 1.2s var(--bezier-smooth), visibility 1.2s;
-        }
-        #page-transition.loaded { opacity: 0; visibility: hidden; }
-        
-        .transition-logo {
-            width: 100px; height: 100px; 
-            animation: pulseLogo 3s infinite var(--bezier-smooth);
-        }
-        @keyframes pulseLogo {
-            0%, 100% { transform: scale(0.95); opacity: 0.6; filter: drop-shadow(0 0 10px rgba(234,222,199,0.1)); }
-            50% { transform: scale(1.05); opacity: 1; filter: drop-shadow(0 0 20px rgba(234,222,199,0.4)); }
-        }
+.hub-page .top-left-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  pointer-events: auto;
+  mix-blend-mode: screen;
+}
 
-        /* ================= 底层宇宙画布 ================= */
-        #core-canvas {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            z-index: -1; 
-            opacity: 0.5;
-            pointer-events: none;
-        }
+.hub-page .real-logo {
+  width: 32px;
+  height: 32px;
+  transition: transform 0.6s var(--bezier-smooth), filter 0.6s ease;
+  filter: drop-shadow(0 0 7px rgba(234, 222, 199, 0.24));
+}
 
-        /* ================= 顶部 UI ================= */
-        .top-nav {
-            position: fixed; top: 40px; left: 0; width: 100%; padding: 0 5%;
-            z-index: 100; display: flex; justify-content: space-between; align-items: center;
-            pointer-events: none;
-        }
+.hub-page .top-left-brand:hover .real-logo {
+  transform: scale(1.08) rotate(5deg);
+  filter: drop-shadow(0 0 15px rgba(234, 222, 199, 0.55));
+}
 
-        .top-left-brand {
-            display: flex; align-items: center; gap: 14px; text-decoration: none;
-            mix-blend-mode: screen; pointer-events: auto;
-        }
-        .real-logo {
-            width: 44px; height: 44px; 
-            transition: transform 0.6s var(--bezier-smooth), filter 0.6s ease;
-            filter: drop-shadow(0 0 5px rgba(234,222,199,0.2));
-        }
-        .top-left-brand:hover .real-logo {
-            transform: scale(1.1) rotate(5deg);
-            filter: drop-shadow(0 0 15px rgba(234,222,199,0.6));
-        }
-        .brand-text { 
-            font-family: var(--font-serif); font-size: 16px; color: var(--text-white); 
-            letter-spacing: 4px; font-weight: 300; opacity: 0.9;
-        }
-        .brand-text .en { font-family: var(--font-sans); letter-spacing: 2px; margin-left: 4px; }
+.hub-page .brand-text {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 300;
+  color: #fff;
+  letter-spacing: 4px;
+}
 
-        .top-right-user {
-            text-decoration: none; font-size: 14px; color: var(--text-muted);
-            letter-spacing: 0.15em; transition: all 0.4s ease; pointer-events: auto;
-        }
-        .top-right-user:hover { color: var(--gold-light); transform: translateY(-2px); }
+.hub-page .brand-text .en {
+  margin-left: 6px;
+  font-family: var(--font-sans);
+  letter-spacing: 2px;
+}
 
-        /* ================= 主体内容区 ================= */
-        .main-container {
-            position: relative; 
-            width: 100vw; flex-grow: 1;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            padding: 120px 0 60px 0; 
-        }
+.hub-page .top-right-user {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.15em;
+  text-decoration: none;
+  transition: color 0.4s ease, transform 0.4s ease;
+  pointer-events: auto;
+}
 
-        /* 大 Logo 与欢迎语 */
-        .welcome-header { 
-            text-align: center; margin-bottom: 60px; 
-            display: flex; flex-direction: column; align-items: center;
-            mix-blend-mode: screen; margin-top: -50px;
-        }
-        .center-logo {
-            width: 100px; height: 100px;
-            margin-bottom: 24px; opacity: 0.9;
-            animation: floatLogo 6s infinite ease-in-out;
-        }
-        @keyframes floatLogo {
-            0%, 100% { transform: translateY(0); filter: drop-shadow(0 0 10px rgba(234,222,199,0.1)); }
-            50% { transform: translateY(-8px); filter: drop-shadow(0 0 25px rgba(234,222,199,0.4)); }
-        }
-        .welcome-header h1 {
-            font-family: var(--font-serif); font-size: clamp(24px, 2.5vw, 32px);
-            font-weight: 300; letter-spacing: 0.3em; color: var(--text-white);
-            margin-left: 0.3em; 
-        }
+.hub-page .top-right-user:hover {
+  color: #fff;
+  transform: translateY(-2px);
+}
 
-        /* ================= 核心「高级黑星球」网格 ================= */
-        .orbs-grid {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 28px;
-            justify-content: center;
-            align-items: center;
-            perspective: 1000px;
-            width: min(100%, 1440px);
-            margin: 0 auto;
-            position: relative;
-            z-index: 10;
-        }
+.hub-page .solar-system {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 10;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+}
 
-        .orb-wrapper { animation: floatOrb 8s infinite ease-in-out; }
-        .orb-wrapper.delay-1 { animation-delay: 0s; }
-        .orb-wrapper.delay-2 { animation-delay: -2.5s; }
-        .orb-wrapper.delay-3 { animation-delay: -5s; }
-        @keyframes floatOrb {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-12px); }
-        }
+.hub-page .planet-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 140px;
+  height: 140px;
+  margin-top: -70px;
+  margin-left: -70px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  transform-origin: center;
+  transition: filter 0.8s ease, opacity 0.8s ease;
+  -webkit-tap-highlight-color: transparent;
+}
 
-        /* 统一的高定黑星球基础结构 */
-        .nav-orb {
-            width: min(100%, 300px); height: 300px; border-radius: 50%;
-            position: relative; overflow: hidden;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            text-decoration: none; cursor: pointer;
-            /* 中心极黑，向外围过渡到微光灰，形成球体底色 */
-            background: radial-gradient(circle at 50% 50%, #000000 30%, #0a0a0c 70%, #15151a 100%);
-            box-shadow: 
-                0 20px 50px rgba(0,0,0,0.8),
-                0 0 0 1px rgba(234, 222, 199, 0.03); /* 极细的外轮廓 */
-            transition: transform 0.6s var(--bezier-smooth), box-shadow 0.6s var(--bezier-smooth);
-        }
-        .nav-orb:hover { 
-            transform: scale(1.03) translateY(-10px); 
-            box-shadow: 
-                0 30px 60px rgba(0,0,0,0.9),
-                0 0 30px rgba(234, 222, 199, 0.15); /* 悬浮泛光 */
-        }
+.hub-page .planet-wrapper:focus {
+  outline: none;
+}
 
-        /* 星球的大气层与立体阴影 (覆盖在最顶层制造3D感) */
-        .orb-shading {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%;
-            box-shadow: 
-                inset -25px -25px 50px rgba(0, 0, 0, 0.9), /* 右下角极度背光 */
-                inset 10px 10px 40px rgba(255, 255, 255, 0.05), /* 左上角微弱迎光 */
-                inset 0 0 20px rgba(234, 222, 199, 0.1); /* 边缘环境光反射 */
-            pointer-events: none; z-index: 5;
-            transition: box-shadow 0.6s var(--bezier-smooth);
-        }
-        .nav-orb:hover .orb-shading { 
-            box-shadow: 
-                inset -25px -25px 50px rgba(0,0,0,0.9), 
-                inset 10px 10px 40px rgba(255,255,255,0.08), 
-                inset 0 0 40px rgba(234, 222, 199, 0.3); /* 悬浮时金光变强 */
-        }
+.hub-page .planet-wrapper:focus-visible .planet-sphere {
+  outline: 1px solid rgba(234, 222, 199, 0.55);
+  outline-offset: 8px;
+}
 
-        /* 内部排版容器 */
-        .orb-content {
-            position: relative; z-index: 10; width: 100%; height: 100%; padding: 45px 35px 35px 35px;
-            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-        }
+.hub-page .planet-sphere {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #151518 0%, #050505 60%, #000 100%);
+  transition: box-shadow 0.8s ease, background 0.8s ease;
+}
 
-        /* 独立的高级标题 */
-        .card-title {
-            font-family: var(--font-serif); font-size: 22px; color: var(--gold-light);
-            font-weight: 400; letter-spacing: 0.15em; 
-            margin-bottom: 25px; position: relative;
-        }
-        /* 标题下方的动态分割线 */
-        .card-title::after {
-            content: ''; position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%);
-            width: 24px; height: 1px; background: rgba(234, 222, 199, 0.3);
-            transition: width 0.5s ease, background 0.5s ease;
-        }
-        .nav-orb:hover .card-title::after { width: 60px; background: rgba(234, 222, 199, 0.8); }
+.hub-page .glow-white {
+  box-shadow:
+    inset -15px -15px 30px rgba(0, 0, 0, 0.9),
+    inset 5px 5px 20px rgba(255, 255, 255, 0.4),
+    0 0 20px rgba(255, 255, 255, 0.1);
+}
 
-        /* 独立的正文描述 */
-        .card-desc {
-            font-family: var(--font-sans); font-size: 13px; color: rgba(255, 255, 255, 0.55); 
-            line-height: 1.8; letter-spacing: 0.1em; text-align: center;
-            flex-grow: 1; display: flex; flex-direction: column; justify-content: center;
-        }
+.hub-page .planet-wrapper.active .glow-white {
+  animation: hubBreatheWhite 4s infinite alternate ease-in-out;
+}
 
-        /* 底部高级实体按钮 */
-        .card-btn {
-            font-family: var(--font-serif); font-size: 13px; color: var(--gold-light);
-            letter-spacing: 0.2em; 
-            border: 1px solid rgba(234, 222, 199, 0.25);
-            border-radius: 30px;
-            padding: 8px 24px; 
-            display: flex; align-items: center; gap: 6px;
-            background: rgba(234, 222, 199, 0.02);
-            backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
-            transition: all 0.4s var(--bezier-smooth);
-            margin-top: 15px;
-        }
-        .card-btn span { transition: transform 0.4s ease; font-size: 14px; }
-        .nav-orb:hover .card-btn {
-            background: rgba(234, 222, 199, 0.15);
-            border-color: rgba(234, 222, 199, 0.6);
-            color: #FFF;
-            box-shadow: 0 0 20px rgba(234, 222, 199, 0.1);
-        }
-        .nav-orb:hover .card-btn span { transform: translateX(4px); }
+@keyframes hubBreatheWhite {
+  0% {
+    box-shadow:
+      inset -15px -15px 30px rgba(0, 0, 0, 0.9),
+      inset 5px 5px 25px rgba(255, 255, 255, 0.6),
+      0 0 30px rgba(255, 255, 255, 0.2);
+  }
+  100% {
+    box-shadow:
+      inset -15px -15px 30px rgba(0, 0, 0, 0.9),
+      inset 5px 5px 40px rgba(255, 255, 255, 0.9),
+      0 0 60px rgba(255, 255, 255, 0.5);
+  }
+}
 
-        /* ================= 底部声明 ================= */
-        .footer-note {
-            margin-top: 80px; font-size: 12px; color: var(--text-dark);
-            letter-spacing: 0.2em; text-align: center;
-        }
+.hub-page .glow-grey {
+  background: radial-gradient(circle at 30% 30%, #1c1c1f 0%, #030303 60%, #000 100%);
+  box-shadow:
+    inset -15px -15px 30px rgba(0, 0, 0, 0.95),
+    inset 3px 3px 15px rgba(160, 160, 160, 0.25),
+    0 0 15px rgba(120, 120, 120, 0.05);
+}
 
-        /* ================= 响应式 ================= */
-        .fade-up { opacity: 0; transform: translateY(40px); animation: fadeUpAnim 1.2s var(--bezier-smooth) forwards; }
-        @keyframes fadeUpAnim { to { opacity: 1; transform: translateY(0); } }
+.hub-page .planet-wrapper.active .glow-grey {
+  animation: hubBreatheGrey 4s infinite alternate ease-in-out;
+}
 
-        @media (max-width: 1360px) {
-            .orbs-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 30px; }
-            .nav-orb { width: min(100%, 300px); height: 300px; }
-            .orb-wrapper { display: flex; justify-content: center; }
-        }
-        @media (max-width: 1200px) {
-            .nav-orb { width: min(100%, 280px); height: 280px; }
-            .card-title { font-size: 18px; }
-            .card-desc { font-size: 12px; }
-            .orb-content { padding: 35px 25px 25px 25px; }
-        }
-        @media (max-width: 900px) {
-            .orbs-grid { grid-template-columns: 1fr; gap: 40px; padding: 0 20px; }
-            .nav-orb { width: 300px; height: 300px; }
-            .top-nav { top: 20px; }
-            .welcome-header { margin-top: 0; }
-        }
+@keyframes hubBreatheGrey {
+  0% {
+    box-shadow:
+      inset -15px -15px 30px rgba(0, 0, 0, 0.95),
+      inset 3px 3px 20px rgba(180, 180, 180, 0.35),
+      0 0 25px rgba(150, 150, 150, 0.1);
+  }
+  100% {
+    box-shadow:
+      inset -15px -15px 30px rgba(0, 0, 0, 0.95),
+      inset 3px 3px 30px rgba(220, 220, 220, 0.5),
+      0 0 45px rgba(200, 200, 200, 0.2);
+  }
+}
+
+.hub-page .glow-gold {
+  background: radial-gradient(circle at 30% 30%, #241c0f 0%, #050300 60%, #000 100%);
+  box-shadow:
+    inset -15px -15px 30px rgba(0, 0, 0, 0.9),
+    inset 5px 5px 20px rgba(184, 134, 11, 0.35),
+    0 0 20px rgba(184, 134, 11, 0.1);
+}
+
+.hub-page .planet-wrapper.active .glow-gold {
+  animation: hubBreatheGold 4s infinite alternate ease-in-out;
+}
+
+@keyframes hubBreatheGold {
+  0% {
+    box-shadow:
+      inset -15px -15px 30px rgba(0, 0, 0, 0.9),
+      inset 5px 5px 25px rgba(218, 165, 32, 0.5),
+      0 0 30px rgba(184, 134, 11, 0.15);
+  }
+  100% {
+    box-shadow:
+      inset -15px -15px 30px rgba(0, 0, 0, 0.9),
+      inset 5px 5px 40px rgba(255, 215, 0, 0.7),
+      0 0 60px rgba(218, 165, 32, 0.35);
+  }
+}
+
+.hub-page .planet-content {
+  position: absolute;
+  top: 50%;
+  z-index: 10;
+  width: 150%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.hub-page .planet-title {
+  max-width: 100%;
+  font-family: var(--font-serif);
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1.35;
+  color: #fff;
+  letter-spacing: 0.15em;
+  text-shadow: 0 4px 10px rgba(0, 0, 0, 1);
+  white-space: nowrap;
+  transition: font-size 0.6s ease, font-weight 0.6s ease, transform 0.6s ease, text-shadow 0.6s ease;
+}
+
+.hub-page .planet-title--grey {
+  color: #d8d8d8;
+}
+
+.hub-page .planet-title--gold {
+  color: #daa520;
+}
+
+.hub-page .planet-desc {
+  width: 85%;
+  max-height: 0;
+  margin-top: 0;
+  overflow: hidden;
+  opacity: 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 10px;
+  line-height: 1.8;
+  letter-spacing: 0.05em;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 1);
+  transform: translateY(10px);
+  transition: opacity 0.6s ease, max-height 0.6s ease, margin-top 0.6s ease, transform 0.6s ease;
+}
+
+.hub-page .planet-wrapper.active .planet-content {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+.hub-page .planet-wrapper.active .planet-title {
+  font-size: 16px;
+  font-weight: 600;
+  text-shadow: 0 0 15px currentColor;
+  transform: translateY(-6px);
+}
+
+.hub-page .planet-wrapper.active .planet-desc {
+  max-height: 100px;
+  margin-top: 8px;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hub-page .solar-system .planet-wrapper:not(.active) {
+  filter: brightness(0.65) grayscale(0.2);
+}
+
+@media (max-width: 900px) {
+  .hub-page .top-nav {
+    top: 24px;
+    padding: 0 22px;
+  }
+
+  .hub-page .real-logo {
+    width: 28px;
+    height: 28px;
+  }
+
+  .hub-page .brand-text {
+    font-size: 15px;
+    letter-spacing: 3px;
+  }
+
+  .hub-page .top-right-user {
+    font-size: 12px;
+  }
+
+  .hub-page .solar-system {
+    top: 53%;
+  }
+
+  .hub-page .planet-wrapper {
+    width: 112px;
+    height: 112px;
+    margin-top: -56px;
+    margin-left: -56px;
+  }
+
+  .hub-page .planet-title {
+    font-size: 12px;
+  }
+
+  .hub-page .planet-wrapper.active .planet-title {
+    font-size: 13px;
+  }
+
+  .hub-page .planet-desc {
+    width: 82%;
+    font-size: 9px;
+    line-height: 1.65;
+  }
+}

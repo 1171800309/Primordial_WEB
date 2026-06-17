@@ -9,35 +9,35 @@
     <div class="top-nav">
       <router-link to="/hub" class="top-left-brand">
         <img :src="logoUrl" alt="一炁" class="real-logo ink-blend" />
-        <div class="brand-text">一炁文化<span class="en">YIQI</span></div>
+        <div class="brand-text">一炁<span class="en">YIQI</span></div>
       </router-link>
       <router-link to="/profile" class="top-right-user">个人中心</router-link>
     </div>
 
-    <div class="main-container">
-      <div class="welcome-header fade-up">
-        <img :src="logoUrl" alt="一炁 Logo" class="center-logo ink-blend" />
-        <h1>欢迎来到一炁文化</h1>
-      </div>
-
-      <div class="orbs-grid">
-        <div v-for="(orb, i) in orbs" :key="orb.name" :class="['orb-wrapper', 'fade-up', `delay-${i + 1}`]">
-          <a href="#" class="nav-orb" @click.prevent="goOrb(orb)">
-            <div class="orb-shading" />
-            <div class="orb-content">
-              <div class="card-title">{{ orb.title }}</div>
-              <div class="card-desc" v-html="orb.desc" />
-              <div class="card-btn">{{ orb.cta || '进入' }} <span>→</span></div>
-            </div>
-          </a>
-        </div>
-      </div>
+    <div class="solar-system" aria-label="一炁功能导航">
+      <button
+        v-for="(planet, i) in planets"
+        :key="planet.name"
+        :ref="setPlanetRef"
+        type="button"
+        class="planet-wrapper"
+        :aria-label="`进入${planet.title}`"
+        @click="goPlanet(planet)"
+        @focus="focusPlanet(i)"
+        @mouseenter="focusPlanet(i)"
+      >
+        <span class="planet-sphere" :class="`glow-${planet.tone}`" />
+        <span class="planet-content">
+          <span class="planet-title" :class="`planet-title--${planet.tone}`">{{ planet.title }}</span>
+          <span class="planet-desc">{{ planet.desc }}</span>
+        </span>
+      </button>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onBeforeUpdate, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import logoUrl from '@/assets/logo.png'
 import { usePageTransition } from '@/composables/usePageTransition'
@@ -50,81 +50,145 @@ const canvasRef = ref(null)
 const { loaded } = usePageTransition(1000)
 useOrbitCanvas(canvasRef)
 
-const orbs = [
+const planets = [
   {
     name: 'xiantian',
     to: { name: 'xiantian' },
-    title: '先天 . 恒 . 炁域',
-    desc: '你与生俱来的恒久不变的"先天之炁"<br />其炁之数、炁之性对应的你是谁？<br />真正了解自己，才能面对未知<br />...'
+    title: '先天 . 恒炁域',
+    desc: '你与生俱来的恒久之炁，不可磨灭。',
+    tone: 'white'
   },
   {
     name: 'bianqi',
     to: { name: 'bianqi' },
-    title: '后天 . 变 . 炁域',
-    desc: '你人生之路所遭遇的"变化之炁"<br />大运、流年，对你有怎样的影响<br />在不同的炁场下要做如何的决策<br />...'
+    title: '后天 . 变炁域',
+    desc: '大运流年流转。推演进退法则。',
+    tone: 'white'
   },
   {
     name: 'qixiangtai',
     to: { name: 'qixiangtai' },
     title: '炁象台',
-    desc: '记录你人生的起伏<br />了解你人性的状态<br />具象化你的炁场<br />...'
+    desc: '记录人生的潮汐，展现灵魂能量场。',
+    tone: 'grey'
   },
   {
     name: 'chaos-explore',
     to: { name: 'chaos-explore' },
-    title: '混沌·探索',
-    desc: '混沌暂未上线<br />探索板块为娱乐测试<br />用娱乐测试做自我定位<br />...',
-    cta: '开始测试'
+    title: '混沌探索',
+    desc: '混沌地带。未来将用于测试娱乐。',
+    tone: 'grey'
+  },
+  {
+    name: 'wanqi',
+    to: { name: 'wanqi' },
+    title: '幸运星',
+    desc: '触碰随机恩赐，获取今日专属指引。',
+    tone: 'gold'
   }
 ]
 
-const goOrb = async (orb) => {
+const planetRefs = ref([])
+const planetCount = planets.length
+const pauseDuration = 4000
+let raf = 0
+let mode = 'moving'
+let pauseTimer = 0
+let currentProgress = 0
+let targetProgress = 0
+let lastTime = 0
+
+const setPlanetRef = (el) => {
+  if (el) planetRefs.value.push(el)
+}
+
+onBeforeUpdate(() => {
+  planetRefs.value = []
+})
+
+const focusPlanet = (index) => {
+  mode = 'moving'
+  pauseTimer = 0
+
+  let currentVal = (index + targetProgress) % planetCount
+  if (currentVal < 0) currentVal += planetCount
+
+  let diff = (planetCount - currentVal) % planetCount
+  if (diff > planetCount / 2) diff -= planetCount
+  targetProgress += diff
+}
+
+const renderSystem = (time) => {
+  const dt = lastTime ? time - lastTime : 16
+  lastTime = time
+
+  if (Math.abs(currentProgress - targetProgress) < 0.005) {
+    currentProgress = targetProgress
+    if (mode === 'moving') {
+      mode = 'paused'
+      pauseTimer = 0
+    }
+    if (mode === 'paused') {
+      pauseTimer += dt
+      if (pauseTimer > pauseDuration) {
+        targetProgress += 1
+        mode = 'moving'
+      }
+    }
+  } else {
+    currentProgress += (targetProgress - currentProgress) * (dt * 0.004)
+  }
+
+  const isWide = window.innerWidth > 800
+  const rx = window.innerWidth * (isWide ? 0.42 : 0.48)
+  const ry = window.innerHeight * (isWide ? 0.18 : 0.14)
+  const breathTime = time * 0.0015
+
+  planetRefs.value.forEach((planetEl, i) => {
+    let val = (i + currentProgress) % planetCount
+    if (val < 0) val += planetCount
+
+    let t = val
+    if (t > planetCount / 2) t -= planetCount
+
+    const x = rx * Math.sin(t * (Math.PI / 6))
+    const z = Math.cos(t * (Math.PI / 6))
+    const baseY = -ry * (1 - z) + ry * 0.2
+    const floatY = Math.sin(breathTime * 1.5 + i) * (isWide ? 15 : 8)
+    const breatheScale = Math.sin(breathTime * 1.8 + i) * 0.03
+    const scale = 0.7 + 0.55 * z + breatheScale
+    const opacity = Math.max(0, 1 - Math.abs(t / 2.4) ** 4)
+
+    planetEl.style.transform = `translate(${x}px, ${baseY + floatY}px) scale(${scale})`
+    planetEl.style.zIndex = `${Math.floor(z * 100)}`
+    planetEl.style.opacity = `${opacity}`
+
+    planetEl.classList.toggle('active', Math.abs(t) < 0.1 && mode === 'paused')
+  })
+
+  raf = requestAnimationFrame(renderSystem)
+}
+
+onMounted(() => {
+  raf = requestAnimationFrame(renderSystem)
+})
+
+onUnmounted(() => {
+  cancelAnimationFrame(raf)
+})
+
+const goPlanet = async (planet) => {
   loaded.value = false
-  await router.push(orb.to)
+  await router.push(planet.to)
 }
 </script>
 
 <style scoped>
-.hub-page .top-right-user {
-  text-decoration: none;
-  font-size: 14px;
-  color: var(--text-muted);
-  letter-spacing: 0.15em;
-  transition: all 0.4s ease;
-  pointer-events: auto;
-}
-.hub-page .top-right-user:hover {
-  color: var(--gold-light);
-  transform: translateY(-2px);
-}
 #core-canvas {
   position: fixed;
   inset: 0;
-  z-index: -1;
-  opacity: 0.5;
+  z-index: 1;
+  opacity: 0.72;
   pointer-events: none;
-}
-
-.hub-page a.nav-orb {
-  text-decoration: none;
-  color: inherit;
-}
-
-.hub-page .main-container {
-  min-height: 100vh;
-  justify-content: center;
-  align-items: center;
-  padding: 140px 5% 80px;
-}
-
-.hub-page .welcome-header {
-  margin-top: 0;
-  margin-bottom: 52px;
-}
-
-.hub-page .orbs-grid {
-  width: 100%;
-  justify-content: center;
-  align-items: center;
 }
 </style>
