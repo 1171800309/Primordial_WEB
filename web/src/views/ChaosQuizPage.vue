@@ -9,7 +9,7 @@
     <div class="top-nav">
       <router-link to="/hub" class="top-left-brand">
         <img :src="logoUrl" alt="一炁" class="real-logo ink-blend" />
-        <div class="brand-text">一炁文化<span class="en">YIQI</span></div>
+        <div class="brand-text">一炁逆熵.炁运录<span class="en">YIQI</span></div>
       </router-link>
       <router-link to="/profile" class="top-right-user">个人中心</router-link>
     </div>
@@ -28,13 +28,17 @@
         <div v-else-if="error" class="quiz-empty">{{ error }}</div>
         <template v-else>
           <section v-if="stage === 'quiz' && currentQuestion" class="question-card">
-            <div class="question-progress">第 {{ currentIndex + 1 }} / {{ questionCount }} 题</div>
+            <div class="question-progress">
+              <span>第 {{ currentIndex + 1 }} / {{ questionCount }} 题</span>
+              <span v-if="submitting">结果生成中…</span>
+            </div>
             <div class="question-prompt">{{ currentQuestion.prompt }}</div>
             <button
               v-for="option in currentQuestion.options"
               :key="option.key"
               type="button"
               class="question-option"
+              :disabled="submitting"
               @click="selectOption(option.key)"
             >
               <span>{{ option.key }}.</span>
@@ -71,6 +75,7 @@
               </div>
             </div>
           </section>
+          <section v-else class="quiz-empty">暂无可用题目</section>
         </template>
       </div>
     </main>
@@ -104,6 +109,7 @@ const currentIndex = ref(0)
 const stage = ref('quiz')
 const result = ref(null)
 const showYin = ref(false)
+const submitting = ref(false)
 const { loaded } = usePageTransition(500)
 
 useDustCanvas(canvasRef)
@@ -113,6 +119,15 @@ const currentQuestion = computed(() => quiz.value.questions?.[currentIndex.value
 
 const goList = () => {
   router.push({ name: 'chaos-explore' })
+}
+
+const resetLocalQuizState = () => {
+  answers.value = {}
+  currentIndex.value = 0
+  stage.value = 'quiz'
+  result.value = null
+  showYin.value = false
+  submitting.value = false
 }
 
 const hydrateSavedAttempt = (savedAttempt) => {
@@ -127,6 +142,7 @@ const hydrateSavedAttempt = (savedAttempt) => {
 const loadQuiz = async () => {
   loading.value = true
   error.value = ''
+  resetLocalQuizState()
   try {
     const res = await fetchChaosQuizDetail(route.params.slug)
     quiz.value = {
@@ -142,6 +158,7 @@ const loadQuiz = async () => {
 }
 
 const selectOption = async (optionKey) => {
+  if (submitting.value) return
   const questionId = currentQuestion.value?.id
   if (!questionId) return
 
@@ -156,11 +173,17 @@ const selectOption = async (optionKey) => {
   }
 
   try {
+    submitting.value = true
     const res = await submitChaosQuiz(route.params.slug, answers.value)
+    if (!res?.data?.result) {
+      throw new Error('结果数据为空')
+    }
     result.value = res.data.result
     stage.value = 'summary'
   } catch (err) {
     error.value = err?.message || '提交测试失败'
+  } finally {
+    submitting.value = false
   }
 }
 
@@ -173,12 +196,12 @@ const toggleFace = () => {
 }
 
 const restartQuiz = async () => {
-  await resetChaosQuiz(route.params.slug)
-  answers.value = {}
-  currentIndex.value = 0
-  stage.value = 'quiz'
-  result.value = null
-  showYin.value = false
+  try {
+    await resetChaosQuiz(route.params.slug)
+    resetLocalQuizState()
+  } catch (err) {
+    error.value = err?.message || '重置测试失败'
+  }
 }
 
 onMounted(loadQuiz)

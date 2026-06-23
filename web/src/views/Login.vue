@@ -46,16 +46,17 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { login } from '@/api/auth'
-import { extractAuthPayload, saveAuthSession, navigateToHub, skipTokenValidationOnce } from '@/utils/authSession'
+import { extractAuthPayload, saveAuthSession, skipTokenValidationOnce } from '@/utils/authSession'
 import { persistBaziAnalysis } from '@/utils/baziAnalysis'
 import { ensureBaziAnalysis } from '@/utils/userData'
 import AuthPageShell from '@/components/layout/AuthPageShell.vue'
 import { fetchAuthPublicKey } from '@/utils/passwordCipher'
 
 const router = useRouter()
+const route = useRoute()
 const loginFormRef = ref()
 const loading = ref(false)
 
@@ -68,6 +69,13 @@ const loginForm = reactive({
 const rules = {
   username: [{ required: true, message: '请输入用户名或手机号', trigger: 'blur' }],
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
+}
+
+const resolveLoginRedirect = () => {
+  const redirect = route.query.redirect
+  return typeof redirect === 'string' && redirect.startsWith('/') && !redirect.startsWith('//')
+    ? redirect
+    : '/hub'
 }
 
 const handleLogin = async () => {
@@ -106,7 +114,7 @@ const handleLogin = async () => {
     skipTokenValidationOnce()
     ElMessage.success('欢迎回来')
     loginForm.password = ''
-    await navigateToHub(router)
+    await router.replace(resolveLoginRedirect())
   } catch (error) {
     const msg =
       error?.response?.data?.message ||

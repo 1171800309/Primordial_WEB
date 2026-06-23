@@ -49,12 +49,17 @@ const VALIDATE_CACHE_MS = Number(import.meta.env.VITE_TOKEN_VALIDATE_CACHE_MS ||
 router.beforeEach(async (to) => {
   const token = localStorage.getItem('token')
   const publicRoutes = ['/login', '/register', '/', '/terms', '/privacy']
-  if (!token && !publicRoutes.includes(to.path)) return '/login'
+  const resolveRedirect = (value) =>
+    typeof value === 'string' && value.startsWith('/') && !value.startsWith('//') ? value : '/hub'
+
+  if (!token && !publicRoutes.includes(to.path)) {
+    return { path: '/login', query: { redirect: to.fullPath } }
+  }
   if (token && isOversizedToken(token)) {
     clearSession()
     return '/login'
   }
-  if (token && (to.path === '/login' || to.path === '/register')) return '/hub'
+  if (token && (to.path === '/login' || to.path === '/register')) return resolveRedirect(to.query.redirect)
   if (!token) return true
 
   // 页面跳转本身算作用户活跃，避免在子页停留较久后点「返回中枢」被误判为空闲登出
