@@ -23,7 +23,6 @@
 
       <footer class="register-loading-footer">
         <p class="register-loading-classics">{{ classicsText }}</p>
-        <p class="register-loading-disclaimer">{{ disclaimerText }}</p>
       </footer>
     </div>
   </div>
@@ -36,10 +35,8 @@ import logoUrl from '@/assets/logo.png'
 import { useDustCanvas } from '@/composables/useDustCanvas'
 import {
   REGISTER_LOADING_CLASSICS,
-  REGISTER_LOADING_DISCLAIMER,
   REGISTER_LOADING_SESSION_KEY
 } from '@/constants/registerLoadingClassics'
-import { readStoredBaziAnalysis } from '@/utils/baziAnalysis'
 import {
   buildRegisterLoadingSteps,
   getLogoSpinDurationSec,
@@ -53,9 +50,8 @@ useDustCanvas(canvasRef)
 
 const router = useRouter()
 const classicsText = REGISTER_LOADING_CLASSICS
-const disclaimerText = REGISTER_LOADING_DISCLAIMER
 
-const steps = ref(buildRegisterLoadingSteps(readStoredBaziAnalysis()))
+const steps = ref(buildRegisterLoadingSteps())
 const stepIndex = ref(0)
 const spinDurationSec = ref(4)
 const transitionName = ref('loading-flash')
@@ -86,7 +82,9 @@ const updateSpinByProgress = () => {
 const runSequence = () => {
   clearTimers()
   startedAt = Date.now()
-  totalMs = REGISTER_LOADING_DURATIONS_MS.reduce((sum, ms) => sum + ms, 0)
+  const fallbackDuration = REGISTER_LOADING_DURATIONS_MS[REGISTER_LOADING_DURATIONS_MS.length - 1] || 700
+  const durations = steps.value.map((_, index) => REGISTER_LOADING_DURATIONS_MS[index] ?? fallbackDuration)
+  totalMs = durations.reduce((sum, ms) => sum + ms, 0)
   stepIndex.value = 0
   updateSpinByProgress()
 
@@ -94,9 +92,9 @@ const runSequence = () => {
   timers.push(spinTicker)
 
   let elapsed = 0
-  REGISTER_LOADING_DURATIONS_MS.forEach((duration, index) => {
+  durations.forEach((duration, index) => {
     if (index === 0) return
-    elapsed += REGISTER_LOADING_DURATIONS_MS[index - 1]
+    elapsed += durations[index - 1]
     schedule(() => {
       stepIndex.value = index
       transitionName.value = index >= steps.value.length - 2 ? 'loading-flash-slow' : 'loading-flash'
@@ -107,7 +105,7 @@ const runSequence = () => {
   schedule(() => {
     sessionStorage.removeItem(REGISTER_LOADING_SESSION_KEY)
     router.replace({ name: 'hub' })
-  }, totalMs + 400)
+  }, totalMs + 150)
 }
 
 onMounted(() => {
@@ -115,7 +113,7 @@ onMounted(() => {
     router.replace({ name: 'hub' })
     return
   }
-  steps.value = buildRegisterLoadingSteps(readStoredBaziAnalysis())
+  steps.value = buildRegisterLoadingSteps()
   runSequence()
 })
 

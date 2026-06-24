@@ -9,20 +9,15 @@
     <div class="top-nav">
       <router-link to="/hub" class="top-left-brand">
         <img :src="logoUrl" alt="一炁" class="real-logo ink-blend" />
-        <div class="brand-text">一炁逆熵.炁运录<span class="en">YIQI</span></div>
       </router-link>
       <router-link to="/profile" class="top-right-user">个人中心</router-link>
     </div>
 
-    <main class="chaos-quiz-main">
+    <main class="chaos-quiz-main" :class="{ 'is-result-mode': stage === 'result' }">
       <div class="chaos-quiz-shell">
-        <a href="/chaos-explore" class="back-btn chaos-back-btn" @click.prevent="goList">← 返回题库</a>
-
-        <header class="quiz-header">
-          <p class="page-kicker">探索测试</p>
-          <h1>{{ quiz.title || '测试加载中' }}</h1>
-          <p class="page-subtitle">{{ quiz.summary }}</p>
-        </header>
+        <a href="/chaos-explore" class="back-btn chaos-back-btn" @click.prevent="goList">
+          {{ stage === 'result' ? '← 返回' : '← 返回题库' }}
+        </a>
 
         <div v-if="loading" class="quiz-empty">测试加载中…</div>
         <div v-else-if="error" class="quiz-empty">{{ error }}</div>
@@ -32,7 +27,7 @@
               <span>第 {{ currentIndex + 1 }} / {{ questionCount }} 题</span>
               <span v-if="submitting">结果生成中…</span>
             </div>
-            <div class="question-prompt">{{ currentQuestion.prompt }}</div>
+            <div class="question-prompt">{{ cleanText(currentQuestion.prompt) }}</div>
             <button
               v-for="option in currentQuestion.options"
               :key="option.key"
@@ -42,37 +37,62 @@
               @click="selectOption(option.key)"
             >
               <span>{{ option.key }}.</span>
-              <span>{{ option.text }}</span>
+              <span>{{ cleanText(option.text) }}</span>
             </button>
           </section>
 
           <section v-else-if="stage === 'summary'" class="result-prelude-card">
             <div class="prelude-label">测试完成</div>
-            <div class="prelude-text">{{ quiz.introText }}</div>
+            <div class="prelude-text">{{ cleanText(quiz.introText) }}</div>
             <button type="button" class="primary-pill" @click="showResult">查看结果</button>
           </section>
 
-          <section v-else-if="result" class="result-card-shell">
-            <div class="result-actions">
-              <button type="button" class="ghost-pill" @click="toggleFace">
-                {{ showYin ? '查看阳面' : '查看阴面' }}
-              </button>
-              <button type="button" class="ghost-pill" @click="restartQuiz">重新测试</button>
+          <section v-else-if="result" class="quiz-result-layout">
+            <div class="result-card-shell">
+              <div
+                class="result-card"
+                :class="{ 'is-yin': showYin }"
+                role="button"
+                tabindex="0"
+                @click="toggleFace"
+                @keydown.enter.prevent="toggleFace"
+                @keydown.space.prevent="toggleFace"
+              >
+                <div class="card-face face-yang">
+                  <AutoFitTraitCardBody :fit-key="`result-yang-${showYin}`">
+                    <AutoFitTraitTitle :max-size="30" :min-size="16" :fit-key="`result-yang-title-${showYin}`">
+                      {{ cleanText(result.title) }}
+                    </AutoFitTraitTitle>
+                    <div v-if="result.summary" class="result-summary">{{ cleanText(result.summary) }}</div>
+                    <div class="result-body">{{ cleanText(result.yang) }}</div>
+                  </AutoFitTraitCardBody>
+                  <button
+                    type="button"
+                    class="toggle-dot"
+                    aria-label="切换结果阴阳面"
+                    @click.stop="toggleFace"
+                  />
+                </div>
+                <div class="card-face face-yin">
+                  <AutoFitTraitCardBody :fit-key="`result-yin-${showYin}`">
+                    <AutoFitTraitTitle :max-size="30" :min-size="16" :fit-key="`result-yin-title-${showYin}`">
+                      {{ cleanText(result.title) }}
+                    </AutoFitTraitTitle>
+                    <div v-if="result.summary" class="result-summary">{{ cleanText(result.summary) }}</div>
+                    <div class="result-body">{{ cleanText(result.yin) }}</div>
+                  </AutoFitTraitCardBody>
+                  <button
+                    type="button"
+                    class="toggle-dot"
+                    aria-label="切换结果阴阳面"
+                    @click.stop="toggleFace"
+                  />
+                </div>
+              </div>
             </div>
 
-            <div class="result-card" :class="{ 'is-yin': showYin }">
-              <div class="card-face face-yang">
-                <div class="result-title">{{ result.title }}</div>
-                <div class="result-summary">{{ result.summary }}</div>
-                <div class="result-body">{{ result.yang }}</div>
-                <div class="result-outro">{{ quiz.outroText }}</div>
-              </div>
-              <div class="card-face face-yin">
-                <div class="result-title">{{ result.title }}</div>
-                <div class="result-summary">{{ result.summary }}</div>
-                <div class="result-body">{{ result.yin }}</div>
-                <div class="result-outro">{{ quiz.outroText }}</div>
-              </div>
+            <div class="result-actions">
+              <button type="button" class="ghost-pill" @click="restartQuiz">重新测试</button>
             </div>
           </section>
           <section v-else class="quiz-empty">暂无可用题目</section>
@@ -87,6 +107,8 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import logoUrl from '@/assets/logo.png'
 import { fetchChaosQuizDetail, resetChaosQuiz, submitChaosQuiz } from '@/api/chaos'
+import AutoFitTraitCardBody from '@/components/trait/AutoFitTraitCardBody.vue'
+import AutoFitTraitTitle from '@/components/trait/AutoFitTraitTitle.vue'
 import { useDustCanvas } from '@/composables/useDustCanvas'
 import { usePageTransition } from '@/composables/usePageTransition'
 import '@/styles/prototype-base.css'
@@ -116,6 +138,8 @@ useDustCanvas(canvasRef)
 
 const questionCount = computed(() => quiz.value.questions?.length ?? 0)
 const currentQuestion = computed(() => quiz.value.questions?.[currentIndex.value] ?? null)
+
+const cleanText = (value) => String(value ?? '').replace(/\*\*/g, '')
 
 const goList = () => {
   router.push({ name: 'chaos-explore' })

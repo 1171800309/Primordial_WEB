@@ -46,8 +46,8 @@
 }
 
 .register-loading-text-stage {
-  width: min(640px, 100%);
-  min-height: 72px;
+  width: min(720px, 100%);
+  min-height: 92px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -69,7 +69,8 @@
 }
 
 .register-loading-detail {
-  margin: 10px 0 0;
+  max-width: 720px;
+  margin: 12px auto 0;
   font-size: clamp(12px, 3vw, 14px);
   line-height: 1.75;
   letter-spacing: 0.08em;
@@ -136,14 +137,6 @@
   letter-spacing: 0.04em;
   color: rgba(255, 255, 255, 0.28);
   text-align: justify;
-}
-
-.register-loading-disclaimer {
-  margin: 0;
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  color: rgba(255, 255, 255, 0.42);
-  text-align: center;
 }
 
 @media (max-width: 480px) {

@@ -46,22 +46,23 @@
 .auth-header .brand-text {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .auth-header .brand-text .zh {
   font-family: var(--font-serif);
-  font-size: 20px;
+  font-size: clamp(15px, 1.2vw, 18px);
   color: var(--gold-light);
-  letter-spacing: 4px;
+  letter-spacing: 0.08em;
   font-weight: 300;
+  white-space: nowrap;
 }
 
 .auth-header .brand-text .en {
   font-family: var(--font-sans);
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-dark);
-  letter-spacing: 6px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
 }
 
@@ -89,11 +90,12 @@
   position: relative;
   z-index: 10;
   flex: 1;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 100px 5% 60px;
+  padding: 92px 5% 56px;
   min-height: 100vh;
 }
 
@@ -125,13 +127,15 @@
 
 .auth-title {
   font-family: var(--font-serif);
-  font-size: clamp(28px, 4vw, 40px);
+  font-size: clamp(28px, 3.2vw, 38px);
+  line-height: 1.25;
   font-weight: 300;
   letter-spacing: 0.25em;
   margin-left: 0.25em;
   color: var(--text-white);
   text-align: center;
-  margin-bottom: 12px;
+  margin-top: 0;
+  margin-bottom: 18px;
 }
 
 .auth-subtitle {
@@ -139,14 +143,14 @@
   color: var(--text-muted);
   letter-spacing: 0.15em;
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 28px;
   font-weight: 300;
 }
 
 .auth-card {
-  width: 100%;
-  max-width: 420px;
-  padding: 40px 36px;
+  width: clamp(340px, 33.333vw, 680px);
+  max-width: calc(100vw - 40px);
+  padding: 36px 32px;
   background: rgba(12, 12, 14, 0.75);
   border: 1px solid rgba(234, 222, 199, 0.12);
   border-radius: 12px;
@@ -157,7 +161,10 @@
 }
 
 .auth-card--wide {
-  max-width: 720px;
+  width: min(980px, calc(100vw - 40px));
+  max-width: calc(100vw - 40px);
+  padding: 20px 32px 22px;
+  line-height: 1.35;
 }
 
 @keyframes authCardEnter {
@@ -172,7 +179,7 @@
 }
 
 .auth-form :deep(.el-form-item) {
-  margin-bottom: 22px;
+  margin-bottom: 18px;
 }
 
 .auth-form :deep(.el-form-item__label) {
@@ -181,6 +188,28 @@
   letter-spacing: 0.1em;
   padding-bottom: 8px !important;
   line-height: 1.4 !important;
+}
+
+.auth-card--wide .auth-form .el-form-item {
+  margin-bottom: 4px;
+}
+
+.auth-card--wide .auth-form .el-form-item__label {
+  color: var(--text-muted) !important;
+  font-size: 12px !important;
+  letter-spacing: 0.1em;
+  padding-bottom: 3px !important;
+  line-height: 1.2 !important;
+}
+
+.auth-card--wide .auth-form .el-input__wrapper,
+.auth-card--wide .auth-form .el-select__wrapper {
+  min-height: 32px !important;
+}
+
+.auth-card--wide .auth-form .el-input__inner,
+.auth-card--wide .auth-form .el-select__selected-item {
+  font-size: 13px;
 }
 
 .auth-form :deep(.el-input__wrapper),
@@ -275,17 +304,11 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.auth-coords-hint {
-  margin: -8px 0 16px;
+.auth-card--wide .auth-section-title {
   font-size: 12px;
-  line-height: 1.6;
-  color: var(--text-dark);
-  letter-spacing: 0.06em;
-}
-
-.auth-coords-hint strong {
-  color: var(--gold-light);
-  font-weight: 400;
+  line-height: 1.25;
+  margin: 2px 0 6px;
+  padding-bottom: 4px;
 }
 
 .auth-form .birth-datetime-row :deep(.el-form-item__label) {
@@ -294,7 +317,7 @@
   width: 100% !important;
   height: 20px;
   min-height: 20px;
-  padding-bottom: 8px !important;
+  padding-bottom: 3px !important;
   line-height: 20px !important;
   box-sizing: content-box;
 }
@@ -318,6 +341,88 @@
   white-space: nowrap;
 }
 
+.auth-label-with-help {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.auth-help-tip {
+  position: relative;
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  border: 1px solid rgba(234, 222, 199, 0.46);
+  border-radius: 50%;
+  color: var(--gold-light);
+  font-size: 11px;
+  line-height: 1;
+  cursor: help;
+  background: rgba(234, 222, 199, 0.06);
+}
+
+.auth-help-tip::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  width: min(340px, calc(100vw - 48px));
+  padding: 10px 12px;
+  border: 1px solid rgba(234, 222, 199, 0.24);
+  border-radius: 6px;
+  background: rgba(5, 5, 7, 0.94);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.7;
+  letter-spacing: 0.04em;
+  white-space: normal;
+  text-align: left;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.auth-help-tip::after {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 3px);
+  left: 5px;
+  width: 8px;
+  height: 8px;
+  border-right: 1px solid rgba(234, 222, 199, 0.24);
+  border-bottom: 1px solid rgba(234, 222, 199, 0.24);
+  background: rgba(5, 5, 7, 0.94);
+  opacity: 0;
+  pointer-events: none;
+  transform: rotate(45deg) translateY(4px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.auth-help-tip:hover::before,
+.auth-help-tip:focus-visible::before {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.auth-help-tip:hover::after,
+.auth-help-tip:focus-visible::after {
+  opacity: 1;
+  transform: rotate(45deg) translateY(0);
+}
+
+.auth-help-tip:focus-visible {
+  outline: 1px solid rgba(234, 222, 199, 0.7);
+  outline-offset: 2px;
+}
+
 .calendar-type-segment {
   flex: 0 0 auto;
   display: inline-flex;
@@ -334,9 +439,9 @@
   color: var(--text-muted);
   font-size: 11px;
   letter-spacing: 0.06em;
-  padding: 0 7px;
-  height: 18px;
-  line-height: 18px;
+  padding: 0 6px;
+  height: 17px;
+  line-height: 17px;
   border-radius: 3px;
   cursor: pointer;
   transition: color 0.2s ease, background 0.2s ease;
@@ -363,6 +468,47 @@
   font-size: 13px;
 }
 
+.auth-form .birth-datetime-row .el-form-item__label {
+  display: flex !important;
+  align-items: center;
+  width: 100% !important;
+  height: 20px;
+  min-height: 20px;
+  padding-bottom: 3px !important;
+  line-height: 20px !important;
+  box-sizing: content-box;
+}
+
+.auth-form .birth-datetime-row .el-form-item__label::before {
+  line-height: 20px;
+  margin-right: 4px;
+}
+
+.auth-form .birth-datetime-row .el-date-editor {
+  width: 100% !important;
+}
+
+.auth-form .birth-datetime-row .el-date-editor .el-input__wrapper {
+  width: 100%;
+}
+
+.auth-form .birth-datetime-row .el-date-editor .el-input__inner {
+  font-size: 13px;
+}
+
+.auth-gender-item {
+  margin-bottom: 4px !important;
+}
+
+.auth-gender-item .el-form-item__content {
+  min-height: 22px;
+}
+
+.auth-gender-item .el-radio {
+  height: 22px;
+  line-height: 22px;
+}
+
 @media (max-width: 768px) {
   .birth-month-label-inline {
     flex-wrap: wrap;
@@ -377,19 +523,19 @@
 .auth-actions {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  margin-top: 8px;
+  gap: 8px;
+  margin-top: 2px;
 }
 
 .auth-submit-btn {
   width: 100%;
-  padding: 16px;
+  padding: 10px 12px;
   background: var(--gold-light);
   color: #050507;
   border: none;
   border-radius: 6px;
   font-family: var(--font-serif);
-  font-size: 16px;
+  font-size: 15px;
   letter-spacing: 0.2em;
   font-weight: 600;
   cursor: pointer;
@@ -408,13 +554,13 @@
 
 .auth-ghost-btn {
   width: 100%;
-  padding: 14px;
+  padding: 8px 12px;
   background: transparent;
   color: var(--text-white);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 40px;
   font-family: var(--font-serif);
-  font-size: 14px;
+  font-size: 13px;
   letter-spacing: 0.15em;
   cursor: pointer;
   transition: all 0.4s ease;
@@ -426,16 +572,18 @@
   background: rgba(234, 222, 199, 0.05);
 }
 
-.auth-footer-note {
-  margin-top: 32px;
-  font-size: 12px;
-  color: var(--text-dark);
-  letter-spacing: 0.15em;
-  text-align: center;
-}
-
 .auth-agreement-item {
   margin-bottom: 0;
+}
+
+.auth-agreement-item .el-form-item__content {
+  min-height: 22px;
+  line-height: 22px;
+}
+
+.auth-agreement-item .el-checkbox {
+  height: auto;
+  line-height: 22px;
 }
 
 .auth-agreement-link {
@@ -473,11 +621,17 @@
 }
 
 @media (max-width: 768px) {
+  .auth-main {
+    padding: 90px 20px 54px;
+  }
+
   .auth-card {
+    width: 100%;
     padding: 32px 24px;
   }
 
   .auth-card--wide {
+    width: 100%;
     max-width: 100%;
   }
 }

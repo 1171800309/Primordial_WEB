@@ -1,86 +1,58 @@
 <template>
   <AuthPageShell
     title="注册账号"
-    subtitle="填写基础信息，完成账号注册"
     wide
-    scrollable
     :show-hero-logo="false"
     :header-link="{ to: '/login', label: '去登录' }"
   >
     <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="auth-form">
       <div class="auth-section-title">基础信息</div>
       <el-row :gutter="16">
-        <el-col :xs="24" :sm="12">
-          <el-form-item label="用户名称" prop="username">
-            <el-input v-model="form.username" placeholder="请输入用户名称" />
-          </el-form-item>
-        </el-col>
-        <el-col :xs="24" :sm="12">
+        <el-col :xs="24" :sm="12" :md="6">
           <el-form-item label="手机号" prop="phone">
             <el-input v-model="form.phone" placeholder="请输入手机号" />
           </el-form-item>
         </el-col>
-      </el-row>
-
-      <el-row :gutter="16">
-        <el-col :xs="24" :sm="12">
+        <el-col :xs="24" :sm="12" :md="6">
+          <el-form-item label="用户名称" prop="username">
+            <el-input v-model="form.username" placeholder="请输入用户名称" />
+          </el-form-item>
+        </el-col>
+        <el-col :xs="24" :sm="12" :md="6">
           <el-form-item label="密码" prop="password">
             <el-input v-model="form.password" type="password" show-password placeholder="请输入密码" />
           </el-form-item>
         </el-col>
-        <el-col :xs="24" :sm="12">
+        <el-col :xs="24" :sm="12" :md="6">
           <el-form-item label="邮箱（可选）" prop="email">
             <el-input v-model="form.email" placeholder="请输入邮箱" />
           </el-form-item>
         </el-col>
       </el-row>
 
-      <el-row :gutter="16">
-        <el-col :xs="24" :sm="12">
-          <el-form-item label="性别" prop="gender">
-            <el-radio-group v-model="form.gender">
-              <el-radio label="male">男</el-radio>
-              <el-radio label="female">女</el-radio>
-            </el-radio-group>
-          </el-form-item>
-        </el-col>
-      </el-row>
-
-      <div class="auth-section-title">出生坐标</div>
-      <el-row :gutter="16">
-        <el-col :xs="24" :sm="12">
-          <el-form-item label="省" prop="province">
-            <el-select v-model="form.province" placeholder="请选择省" style="width: 100%" @change="onProvinceChange">
-              <el-option v-for="item in provinces" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-          </el-form-item>
-        </el-col>
-        <el-col :xs="24" :sm="12">
-          <el-form-item label="市" prop="city">
-            <el-select
-              v-model="form.city"
-              placeholder="请选择市"
-              style="width: 100%"
-              :disabled="!form.province"
-              @change="onCityChange"
-            >
-              <el-option v-for="item in cities" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-          </el-form-item>
-        </el-col>
-      </el-row>
-      <p class="auth-coords-hint">经纬已固定为<strong>东经</strong>基准（北京时间参考），与所选省市无关。</p>
-
       <div class="auth-section-title">出生时辰</div>
       <el-row :gutter="16" class="birth-datetime-row">
-        <el-col :xs="12" :sm="6">
-          <el-form-item label="出生年" prop="birthYear">
+        <el-col :xs="12" :sm="12" :md="6">
+          <el-form-item prop="birthYear">
+            <template #label>
+              <span class="auth-label-with-help">
+                <span>出生年</span>
+                <span
+                  class="auth-help-tip"
+                  tabindex="0"
+                  :aria-label="BIRTH_YEAR_HELP_TEXT"
+                  :data-tooltip="BIRTH_YEAR_HELP_TEXT"
+                >
+                  ?
+                </span>
+              </span>
+            </template>
             <el-select v-model="form.birthYear" placeholder="请选择年" style="width: 100%" @change="onBirthYearChange">
               <el-option v-for="item in calendarYearOptions" :key="item" :label="item" :value="item" />
             </el-select>
           </el-form-item>
         </el-col>
-        <el-col :xs="12" :sm="6">
+        <el-col :xs="12" :sm="12" :md="6">
           <el-form-item prop="birthMonth" class="birth-month-field">
             <template #label>
               <span class="birth-month-label-inline">
@@ -118,7 +90,7 @@
             </el-select>
           </el-form-item>
         </el-col>
-        <el-col :xs="12" :sm="6">
+        <el-col :xs="12" :sm="12" :md="6">
           <el-form-item label="出生日" prop="birthDay">
             <el-select
               v-model="form.birthDay"
@@ -131,7 +103,7 @@
             </el-select>
           </el-form-item>
         </el-col>
-        <el-col :xs="12" :sm="6">
+        <el-col :xs="12" :sm="12" :md="6">
           <el-form-item label="出生时间" prop="birthTime">
             <el-time-picker
               v-model="form.birthTime"
@@ -141,6 +113,55 @@
               style="width: 100%"
               @change="onBirthTimeChange"
             />
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <div class="auth-section-title">性别</div>
+      <el-row :gutter="16">
+        <el-col :xs="24" :sm="12">
+          <el-form-item prop="gender" class="auth-gender-item">
+            <el-radio-group v-model="form.gender">
+              <el-radio label="male">男</el-radio>
+              <el-radio label="female">女</el-radio>
+            </el-radio-group>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <div class="auth-section-title">出生坐标</div>
+      <el-row :gutter="16">
+        <el-col :xs="24" :sm="12">
+          <el-form-item prop="province">
+            <template #label>
+              <span class="auth-label-with-help">
+                <span>省</span>
+                <span
+                  class="auth-help-tip"
+                  tabindex="0"
+                  :aria-label="BIRTH_COORDINATE_HELP_TEXT"
+                  :data-tooltip="BIRTH_COORDINATE_HELP_TEXT"
+                >
+                  ?
+                </span>
+              </span>
+            </template>
+            <el-select v-model="form.province" placeholder="请选择省" style="width: 100%" @change="onProvinceChange">
+              <el-option v-for="item in provinces" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :xs="24" :sm="12">
+          <el-form-item label="市" prop="city">
+            <el-select
+              v-model="form.city"
+              placeholder="请选择市"
+              style="width: 100%"
+              :disabled="!form.province"
+              @change="onCityChange"
+            >
+              <el-option v-for="item in cities" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
           </el-form-item>
         </el-col>
       </el-row>
@@ -182,6 +203,8 @@ const formRef = ref()
 const loading = ref(false)
 
 const REGISTER_EAST_LONGITUDE_COORDINATES = '116.407526,39.904030'
+const BIRTH_YEAR_HELP_TEXT = '本站名为炁运录，收录并结合中国传统文化计算下方可选时间的降生之人之炁，往前为长者，往后为幼者，此两者之炁不观'
+const BIRTH_COORDINATE_HELP_TEXT = '本站收录中国所有省市经纬坐标，用于真太阳时校正及获取出生方位之炁性，国外出生用户暂时可选择北京为出生坐标，请期待未来海外版上线'
 
 const provinces = ref([])
 const cities = ref([])

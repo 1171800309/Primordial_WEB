@@ -9,11 +9,8 @@
     <div class="top-nav">
       <router-link to="/hub" class="top-left-brand">
         <img :src="logoUrl" alt="一炁" class="real-logo ink-blend" />
-        <div class="brand-text">一炁文化<span class="en">YIQI</span></div>
+        <div class="brand-text">一炁逆熵.炁运录<span class="en">YIQI</span></div>
       </router-link>
-      <div v-if="storeOpen" class="top-right-user">
-        <router-link to="/profile" class="icon-btn">我的订单</router-link>
-      </div>
     </div>
 
     <router-link to="/hub" class="left-return-dot" :style="hubReturnStyle">
@@ -48,7 +45,7 @@
         </div>
       </div>
 
-      <div class="unlocked-section">
+      <div v-if="showBlindBoxes" class="unlocked-section">
         <div
           v-for="box in blindBoxes"
           :key="box.key"
@@ -130,6 +127,8 @@ const activeBoxKey = ref('')
 const paying = ref(false)
 const shippingNote = SHIPPING_NOTE
 const blindBoxes = Object.values(BLIND_BOXES)
+// 下方盲盒商城暂不显示，仅展示「万炁之城」部分
+const showBlindBoxes = ref(false)
 
 const checkout = reactive({
   recipientName: '',
@@ -190,7 +189,7 @@ const submitOrder = async () => {
       return
     }
     await payShopOrder(orderId)
-    ElMessage.success('支付成功，可在个人中心查看订单与物流')
+    ElMessage.success('支付成功')
     closeStore()
   } catch (error) {
     const msg = error?.response?.data?.message || error?.message || '下单失败'
@@ -212,6 +211,49 @@ const submitOrder = async () => {
 
 .left-return-dot {
   text-decoration: none;
+}
+
+/* 仅展示「万炁之城」部分：撑满整屏并水平垂直居中，整体放大 */
+.wanqi-page .locked-section {
+  flex: 1 1 100%;
+  min-height: 100vh;
+  padding-top: 0;
+  border-bottom: none;
+}
+
+.wanqi-page .locked-content {
+  gap: 36px;
+}
+
+.wanqi-page .portal-title {
+  font-size: clamp(34px, 5vw, 48px);
+}
+
+.wanqi-page .portals-grid {
+  gap: clamp(36px, 5vw, 56px);
+}
+
+.wanqi-page .portal-icon {
+  width: 104px;
+  height: 104px;
+}
+
+.wanqi-page .portal-icon svg {
+  width: 48px;
+  height: 48px;
+}
+
+.wanqi-page .portal-name {
+  font-size: 18px;
+}
+
+.wanqi-page .locked-content .lock-icon {
+  width: 54px;
+  height: 54px;
+}
+
+.wanqi-page .locked-content .lock-text {
+  font-size: 24px;
 }
 
 .wanqi-page .mystery-box-icon {

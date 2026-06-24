@@ -2,7 +2,5 @@
 export const REGISTER_LOADING_CLASSICS =
   '本站算法参考古籍：《穷通宝鉴》《滴天髓》《八字提要》《三命通会》《渊海子平》《子平真诠》《神峰通考》《天元巫咸》《五行精纪》《千里命稿》《李虚中命书》《五行大义》《鬼谷遗文》《星平会海》《命理探原》《玉照定真经》《命理约言》《星命总括》《兰台妙选》《珞琭子消息赋》《易经》《易传》《卜筮正宗》《易隐》《梅花易数》《皇极经世书》《奇门遁甲》《六壬大全》《太清神鉴》《麻衣神相》《冰鉴》《推背图》《汉书天文志》《灵宪》《葬经》《青囊经》《宅经》《玄微论》《增补太微赋》等传统典籍'
 
-export const REGISTER_LOADING_DISCLAIMER = '本站拒绝封建迷信，一切内容仅供娱乐。'
-
 /** 仅新用户注册成功后写入 sessionStorage，过场页读取后清除 */
 export const REGISTER_LOADING_SESSION_KEY = 'registerLoadingPending'
