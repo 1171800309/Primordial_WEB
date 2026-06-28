@@ -86,16 +86,6 @@ const featurePlanets = [
     ]
   },
   {
-    name: 'bianqi-report',
-    to: { name: 'bianqi-report' },
-    title: '大运.流年.报告',
-    descLines: [
-      '读取后天变化里的深层文本',
-      '大运深度分析与流年关键提示',
-      '看见当下炁场的具体提醒'
-    ]
-  },
-  {
     name: 'qixiangtai',
     to: { name: 'qixiangtai' },
     title: '炁象台',

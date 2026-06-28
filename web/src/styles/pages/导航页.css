@@ -124,7 +124,7 @@
   z-index: 10;
   width: min(82vw, 1280px);
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: clamp(14px, 1.8vw, 35px);
   align-items: center;
   justify-items: center;

@@ -16,15 +16,8 @@
     <a href="/hub" class="back-btn" @click.prevent="goHub">← 返回中枢</a>
 
     <main class="report-main">
-      <section class="report-hero fade-up">
-        <p class="report-kicker">后天变炁报告</p>
-        <h1>大运深度分析 / 流年关键提示</h1>
-        <div v-if="summaryChips.length" class="report-summary-chips" aria-label="报告摘要">
-          <span v-for="chip in summaryChips" :key="chip">{{ chip }}</span>
-        </div>
-      </section>
-
-      <div class="report-actions fade-up" style="animation-delay: 0.08s">
+      <div class="report-actions fade-up">
+        <router-link to="/bianqi" class="report-ghost-link">返回变炁域</router-link>
         <div class="report-tabs" role="tablist" aria-label="报告类型">
           <button
             v-for="tab in tabs"
@@ -38,29 +31,12 @@
             {{ tab.label }}
           </button>
         </div>
-        <router-link to="/bianqi" class="report-ghost-link">返回变炁域</router-link>
       </div>
 
       <section v-if="loading" class="report-state fade-up">报告加载中...</section>
       <section v-else-if="loadError" class="report-state report-state--error fade-up">{{ loadError }}</section>
 
-      <section v-else class="report-layout fade-up" style="animation-delay: 0.16s">
-        <aside class="report-context">
-          <div class="context-eyebrow">{{ activeTab === 'dayun' ? '当前大运' : `${flowYearText} 流年` }}</div>
-          <div class="context-pillar">{{ currentSection?.pillar || '—' }}</div>
-          <div v-if="currentSection?.metaLine" class="context-meta">{{ currentSection.metaLine }}</div>
-          <div class="context-rows">
-            <div v-for="row in contextRows" :key="row.label" class="context-row">
-              <span>{{ row.label }}</span>
-              <strong>{{ row.value }}</strong>
-            </div>
-          </div>
-          <div v-if="currentSection?.available" class="context-buff">
-            <span>BUFF</span>
-            <strong>{{ formatBuff(currentSection) }}</strong>
-          </div>
-        </aside>
-
+      <section v-else class="report-layout fade-up" style="animation-delay: 0.08s">
         <article class="report-article">
           <template v-if="!currentSection?.available">
             <h2>{{ currentSection?.message || '暂无报告' }}</h2>
@@ -73,7 +49,6 @@
           </template>
 
           <template v-else-if="activeTab === 'dayun'">
-            <p class="article-source">{{ currentReport.sourceHeading }}</p>
             <h2>{{ currentReport.title || '大运深度分析' }}</h2>
             <section
               v-for="block in articleBlocks"
@@ -86,7 +61,6 @@
           </template>
 
           <template v-else>
-            <p class="article-source">{{ currentReport.sourceHeading }}</p>
             <h2>{{ currentReport.annualTheme || '流年关键提示' }}</h2>
             <ol v-if="currentReport.keyItems?.length" class="key-list">
               <li v-for="item in currentReport.keyItems" :key="item">{{ item }}</li>
@@ -136,31 +110,6 @@ const bianqi = ref(null)
 
 const currentSection = computed(() => bianqi.value?.[activeTab.value] || null)
 const currentReport = computed(() => currentSection.value?.report || null)
-const flowYearText = computed(() => String(bianqi.value?.flowYear || new Date().getFullYear()))
-
-const summaryChips = computed(() => {
-  const data = bianqi.value
-  if (!data) return []
-  return [
-    data.dayMasterGan ? `${data.dayMasterGan}日主` : '',
-    data.reportBodyStrength || '',
-    data.flowYear ? `${data.flowYear}流年` : ''
-  ].filter(Boolean)
-})
-
-const contextRows = computed(() => {
-  const section = currentSection.value
-  if (!section) return []
-  const report = section.report
-  return [
-    { label: '周期', value: section.period },
-    { label: '纳音', value: section.nayin },
-    { label: '天干十神', value: section.stemTenGod },
-    { label: '地支本气十神', value: section.branchTenGod },
-    { label: '身旺弱', value: section.bodyStrength },
-    { label: '查表键', value: report?.matchKey || buildMatchKey(section) }
-  ].filter((row) => row.value)
-})
 
 const articleBlocks = computed(() => {
   const report = currentReport.value
@@ -174,17 +123,6 @@ const articleBlocks = computed(() => {
     { title: '关键提醒', body: report.keyReminder }
   ].filter((block) => block.body)
 })
-
-function buildMatchKey(section) {
-  return [section.stemTenGod, section.branchTenGod, section.bodyStrength].filter(Boolean).join('+')
-}
-
-function formatBuff(section) {
-  const raw = Number(section.adjustedBuffExact ?? section.adjustedBuffPercent ?? section.buffPercent)
-  if (!Number.isFinite(raw)) return '—'
-  const text = raw.toFixed(1)
-  return raw > 0 ? `+${text}%` : `${text}%`
-}
 
 async function loadReport() {
   loading.value = true
