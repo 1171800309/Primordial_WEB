@@ -19,7 +19,7 @@
     <div class="top-nav">
       <router-link to="/hub" class="top-left-brand">
         <img :src="logoUrl" alt="一炁" class="real-logo ink-blend" />
-        <span class="brand-text">一炁文化</span>
+        <div class="brand-text">一炁逆熵.炁运录<span class="en">YIQI</span></div>
       </router-link>
     </div>
 
@@ -37,7 +37,7 @@
       <h1 class="page-title">隐藏词卡</h1>
       <div class="page-subtitle">HIDDEN TRAITS</div>
 
-      <TraitCardCarousel :items="carouselItems">
+      <TraitCardCarousel :items="carouselItems" :max-slide-height="carouselMaxHeight">
         <template #default="{ item: card }">
           <div
             class="blind-box"
@@ -90,8 +90,8 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import logoUrl from '@/assets/logo.png'
 import { fetchMyTraitCards, openMyTraitCard } from '@/api/me'
 import { HIDDEN_TRAIT_CARD_SLOTS, mergeHiddenTraitCards } from '@/constants/hiddenTraitCards'
@@ -107,6 +107,7 @@ const canvasRef = ref(null)
 useDustCanvas(canvasRef)
 
 const router = useRouter()
+const route = useRoute()
 const modalHidden = ref(false)
 const contentRevealed = ref(false)
 const visibleCards = ref([])
@@ -123,6 +124,14 @@ const discovery = ref({
 })
 
 const cardStates = reactive({})
+
+// 单视口完整显示：按窗口高度约束词卡高度，避免页面出现滚动
+const carouselMaxHeight = ref(360)
+const syncCarouselMaxHeight = () => {
+  carouselMaxHeight.value = Math.round(
+    Math.max(220, Math.min(460, window.innerHeight - 300))
+  )
+}
 
 const syncCardStates = (cards) => {
   for (const key of Object.keys(cardStates)) {
@@ -165,10 +174,12 @@ const loadDiscovery = async () => {
     syncCardStates(visibleCards.value)
 
     const remote = data?.hiddenDiscovery
+    // 从先天页「查看隐藏词卡」进入时（reveal=1）直接展示词卡，不再弹一次「机缘触发」
+    const skipModal = route.query.reveal === '1'
     applyDiscovery({
       dayZhi: remote?.dayZhi ?? null,
       count: cards.length,
-      showModal: Boolean(remote?.showModal),
+      showModal: skipModal ? false : Boolean(remote?.showModal),
       modalMessage: remote?.modalMessage ?? null
     })
   } catch {
@@ -192,7 +203,13 @@ const handleCardClick = (id) => {
 }
 
 onMounted(() => {
+  syncCarouselMaxHeight()
+  window.addEventListener('resize', syncCarouselMaxHeight, { passive: true })
   loadDiscovery()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', syncCarouselMaxHeight)
 })
 </script>
 

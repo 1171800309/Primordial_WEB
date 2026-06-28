@@ -1,6 +1,6 @@
 <template>
   <footer class="site-disclaimer" :class="{ fixed: fixed }">
-    <p>本站拒绝封建迷信，一切内容仅供娱乐。</p>
+    <p>本站内容源自中国传统文化，仅供娱乐，不构成任何决策建议，请理性看待，切勿迷信</p>
   </footer>
 </template>
 

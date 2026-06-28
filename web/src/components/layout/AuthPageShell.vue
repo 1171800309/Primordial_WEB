@@ -10,8 +10,8 @@
       <router-link to="/" class="brand-container">
         <img :src="logoUrl" alt="一炁" class="real-logo ink-blend" />
         <div class="brand-text">
-          <span class="zh">一炁文化</span>
-          <span class="en">YI QI</span>
+          <span class="zh">一炁逆熵.炁运录</span>
+          <span class="en">YIQI</span>
         </div>
       </router-link>
       <router-link v-if="headerLink" :to="headerLink.to" class="auth-nav-btn">
@@ -19,7 +19,7 @@
       </router-link>
     </header>
 
-    <main :class="['auth-main', { 'auth-main--scroll': scrollable }]">
+    <main :class="['auth-main', { 'auth-main--scroll': scrollable, 'auth-main--wide': wide }]">
       <img v-if="showHeroLogo" :src="logoUrl" alt="一炁" class="auth-hero-logo ink-blend" />
       <h1 v-if="title" class="auth-title">{{ title }}</h1>
       <p v-if="subtitle" class="auth-subtitle">{{ subtitle }}</p>
@@ -27,8 +27,6 @@
       <div :class="['auth-card', { 'auth-card--wide': wide }]">
         <slot />
       </div>
-
-      <p v-if="footerNote" class="auth-footer-note">{{ footerNote }}</p>
     </main>
   </div>
 </template>
@@ -47,7 +45,6 @@ defineProps({
   wide: { type: Boolean, default: false },
   scrollable: { type: Boolean, default: false },
   showHeroLogo: { type: Boolean, default: true },
-  footerNote: { type: String, default: '仅供娱乐 · 文化探索与心理参考' },
   headerLink: {
     type: Object,
     default: () => ({ to: '/', label: '返回首页' })

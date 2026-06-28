@@ -1,0 +1,35 @@
+---
+description: 一炁文化 NAS 发版——用户说发布时自动 SSH 部署
+alwaysApply: true
+---
+
+# 一炁文化 · NAS 发版
+
+当用户要求**发布 / 发版 / 部署**「一炁文化」「Primordial」「前台+后台」等项目时，执行 NAS 全量发版，不要只改本地代码。
+
+## 环境
+
+| 项 | 值 |
+|----|-----|
+| 主机 | `192.168.2.224`（可用 `YIQI_NAS_HOST` 覆盖） |
+| 用户 | `Bely` |
+| 远程脚本 | `/home/Bely/deploy.sh` |
+| 代码 | `/home/Bely/code/Primordial_WEB`、`Primordial_API` |
+| Compose | `/home/Bely/docker-compose`（服务：`api-web`、`api-admin`、`web-web`、`web-admin`） |
+| **管理后台 URL** | `http://192.168.2.224:8004`（不是 8001/80 端口） |
+| **用户前台 URL** | `https://192.168.2.224:8001` |
+
+## 执行步骤
+
+1. 使用 SSH 公钥 `~/.ssh/id_ed25519`（**禁止**向用户索取 NAS 密码；未配置时让用户在本机终端运行 `./scripts/setup-nas-ssh-key.sh` 一次性安装公钥）。
+2. 在本机运行：`./scripts/deploy-yiqi-nas.sh` 或 `ssh yiqi-nas`（需已配置 `deploy/nas-ssh-config.example` → `~/.ssh/config`）。
+3. 若需无缓存重建：`YIQI_NAS_NO_CACHE=1 ./scripts/deploy-yiqi-nas.sh`
+4. 汇报：`git pull` 结果、四个容器状态、失败时的 `docker compose logs` 尾部。
+
+## 说明
+
+- NAS 生产差异保存在 `/home/Bely/deploy/nas-prod/`；`deploy.sh` 在 `git reset --hard origin/main` 后自动覆盖（nginx、ssl、appsettings 等）。
+- `Primordial_API/admin/Dockerfile` 覆盖层需包含 `Services/` 复制，否则 admin 镜像构建失败。
+- `web-admin` / `web-web` 的 `VITE_*` 必须在 compose **`build.args`**；发版后若登录异常，对前端服务 `docker compose build --no-cache`。
+- 主机 `/etc/nginx/server.d/primordial.conf` 只代理用户站（8001），管理后台需 **8004** 或 `deploy/nas-nginx-admin.conf`（`admin.primordial.local`）。
+- NAS 仅 SSH 公钥登录，勿使用 `YIQI_NAS_SSH_PASS` / `sshpass`。

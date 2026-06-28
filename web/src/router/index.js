@@ -6,6 +6,7 @@ import HubPage from '../views/HubPage.vue'
 import LandingPage from '../views/LandingPage.vue'
 import XianTianPage from '../views/XianTianPage.vue'
 import BianQiPage from '../views/BianQiPage.vue'
+import BianQiReportPage from '../views/BianQiReportPage.vue'
 import QiXiangTaiPage from '../views/QiXiangTaiPage.vue'
 import WanQiPage from '../views/WanQiPage.vue'
 import HiddenCardPage from '../views/HiddenCardPage.vue'
@@ -29,6 +30,7 @@ const router = createRouter({
     { path: '/hub', name: 'hub', component: HubPage },
     { path: '/xiantian', name: 'xiantian', component: XianTianPage },
     { path: '/bianqi', name: 'bianqi', component: BianQiPage },
+    { path: '/bianqi-report', name: 'bianqi-report', component: BianQiReportPage },
     { path: '/qixiangtai', name: 'qixiangtai', component: QiXiangTaiPage },
     { path: '/chaos-explore', name: 'chaos-explore', component: ChaosExplorePage },
     { path: '/chaos-explore/:slug', name: 'chaos-quiz', component: ChaosQuizPage },

@@ -42,7 +42,8 @@ pointer-events: none;
 .xiantian-page .top-left-brand{ display: flex; align-items: center; gap: 14px; text-decoration: none; pointer-events: auto; mix-blend-mode: screen; }
 .xiantian-page .real-logo{ width: 36px; height: 36px; transition: transform 0.4s ease, filter 0.4s ease; filter: drop-shadow(0 0 5px rgba(234,222,199,0.2)); }
 .xiantian-page .top-left-brand:hover .real-logo{ transform: scale(1.08); filter: drop-shadow(0 0 15px rgba(234,222,199,0.6)); }
-.xiantian-page .brand-text{ font-family: var(--font-serif); font-size: 18px; color: var(--gold-light); letter-spacing: 4px; font-weight: 300; }
+.xiantian-page .brand-text{ display: flex; align-items: center; gap: 6px; font-family: var(--font-serif); font-size: clamp(13px, 1vw, 16px); color: var(--gold-light); letter-spacing: 0.08em; font-weight: 300; white-space: nowrap; }
+.xiantian-page .brand-text .en{ font-family: var(--font-sans); font-size: 0.68em; letter-spacing: 0.16em; margin-left: 2px; opacity: 0.65; }
 .xiantian-page .back-btn{
 position: fixed; top: 90px; left: 5%; z-index: 100; display: flex; align-items: center; gap: 8px;
 font-size: 13px; color: var(--text-muted); letter-spacing: 0.2em; text-decoration: none; transition: all 0.3s ease; pointer-events: auto; padding: 8px 0;

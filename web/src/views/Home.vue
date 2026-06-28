@@ -3,8 +3,8 @@
     <el-container class="outer">
       <el-aside class="aside">
         <div class="brand">
-          <span class="brand-mark">一炁</span>
-          <span class="brand-text">天机台</span>
+          <img :src="logoUrl" alt="一炁" class="brand-logo ink-blend" />
+          <span class="brand-text">一炁逆熵.炁运录<span class="brand-en">YIQI</span></span>
         </div>
         <el-menu
           :default-active="active"
@@ -135,6 +135,7 @@ import {
 import { ensureBaziAnalysis } from '@/utils/userData'
 import MingPanTianJi from '@/components/destiny/MingPanTianJi.vue'
 import DestinyRevealMatrix from '@/components/destiny-form/DestinyRevealMatrix.vue'
+import logoUrl from '@/assets/logo.png'
 
 const router = useRouter()
 const menuMode = ref('vertical')
@@ -335,20 +336,30 @@ const handleLogout = async () => {
   border-bottom: 1px solid rgba(200, 155, 60, 0.1);
 }
 
-.brand-mark {
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  background: linear-gradient(105deg, #e8d5a8, #c89b3c);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+.brand-logo {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  filter: drop-shadow(0 0 5px rgba(234, 222, 199, 0.22));
 }
 
 .brand-text {
-  font-size: 13px;
-  color: #9a9a8e;
-  letter-spacing: 0.35em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: #e8d5a8;
+  font-family: var(--font-serif, 'Noto Serif SC', serif);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.brand-en {
+  color: #8f887a;
+  font-family: var(--font-sans, 'PingFang SC', sans-serif);
+  font-size: 9px;
+  letter-spacing: 0.16em;
 }
 
 .menu {

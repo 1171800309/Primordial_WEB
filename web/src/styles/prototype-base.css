@@ -68,17 +68,24 @@
 }
 
 .brand-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
   font-family: var(--font-serif);
-  font-size: 16px;
+  font-size: clamp(13px, 1vw, 16px);
   color: var(--text-white);
-  letter-spacing: 4px;
+  letter-spacing: 0.08em;
   font-weight: 300;
+  white-space: nowrap;
 }
 
 .brand-text .en {
   font-family: var(--font-sans);
-  letter-spacing: 2px;
-  margin-left: 4px;
+  font-size: 0.68em;
+  letter-spacing: 0.16em;
+  margin-left: 2px;
+  opacity: 0.65;
 }
 
 .back-btn {

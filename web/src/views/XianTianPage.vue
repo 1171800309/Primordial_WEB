@@ -9,7 +9,7 @@
     <div class="top-nav">
       <router-link to="/hub" class="top-left-brand">
         <img :src="logoUrl" alt="一炁" class="real-logo ink-blend" />
-        <span class="brand-text">一炁文化</span>
+        <div class="brand-text">一炁逆熵.炁运录<span class="en">YIQI</span></div>
       </router-link>
       <router-link to="/wanqi" class="top-right-store">
         <span class="store-label">进入万炁之城</span>
@@ -171,7 +171,6 @@
     >
       <div class="hidden-discovery-box">
         <div class="hidden-discovery-ring" />
-        <div class="hidden-discovery-title">机缘触发</div>
         <p class="hidden-discovery-desc">
           {{ hiddenDiscovery.modalMessage || `你有${hiddenDiscovery.count}张隐藏词卡待开启` }}
         </p>
@@ -571,7 +570,7 @@ const acknowledgeHiddenUnlock = () => {
 const goHiddenCard = () => {
   acknowledgeHiddenUnlock()
   showHiddenPrompt.value = false
-  router.push('/hidden-card')
+  router.push({ path: '/hidden-card', query: { reveal: '1' } })
 }
 
 const dismissHiddenPrompt = () => {
@@ -704,7 +703,12 @@ watch(activeTab, () => {
 .hidden-discovery-box {
   position: relative;
   width: min(500px, 90vw);
-  padding: 48px 36px 40px;
+  min-height: 220px;
+  padding: 40px 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   border: 1px solid rgba(212, 175, 55, 0.3);
   border-radius: 4px;
@@ -741,10 +745,13 @@ watch(activeTab, () => {
 .hidden-discovery-desc {
   position: relative;
   z-index: 1;
-  font-size: 14px;
-  color: var(--text-muted);
-  line-height: 2;
-  letter-spacing: 0.1em;
+  width: 100%;
+  font-family: var(--font-serif);
+  font-size: clamp(20px, 3.4vw, 28px);
+  color: #d4af37;
+  line-height: 1.7;
+  letter-spacing: 0.16em;
+  text-shadow: 0 0 20px rgba(212, 175, 55, 0.35);
   margin: 0 0 28px;
 }
 

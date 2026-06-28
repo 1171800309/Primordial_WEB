@@ -7,7 +7,7 @@
     <div class="top-nav">
       <router-link to="/hub" class="top-left-brand">
         <img :src="logoUrl" alt="一炁" class="real-logo ink-blend" />
-        <div class="brand-text">一炁 <span class="brand-divider">|</span> 炁象台</div>
+        <div class="brand-text">一炁逆熵.炁运录<span class="en">YIQI</span></div>
       </router-link>
     </div>
 

@@ -9,7 +9,7 @@
     <div class="top-nav">
       <router-link to="/hub" class="top-left-brand">
         <img :src="logoUrl" alt="一炁" class="real-logo ink-blend" />
-        <span class="brand-text">一炁文化</span>
+        <div class="brand-text">一炁逆熵.炁运录<span class="en">YIQI</span></div>
       </router-link>
     </div>
 
@@ -82,6 +82,12 @@
             </div>
           </div>
         </div>
+        <div class="tab-report-action">
+          <div class="tab-report-divider" />
+          <router-link :to="{ name: 'bianqi-report', query: { tab: 'dayun' } }" class="tab-report-link">
+            查看大运深度解析
+          </router-link>
+        </div>
       </div>
 
       <div
@@ -128,6 +134,12 @@
               <div class="trait-label">我的当前流年词条</div>
             </div>
           </div>
+        </div>
+        <div class="tab-report-action">
+          <div class="tab-report-divider" />
+          <router-link :to="{ name: 'bianqi-report', query: { tab: 'liunian' } }" class="tab-report-link">
+            查看流年关键提示
+          </router-link>
         </div>
       </div>
 

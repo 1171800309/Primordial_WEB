@@ -1,0 +1,437 @@
+.bianqi-report-page {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: #050507;
+  isolation: isolate;
+}
+
+#report-bg-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.42;
+  pointer-events: none;
+}
+
+.bianqi-report-page .top-nav {
+  height: 92px;
+  background: linear-gradient(180deg, rgba(5, 5, 7, 0.92), rgba(5, 5, 7, 0));
+}
+
+.bianqi-report-page .brand-text {
+  color: var(--gold-light);
+}
+
+.bianqi-report-page .report-main {
+  position: relative;
+  z-index: 10;
+  width: min(1120px, calc(100% - 48px));
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 138px 0 72px;
+}
+
+.bianqi-report-page .report-hero {
+  width: min(850px, 100%);
+  margin: 0 auto 30px;
+  text-align: center;
+}
+
+.bianqi-report-page .report-kicker {
+  margin: 0 0 12px;
+  color: rgba(234, 222, 199, 0.62);
+  font-family: var(--font-serif);
+  font-size: 13px;
+  letter-spacing: 0.22em;
+}
+
+.bianqi-report-page h1 {
+  margin: 0;
+  color: #fff;
+  font-family: var(--font-serif);
+  font-size: 42px;
+  font-weight: 400;
+  line-height: 1.24;
+  letter-spacing: 0.08em;
+}
+
+.bianqi-report-page .report-summary-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.bianqi-report-page .report-summary-chips span,
+.bianqi-report-page .context-row strong,
+.bianqi-report-page .context-buff {
+  border: 1px solid rgba(234, 222, 199, 0.18);
+  background: rgba(234, 222, 199, 0.045);
+}
+
+.bianqi-report-page .report-summary-chips span {
+  padding: 7px 12px;
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+.bianqi-report-page .report-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.bianqi-report-page .report-tabs {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 999px;
+  background: rgba(15, 15, 17, 0.74);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.bianqi-report-page .report-tab {
+  min-width: 112px;
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-serif);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.bianqi-report-page .report-tab.active {
+  background: var(--gold-light);
+  color: #050507;
+}
+
+.bianqi-report-page .report-ghost-link {
+  flex: 0 0 auto;
+  padding: 11px 18px;
+  border: 1px solid rgba(234, 222, 199, 0.2);
+  border-radius: 999px;
+  color: rgba(234, 222, 199, 0.78);
+  font-family: var(--font-serif);
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  transition: border-color 0.3s ease, color 0.3s ease, background 0.3s ease;
+}
+
+.bianqi-report-page .report-ghost-link:hover {
+  border-color: rgba(234, 222, 199, 0.48);
+  background: rgba(234, 222, 199, 0.08);
+  color: #fff;
+}
+
+.bianqi-report-page .report-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.bianqi-report-page .report-context,
+.bianqi-report-page .report-article,
+.bianqi-report-page .report-state {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(8, 8, 11, 0.78);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.bianqi-report-page .report-context {
+  position: sticky;
+  top: 116px;
+  padding: 24px;
+  border-radius: 8px;
+}
+
+.bianqi-report-page .context-eyebrow {
+  color: rgba(234, 222, 199, 0.6);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+}
+
+.bianqi-report-page .context-pillar {
+  margin-top: 12px;
+  color: var(--gold-light);
+  font-family: var(--font-serif);
+  font-size: 64px;
+  line-height: 1;
+  letter-spacing: 0.12em;
+}
+
+.bianqi-report-page .context-meta {
+  margin-top: 14px;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.bianqi-report-page .context-rows {
+  display: grid;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.bianqi-report-page .context-row {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.bianqi-report-page .context-row span {
+  color: rgba(255, 255, 255, 0.44);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+.bianqi-report-page .context-row strong {
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.bianqi-report-page .context-buff {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+  padding: 14px;
+  border-radius: 8px;
+}
+
+.bianqi-report-page .context-buff span {
+  color: rgba(255, 255, 255, 0.42);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+}
+
+.bianqi-report-page .context-buff strong {
+  color: #89f7fe;
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.bianqi-report-page .report-article {
+  min-width: 0;
+  padding: 34px;
+  border-radius: 8px;
+}
+
+.bianqi-report-page .article-source {
+  margin: 0 0 14px;
+  color: rgba(255, 255, 255, 0.36);
+  font-size: 12px;
+  line-height: 1.7;
+  letter-spacing: 0.08em;
+}
+
+.bianqi-report-page .report-article h2 {
+  margin: 0 0 26px;
+  color: #fff;
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1.45;
+  letter-spacing: 0.06em;
+}
+
+.bianqi-report-page .article-block {
+  padding: 22px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.bianqi-report-page .article-block:first-of-type {
+  border-top-color: rgba(234, 222, 199, 0.16);
+}
+
+.bianqi-report-page .article-block h3 {
+  margin: 0 0 10px;
+  color: rgba(234, 222, 199, 0.82);
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+}
+
+.bianqi-report-page .article-block p,
+.bianqi-report-page .report-article > p:not(.article-source),
+.bianqi-report-page .key-list li {
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 15px;
+  line-height: 2;
+  letter-spacing: 0.02em;
+  overflow-wrap: anywhere;
+}
+
+.bianqi-report-page .article-block p,
+.bianqi-report-page .report-article > p:not(.article-source) {
+  margin: 0;
+}
+
+.bianqi-report-page .article-block--reminder {
+  margin-top: 8px;
+  padding: 22px;
+  border: 1px solid rgba(234, 222, 199, 0.14);
+  border-radius: 8px;
+  background: rgba(234, 222, 199, 0.035);
+}
+
+.bianqi-report-page .key-list {
+  display: grid;
+  gap: 14px;
+  margin: 0 0 10px;
+  padding-left: 22px;
+}
+
+.bianqi-report-page .key-list li::marker {
+  color: var(--gold-light);
+}
+
+.bianqi-report-page .report-state {
+  width: min(720px, 100%);
+  margin: 36px auto 0;
+  padding: 34px;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.68);
+  text-align: center;
+  line-height: 1.8;
+}
+
+.bianqi-report-page .report-state--error {
+  color: #ffb3a8;
+}
+
+@media (max-width: 900px) {
+  .bianqi-report-page .top-nav {
+    height: 72px;
+    padding: 0 max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px));
+  }
+
+  .bianqi-report-page .real-logo {
+    width: 32px;
+    height: 32px;
+  }
+
+  .bianqi-report-page .brand-text {
+    max-width: calc(100vw - 96px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .bianqi-report-page .back-btn {
+    top: 66px;
+    left: max(16px, env(safe-area-inset-left, 0px));
+    font-size: 12px;
+  }
+
+  .bianqi-report-page .report-main {
+    width: min(calc(100% - 28px), 720px);
+    padding-top: 120px;
+    padding-bottom: max(42px, env(safe-area-inset-bottom, 0px));
+  }
+
+  .bianqi-report-page .report-hero {
+    margin-bottom: 22px;
+  }
+
+  .bianqi-report-page h1 {
+    font-size: 30px;
+    line-height: 1.36;
+    letter-spacing: 0.06em;
+  }
+
+  .bianqi-report-page .report-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bianqi-report-page .report-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .bianqi-report-page .report-tab {
+    min-width: 0;
+    padding: 10px 8px;
+  }
+
+  .bianqi-report-page .report-ghost-link {
+    text-align: center;
+  }
+
+  .bianqi-report-page .report-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .bianqi-report-page .report-context {
+    position: relative;
+    top: auto;
+    padding: 20px;
+  }
+
+  .bianqi-report-page .context-pillar {
+    font-size: 52px;
+  }
+
+  .bianqi-report-page .context-row {
+    grid-template-columns: 86px minmax(0, 1fr);
+  }
+
+  .bianqi-report-page .report-article {
+    padding: 24px 20px;
+  }
+
+  .bianqi-report-page .report-article h2 {
+    font-size: 23px;
+  }
+
+  .bianqi-report-page .article-block p,
+  .bianqi-report-page .report-article > p,
+  .bianqi-report-page .key-list li {
+    font-size: 14px;
+    line-height: 1.9;
+  }
+}
+
+@media (max-width: 420px) {
+  .bianqi-report-page .report-summary-chips {
+    justify-content: flex-start;
+  }
+
+  .bianqi-report-page .context-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .bianqi-report-page .context-row strong {
+    width: 100%;
+  }
+}

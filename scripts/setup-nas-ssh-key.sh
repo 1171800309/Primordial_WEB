@@ -15,4 +15,4 @@ ssh-copy-id -i "$PUB" -o StrictHostKeyChecking=no "${USER}@${HOST}"
 echo ">>> 测试密钥登录（不应再要密码）"
 ssh -i "${PUB%.pub}" -o BatchMode=yes -o StrictHostKeyChecking=no "${USER}@${HOST}" 'echo "NAS 密钥登录 OK"'
 
-echo ">>> 完成。之后使用: ssh -i ~/.ssh/id_ed25519 ${USER}@${HOST}"
+echo ">>> 完成。配置见 deploy/codex-ssh.config → ~/.ssh/config，之后: ssh yiqi-nas"

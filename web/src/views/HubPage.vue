@@ -9,35 +9,49 @@
     <div class="top-nav">
       <router-link to="/hub" class="top-left-brand">
         <img :src="logoUrl" alt="一炁" class="real-logo ink-blend" />
-        <div class="brand-text">一炁<span class="en">YIQI</span></div>
+        <div class="brand-text">一炁逆熵.炁运录<span class="en">YIQI</span></div>
       </router-link>
       <router-link to="/profile" class="top-right-user">个人中心</router-link>
     </div>
 
-    <div class="solar-system" aria-label="一炁功能导航">
-      <button
-        v-for="(planet, i) in planets"
-        :key="planet.name"
-        :ref="setPlanetRef"
-        type="button"
-        class="planet-wrapper"
-        :aria-label="`进入${planet.title}`"
-        @click="goPlanet(planet)"
-        @focus="focusPlanet(i)"
-        @mouseenter="focusPlanet(i)"
-      >
-        <span class="planet-sphere" :class="`glow-${planet.tone}`" />
-        <span class="planet-content">
-          <span class="planet-title" :class="`planet-title--${planet.tone}`">{{ planet.title }}</span>
-          <span class="planet-desc">{{ planet.desc }}</span>
-        </span>
-      </button>
+    <div class="main-container">
+      <section class="welcome-header" aria-label="炁运录欢迎区">
+        <p>欢迎来到炁运录</p>
+      </section>
+
+      <div class="orbs-grid" aria-label="一炁功能导航">
+        <div
+          v-for="(planet, i) in featurePlanets"
+          :key="planet.name"
+          class="orb-wrapper"
+          :class="`delay-${i + 1}`"
+        >
+          <button
+            type="button"
+            class="nav-orb"
+            :class="{ 'nav-orb--locked': planet.locked }"
+            :aria-label="planet.locked ? `${planet.title}暂未开放` : `进入${planet.title}`"
+            :aria-disabled="planet.locked ? 'true' : 'false'"
+            :disabled="planet.locked"
+            @click="goPlanet(planet)"
+          >
+            <span class="orb-shading" />
+            <span class="orb-content">
+              <span class="card-title">{{ planet.title }}</span>
+              <span v-if="planet.descLines?.length" class="card-desc">
+                <span v-for="line in planet.descLines" :key="line">{{ line }}</span>
+              </span>
+              <span v-if="!planet.locked" class="card-btn">进入 <span>→</span></span>
+            </span>
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { onBeforeUpdate, onMounted, onUnmounted, ref } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import logoUrl from '@/assets/logo.png'
 import { usePageTransition } from '@/composables/usePageTransition'
@@ -50,134 +64,67 @@ const canvasRef = ref(null)
 const { loaded } = usePageTransition(1000)
 useOrbitCanvas(canvasRef)
 
-const planets = [
+const featurePlanets = [
   {
     name: 'xiantian',
     to: { name: 'xiantian' },
-    title: '先天 . 恒炁域',
-    desc: '你与生俱来的恒久之炁，不可磨灭。',
-    tone: 'white'
+    title: '先天.恒.炁域',
+    descLines: [
+      '你与生俱来的恒久不变的“先天之炁”',
+      '其炁之数、炁之性对应的你是谁？',
+      '真正了解自己，才能面对未知'
+    ]
   },
   {
     name: 'bianqi',
     to: { name: 'bianqi' },
-    title: '后天 . 变炁域',
-    desc: '大运流年流转。推演进退法则。',
-    tone: 'white'
+    title: '后天.变.炁域',
+    descLines: [
+      '你人生之路所遭遇的“变化之炁”',
+      '大运、流年，对你有怎样的影响',
+      '在不同的炁场下要做如何的决策'
+    ]
+  },
+  {
+    name: 'bianqi-report',
+    to: { name: 'bianqi-report' },
+    title: '大运.流年.报告',
+    descLines: [
+      '读取后天变化里的深层文本',
+      '大运深度分析与流年关键提示',
+      '看见当下炁场的具体提醒'
+    ]
   },
   {
     name: 'qixiangtai',
     to: { name: 'qixiangtai' },
     title: '炁象台',
-    desc: '记录人生的潮汐，展现灵魂能量场。',
-    tone: 'grey'
+    descLines: [
+      '记录你人生的起伏',
+      '了解你人性的状态',
+      '具象化你的炁场'
+    ]
   },
   {
     name: 'chaos-explore',
     to: { name: 'chaos-explore' },
-    title: '混沌探索',
-    desc: '混沌地带。未来将用于测试娱乐。',
-    tone: 'grey'
+    title: '混沌.探索域',
+    descLines: [
+      '进入混沌地带',
+      '探索未定型的测试炁场',
+      '寻找尚未显化的可能'
+    ]
   },
   {
-    name: 'wanqi',
-    to: { name: 'wanqi' },
-    title: '幸运星',
-    desc: '触碰随机恩赐，获取今日专属指引。',
-    tone: 'gold'
+    name: 'x-domain',
+    title: 'x炁域',
+    locked: true,
+    descLines: []
   }
 ]
 
-const planetRefs = ref([])
-const planetCount = planets.length
-const pauseDuration = 4000
-let raf = 0
-let mode = 'moving'
-let pauseTimer = 0
-let currentProgress = 0
-let targetProgress = 0
-let lastTime = 0
-
-const setPlanetRef = (el) => {
-  if (el) planetRefs.value.push(el)
-}
-
-onBeforeUpdate(() => {
-  planetRefs.value = []
-})
-
-const focusPlanet = (index) => {
-  mode = 'moving'
-  pauseTimer = 0
-
-  let currentVal = (index + targetProgress) % planetCount
-  if (currentVal < 0) currentVal += planetCount
-
-  let diff = (planetCount - currentVal) % planetCount
-  if (diff > planetCount / 2) diff -= planetCount
-  targetProgress += diff
-}
-
-const renderSystem = (time) => {
-  const dt = lastTime ? time - lastTime : 16
-  lastTime = time
-
-  if (Math.abs(currentProgress - targetProgress) < 0.005) {
-    currentProgress = targetProgress
-    if (mode === 'moving') {
-      mode = 'paused'
-      pauseTimer = 0
-    }
-    if (mode === 'paused') {
-      pauseTimer += dt
-      if (pauseTimer > pauseDuration) {
-        targetProgress += 1
-        mode = 'moving'
-      }
-    }
-  } else {
-    currentProgress += (targetProgress - currentProgress) * (dt * 0.004)
-  }
-
-  const isWide = window.innerWidth > 800
-  const rx = window.innerWidth * (isWide ? 0.42 : 0.48)
-  const ry = window.innerHeight * (isWide ? 0.18 : 0.14)
-  const breathTime = time * 0.0015
-
-  planetRefs.value.forEach((planetEl, i) => {
-    let val = (i + currentProgress) % planetCount
-    if (val < 0) val += planetCount
-
-    let t = val
-    if (t > planetCount / 2) t -= planetCount
-
-    const x = rx * Math.sin(t * (Math.PI / 6))
-    const z = Math.cos(t * (Math.PI / 6))
-    const baseY = -ry * (1 - z) + ry * 0.2
-    const floatY = Math.sin(breathTime * 1.5 + i) * (isWide ? 15 : 8)
-    const breatheScale = Math.sin(breathTime * 1.8 + i) * 0.03
-    const scale = 0.7 + 0.55 * z + breatheScale
-    const opacity = Math.max(0, 1 - Math.abs(t / 2.4) ** 4)
-
-    planetEl.style.transform = `translate(${x}px, ${baseY + floatY}px) scale(${scale})`
-    planetEl.style.zIndex = `${Math.floor(z * 100)}`
-    planetEl.style.opacity = `${opacity}`
-
-    planetEl.classList.toggle('active', Math.abs(t) < 0.1 && mode === 'paused')
-  })
-
-  raf = requestAnimationFrame(renderSystem)
-}
-
-onMounted(() => {
-  raf = requestAnimationFrame(renderSystem)
-})
-
-onUnmounted(() => {
-  cancelAnimationFrame(raf)
-})
-
 const goPlanet = async (planet) => {
+  if (planet.locked) return
   loaded.value = false
   await router.push(planet.to)
 }

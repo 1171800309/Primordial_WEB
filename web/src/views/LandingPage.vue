@@ -6,8 +6,8 @@
       <router-link to="/" class="brand-container">
         <img :src="logoUrl" alt="一炁" class="real-logo ink-blend" />
         <div class="brand-text">
-          <span class="zh">一炁文化</span>
-          <span class="en">YI QI</span>
+          <span class="zh">一炁逆熵.炁运录</span>
+          <span class="en">YIQI</span>
         </div>
       </router-link>
       <router-link to="/login" class="nav-btn">登录</router-link>

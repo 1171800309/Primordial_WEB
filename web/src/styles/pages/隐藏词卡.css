@@ -41,7 +41,8 @@
         }
         .top-left-brand { display: flex; align-items: center; gap: 14px; text-decoration: none; pointer-events: auto; mix-blend-mode: screen; }
         .real-logo { width: 36px; height: 36px; transition: transform 0.4s ease, filter 0.4s ease; filter: drop-shadow(0 0 5px rgba(234,222,199,0.2)); }
-        .brand-text { font-family: var(--font-serif); font-size: 18px; color: var(--gold-light); letter-spacing: 4px; font-weight: 300; }
+        .brand-text { display: flex; align-items: center; gap: 6px; font-family: var(--font-serif); font-size: clamp(13px, 1vw, 16px); color: var(--gold-light); letter-spacing: 0.08em; font-weight: 300; white-space: nowrap; }
+        .brand-text .en { font-family: var(--font-sans); font-size: 0.68em; letter-spacing: 0.16em; margin-left: 2px; opacity: 0.65; }
         
         /* ================= 左右导航点 (阴阳门) ================= */
         .nav-dot-btn {
@@ -130,16 +131,26 @@
         .reveal-btn:hover { background: rgba(212, 175, 55, 0.1); box-shadow: 0 0 20px rgba(212, 175, 55, 0.3); }
         .reveal-btn:hover::before { left: 100%; }
 
+        /* ================= 整页单视口：不滚动 ================= */
+        .hidden-card-page {
+            height: 100vh; min-height: 100vh; max-height: 100vh; overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+
         /* ================= 主体内容区 ================= */
         .hidden-card-page .main-content {
-            position: relative; z-index: 10; flex-grow: 1; display: flex; flex-direction: column; align-items: center;
-            padding-top: 140px; padding-bottom: 100px; width: 100%;
+            position: relative; z-index: 10; flex: 1 1 auto; min-height: 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding-top: 110px; padding-bottom: 28px; width: 100%;
             opacity: 0; filter: blur(10px); transform: translateY(30px); transition: all 1.5s var(--bezier-smooth);
         }
         .hidden-card-page .main-content.revealed { opacity: 1; filter: blur(0); transform: translateY(0); }
 
-        .hidden-card-page .page-title { font-family: var(--font-serif); font-size: clamp(28px, 4vw, 36px); color: var(--gold-legendary); font-weight: 300; letter-spacing: 0.2em; margin-bottom: 16px; text-align: center; text-shadow: 0 0 30px rgba(212, 175, 55, 0.4); }
-        .hidden-card-page .page-subtitle { font-size: 13px; color: var(--text-muted); letter-spacing: 0.3em; margin-bottom: 80px; text-transform: uppercase; }
+        .hidden-card-page .page-title { font-family: var(--font-serif); font-size: clamp(26px, 3.4vw, 34px); color: var(--gold-legendary); font-weight: 300; letter-spacing: 0.2em; margin-bottom: 10px; text-align: center; text-shadow: 0 0 30px rgba(212, 175, 55, 0.4); }
+        .hidden-card-page .page-subtitle { font-size: 13px; color: var(--text-muted); letter-spacing: 0.3em; margin-bottom: clamp(20px, 4vh, 44px); text-transform: uppercase; }
+
+        /* 导航点紧贴词卡下方，保持合理间距（覆盖轮播默认的超大上边距） */
+        .hidden-card-page .pagination-dots { margin-top: clamp(16px, 2.6vh, 30px); }
 
         .hidden-card-page .trait-showcase { margin: 0 auto; width: 100%; max-width: 1200px; }
         .hidden-card-page .trait-showcase .blind-box {

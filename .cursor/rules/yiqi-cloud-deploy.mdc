@@ -1,0 +1,17 @@
+---
+description: 一炁文化云服务器发版与安全部署
+alwaysApply: true
+---
+
+# 一炁文化 · 云服务器
+
+用户要求**部署到云服务器**或**云发版**时，优先 **NAS 构建镜像 → 云端 docker load**（不在云端 git pull）：
+
+1. 腾讯云目录 `/opt/yiqi`，编排 `docker-compose.images.yml`。
+2. NAS 执行 `deploy/nas-export-images.sh` 上传镜像；云端 `scripts/load-images.sh` 启动。
+3. 编辑云端 `/opt/yiqi/.env` 域名与 ACME 邮箱；密钥已在云端生成。
+4. 详见 `deploy/cloud/CLOUD-NAS.md`。
+
+域名：`SITE_DOMAIN` 用户站，`ADMIN_DOMAIN` 管理后台（两个子域名均需 DNS 解析）。
+
+详细说明见 `deploy/cloud/README.md`。

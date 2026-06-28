@@ -1,6 +1,0 @@
-# 复制到 ~/.ssh/config（chmod 600），便于 ssh yiqi-nas
-Host yiqi-nas
-  HostName 192.168.2.224
-  User Bely
-  IdentityFile ~/.ssh/id_ed25519
-  IdentitiesOnly yes
